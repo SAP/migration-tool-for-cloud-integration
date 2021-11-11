@@ -1,0 +1,36 @@
+{
+  "name": "migrationtool",
+  "version": "1.0.0",
+  "description": "Assistant to support content migration from SAP Integration Services (Neo) to SAP Integration Suite (Multi-cloud)",
+  "repository": "https://github.com/SAP/migration-tool-for-cloud-integration",
+  "license": "Apache-2.0",
+  "private": false,
+  "engines": {
+    "node": ">=14.5"
+  },
+  "dependencies": {
+    "@sap/cds": "^5.6.2",
+    "axios": "^0.24",
+    "sqlite3": "^5",
+    "yauzl": "^2.10.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@sap/ux-specification": "^1.90.13"
+  },
+  "scripts": {
+    "start": "cds run --with-mocks"
+  },
+  "cds": {
+    "requires": {
+      "IntegrationContent.sap.hci.api": {
+        "kind": "odata",
+        "model": "srv/external/IntegrationContent"
+      },
+      "db": {
+        "kind": "sqlite",
+        "model": "*"
+      }
+    }
+  }
+}

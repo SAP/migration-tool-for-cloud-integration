@@ -1,0 +1,502 @@
+{
+    "_version": "1.32.0",
+    "sap.app": {
+        "id": "contentviewer",
+        "type": "application",
+        "i18n": "i18n/i18n.properties",
+        "applicationVersion": {
+            "version": "1.0.0"
+        },
+        "title": "Explore Tenants",
+        "description": "Explore the content of your tenant",
+        "dataSources": {
+            "mainService": {
+                "uri": "/config/",
+                "type": "OData",
+                "settings": {
+                    "odataVersion": "4.0"
+                }
+            }
+        },
+        "offline": false,
+        "resources": "resources.json",
+        "sourceTemplate": {
+            "id": "ui5template.fiorielements.v4.lrop",
+            "version": "1.0.0"
+        },
+        "crossNavigation": {
+            "inbounds": {
+                "contentviewer-inbound": {
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    },
+                    "semanticObject": "tenants",
+                    "action": "show",
+                    "title": "Registered Tenants",
+                    "subTitle": "",
+                    "icon": ""
+                }
+            }
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "resources": {
+            "js": [],
+            "css": []
+        },
+        "dependencies": {
+            "minUI5Version": "1.95.0",
+            "libs": {
+                "sap.ui.core": {},
+                "sap.fe.templates": {}
+            }
+        },
+        "models": {
+            "i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "uri": "i18n/i18n.properties"
+            },
+            "": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "synchronizationMode": "None",
+                    "operationMode": "Server",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true
+                }
+            }
+        },
+        "routing": {
+            "routes": [
+                {
+                    "pattern": ":?query:",
+                    "name": "TenantsList",
+                    "target": "TenantsList"
+                },
+                {
+                    "pattern": "Tenants({key}):?query:",
+                    "name": "TenantsObjectPage",
+                    "target": "TenantsObjectPage"
+                },
+                {
+                    "pattern": "Tenants({key})/toIntegrationPackages({key2}):?query:",
+                    "name": "IntegrationPackagesObjectPage_toIntegrationPackages",
+                    "target": "IntegrationPackagesObjectPage_toIntegrationPackages"
+                },
+                {
+                    "pattern": "Tenants({key})/toIntegrationPackages({key2})/toIntegrationDesigntimeArtifacts({key3}):?query:",
+                    "name": "IntegrationDesigntimeArtifactsObjectPage_toIntegrationDesigntimeArtifacts",
+                    "target": "IntegrationDesigntimeArtifactsObjectPage_toIntegrationDesigntimeArtifacts"
+                },
+                {
+                    "pattern": "Tenants({key})/toIntegrationPackages({key2})/toIntegrationDesigntimeArtifacts({key3})/toConfigurations({key4}):?query:",
+                    "name": "ConfigurationsObjectPage_toConfigurations",
+                    "target": "ConfigurationsObjectPage_toConfigurations"
+                },
+                {
+                    "pattern": "Tenants({key})/toIntegrationPackages({key2})/toIntegrationDesigntimeArtifacts({key3})/toResources({key4}):?query:",
+                    "name": "ResourcesObjectPage_toResources",
+                    "target": "ResourcesObjectPage_toResources"
+                },
+                {
+                    "pattern": "Tenants({key})/toIntegrationPackages({key2})/toCustomTags({key3}):?query:",
+                    "name": "CustomTagsObjectPage_toCustomTags",
+                    "target": "CustomTagsObjectPage_toCustomTags"
+                },
+                {
+                    "pattern": "Tenants({key})/toIntegrationPackages({key2})/toValueMappingDesigntimeArtifacts({key3}):?query:",
+                    "name": "ValueMappingDesigntimeArtifactsObjectPage_toValueMappingDesigntimeArtifacts",
+                    "target": "ValueMappingDesigntimeArtifactsObjectPage_toValueMappingDesigntimeArtifacts"
+                },
+                {
+                    "pattern": "Tenants({key})/toCustomTagConfigurations({key2}):?query:",
+                    "name": "CustomTagConfigurationsObjectPage_toCustomTagConfigurations",
+                    "target": "CustomTagConfigurationsObjectPage_toCustomTagConfigurations"
+                },
+                {
+                    "pattern": "Tenants({key})/toIntegrationPackages({key2})/toValueMappingDesigntimeArtifacts({key3})/toValMapSchema({key4}):?query:",
+                    "name": "ValMapSchemaObjectPage_toValMapSchema",
+                    "target": "ValMapSchemaObjectPage_toValMapSchema"
+                },
+                {
+                    "pattern": "Tenants({key})/toKeyStoreEntries({key2}):?query:",
+                    "name": "KeyStoreEntriesObjectPage_toKeyStoreEntries",
+                    "target": "KeyStoreEntriesObjectPage_toKeyStoreEntries"
+                },
+                {
+                    "pattern": "Tenants({key})/toUserCredentials({key2}):?query:",
+                    "name": "UserCredentialsObjectPage_toUserCredentials",
+                    "target": "UserCredentialsObjectPage_toUserCredentials"
+                },
+                {
+                    "pattern": "Tenants({key})/toNumberRanges({key2}):?query:",
+                    "name": "NumberRangesObjectPage_toNumberRanges",
+                    "target": "NumberRangesObjectPage_toNumberRanges"
+                },
+                {
+                    "pattern": "Tenants({key})/toAccessPolicies({key2}):?query:",
+                    "name": "AccessPoliciesObjectPage_toAccessPolicies",
+                    "target": "AccessPoliciesObjectPage_toAccessPolicies"
+                },
+                {
+                    "pattern": "Tenants({key})/toOAuth2ClientCredentials({key2}):?query:",
+                    "name": "OAuth2ClientCredentialsObjectPage_toOAuth2ClientCredentials",
+                    "target": "OAuth2ClientCredentialsObjectPage_toOAuth2ClientCredentials"
+                }
+            ],
+            "targets": {
+                "TenantsList": {
+                    "type": "Component",
+                    "id": "TenantsList",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "entitySet": "Tenants",
+                            "enhanceI18n": "i18n/i18n.properties",
+                            "variantManagement": "None",
+                            "navigation": {
+                                "Tenants": {
+                                    "detail": {
+                                        "route": "TenantsObjectPage"
+                                    }
+                                }
+                            },
+                            "initialLoad": true,
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "personalization": {
+                                            "sort": true
+                                        },
+                                        "selectionMode": "Multi"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "TenantsObjectPage": {
+                    "type": "Component",
+                    "id": "TenantsObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "Tenants",
+                            "navigation": {
+                                "toIntegrationPackages": {
+                                    "detail": {
+                                        "route": "IntegrationPackagesObjectPage_toIntegrationPackages"
+                                    }
+                                },
+                                "toCustomTagConfigurations": {
+                                    "detail": {
+                                        "route": "CustomTagConfigurationsObjectPage_toCustomTagConfigurations"
+                                    }
+                                },
+                                "toKeyStoreEntries": {
+                                    "detail": {
+                                        "route": "KeyStoreEntriesObjectPage_toKeyStoreEntries"
+                                    }
+                                },
+                                "toUserCredentials": {
+                                    "detail": {
+                                        "route": "UserCredentialsObjectPage_toUserCredentials"
+                                    }
+                                },
+                                "toNumberRanges": {
+                                    "detail": {
+                                        "route": "NumberRangesObjectPage_toNumberRanges"
+                                    }
+                                },
+                                "toAccessPolicies": {
+                                    "detail": {
+                                        "route": "AccessPoliciesObjectPage_toAccessPolicies"
+                                    }
+                                },
+                                "toOAuth2ClientCredentials": {
+                                    "detail": {
+                                        "route": "OAuth2ClientCredentialsObjectPage_toOAuth2ClientCredentials"
+                                    }
+                                }
+                            },
+                            "content": {},
+                            "sectionLayout": "Tabs",
+                            "controlConfiguration": {
+                                "toIntegrationPackages/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                },
+                                "toErrors/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                },
+                                "toUserCredentials/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                },
+                                "toKeyStoreEntries/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                },
+                                "toCustomTagConfigurations/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                },
+                                "toNumberRanges/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                },
+                                "toOAuth2ClientCredentials/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                },
+                                "toAccessPolicies/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                },
+                                "toMigrationTasks/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "IntegrationPackagesObjectPage_toIntegrationPackages": {
+                    "type": "Component",
+                    "id": "IntegrationPackagesObjectPage_toIntegrationPackages",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "IntegrationPackages",
+                            "navigation": {
+                                "toIntegrationDesigntimeArtifacts": {
+                                    "detail": {
+                                        "route": "IntegrationDesigntimeArtifactsObjectPage_toIntegrationDesigntimeArtifacts"
+                                    }
+                                },
+                                "toCustomTags": {
+                                    "detail": {
+                                        "route": "CustomTagsObjectPage_toCustomTags"
+                                    }
+                                },
+                                "toValueMappingDesigntimeArtifacts": {
+                                    "detail": {
+                                        "route": "ValueMappingDesigntimeArtifactsObjectPage_toValueMappingDesigntimeArtifacts"
+                                    }
+                                }
+                            },
+                            "content": {}
+                        }
+                    }
+                },
+                "IntegrationDesigntimeArtifactsObjectPage_toIntegrationDesigntimeArtifacts": {
+                    "type": "Component",
+                    "id": "IntegrationDesigntimeArtifactsObjectPage_toIntegrationDesigntimeArtifacts",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "IntegrationDesigntimeArtifacts",
+                            "navigation": {
+                                "toConfigurations": {
+                                    "detail": {
+                                        "route": "ConfigurationsObjectPage_toConfigurations"
+                                    }
+                                },
+                                "toResources": {
+                                    "detail": {
+                                        "route": "ResourcesObjectPage_toResources"
+                                    }
+                                }
+                            },
+                            "content": {}
+                        }
+                    }
+                },
+                "ConfigurationsObjectPage_toConfigurations": {
+                    "type": "Component",
+                    "id": "ConfigurationsObjectPage_toConfigurations",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "Configurations",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "ResourcesObjectPage_toResources": {
+                    "type": "Component",
+                    "id": "ResourcesObjectPage_toResources",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "Resources",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "CustomTagsObjectPage_toCustomTags": {
+                    "type": "Component",
+                    "id": "CustomTagsObjectPage_toCustomTags",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "CustomTags",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "ValueMappingDesigntimeArtifactsObjectPage_toValueMappingDesigntimeArtifacts": {
+                    "type": "Component",
+                    "id": "ValueMappingDesigntimeArtifactsObjectPage_toValueMappingDesigntimeArtifacts",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "ValueMappingDesigntimeArtifacts",
+                            "navigation": {
+                                "toValMapSchema": {
+                                    "detail": {
+                                        "route": "ValMapSchemaObjectPage_toValMapSchema"
+                                    }
+                                }
+                            },
+                            "content": {}
+                        }
+                    }
+                },
+                "ValMapSchemaObjectPage_toValMapSchema": {
+                    "type": "Component",
+                    "id": "ValMapSchemaObjectPage_toValMapSchema",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "ValMapSchema",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "CustomTagConfigurationsObjectPage_toCustomTagConfigurations": {
+                    "type": "Component",
+                    "id": "CustomTagConfigurationsObjectPage_toCustomTagConfigurations",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "CustomTagConfigurations",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "KeyStoreEntriesObjectPage_toKeyStoreEntries": {
+                    "type": "Component",
+                    "id": "KeyStoreEntriesObjectPage_toKeyStoreEntries",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "KeyStoreEntries",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "UserCredentialsObjectPage_toUserCredentials": {
+                    "type": "Component",
+                    "id": "UserCredentialsObjectPage_toUserCredentials",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "UserCredentials",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "NumberRangesObjectPage_toNumberRanges": {
+                    "type": "Component",
+                    "id": "NumberRangesObjectPage_toNumberRanges",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "NumberRanges",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "AccessPoliciesObjectPage_toAccessPolicies": {
+                    "type": "Component",
+                    "id": "AccessPoliciesObjectPage_toAccessPolicies",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "AccessPolicies",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "OAuth2ClientCredentialsObjectPage_toOAuth2ClientCredentials": {
+                    "type": "Component",
+                    "id": "OAuth2ClientCredentialsObjectPage_toOAuth2ClientCredentials",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "OAuth2ClientCredentials",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                }
+            }
+        },
+        "contentDensities": {
+            "compact": true,
+            "cozy": true
+        }
+    },
+    "sap.platform.abap": {
+        "_version": "1.1.0",
+        "uri": ""
+    },
+    "sap.platform.hcp": {
+        "_version": "1.1.0",
+        "uri": ""
+    },
+    "sap.fiori": {
+        "_version": "1.1.0",
+        "registrationIds": [],
+        "archeType": "transactional"
+    }
+}

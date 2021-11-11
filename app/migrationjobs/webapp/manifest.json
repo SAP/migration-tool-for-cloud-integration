@@ -1,0 +1,161 @@
+{
+    "_version": "1.32.0",
+    "sap.app": {
+        "id": "migrationjobs",
+        "type": "application",
+        "i18n": "i18n/i18n.properties",
+        "applicationVersion": {
+            "version": "1.0.0"
+        },
+        "title": "Job Logs",
+        "description": "View logs of previous job runs",
+        "dataSources": {
+            "mainService": {
+                "uri": "/config/",
+                "type": "OData",
+                "settings": {
+                    "odataVersion": "4.0"
+                }
+            }
+        },
+        "offline": false,
+        "resources": "resources.json",
+        "sourceTemplate": {
+            "id": "ui5template.fiorielements.v4.lrop",
+            "version": "1.0.0"
+        },
+        "crossNavigation": {
+            "inbounds": {
+                "migrationjobs-inbound": {
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    },
+                    "semanticObject": "migrationjobs",
+                    "action": "manage",
+                    "title": "Migration Jobs",
+                    "subTitle": "",
+                    "icon": ""
+                }
+            }
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "resources": {
+            "js": [],
+            "css": []
+        },
+        "dependencies": {
+            "minUI5Version": "1.95.0",
+            "libs": {
+                "sap.ui.core": {},
+                "sap.fe.templates": {}
+            }
+        },
+        "models": {
+            "i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "uri": "i18n/i18n.properties"
+            },
+            "": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "synchronizationMode": "None",
+                    "operationMode": "Server",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true
+                }
+            }
+        },
+        "routing": {
+            "routes": [
+                {
+                    "pattern": ":?query:",
+                    "name": "MigrationJobsList",
+                    "target": "MigrationJobsList"
+                },
+                {
+                    "pattern": "MigrationJobs({key}):?query:",
+                    "name": "MigrationJobsObjectPage",
+                    "target": "MigrationJobsObjectPage"
+                }
+            ],
+            "targets": {
+                "MigrationJobsList": {
+                    "type": "Component",
+                    "id": "MigrationJobsList",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "initialLoad": true,
+                            "entitySet": "MigrationJobs",
+                            "variantManagement": "None",
+                            "navigation": {
+                                "MigrationJobs": {
+                                    "detail": {
+                                        "route": "MigrationJobsObjectPage"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "MigrationJobsObjectPage": {
+                    "type": "Component",
+                    "id": "MigrationJobsObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "MigrationJobs",
+                            "content": {
+								"body": {
+									"sections": {
+										"logPage": {
+											"type": "XMLFragment",
+											"name": "migrationjobs/custom/logPage",
+											"title": "Log"
+										}
+									}
+								}
+							}
+                        }
+                    }
+                }
+            }
+        },
+        "contentDensities": {
+            "compact": true,
+            "cozy": true
+        }
+    },
+    "sap.platform.abap": {
+        "_version": "1.1.0",
+        "uri": ""
+    },
+    "sap.platform.hcp": {
+        "_version": "1.1.0",
+        "uri": ""
+    },
+    "sap.fiori": {
+        "_version": "1.1.0",
+        "registrationIds": [],
+        "archeType": "transactional"
+    }
+}

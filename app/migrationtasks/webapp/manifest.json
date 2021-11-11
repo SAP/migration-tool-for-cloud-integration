@@ -1,0 +1,223 @@
+{
+    "_version": "1.32.0",
+    "sap.app": {
+        "id": "migrationtasks",
+        "type": "application",
+        "i18n": "i18n/i18n.properties",
+        "applicationVersion": {
+            "version": "1.0.0"
+        },
+        "title": "Migration Tasks",
+        "description": "{{appDescription}}",
+        "dataSources": {
+            "mainService": {
+                "uri": "/config/",
+                "type": "OData",
+                "settings": {
+                    "odataVersion": "4.0"
+                }
+            }
+        },
+        "offline": false,
+        "resources": "resources.json",
+        "sourceTemplate": {
+            "id": "ui5template.fiorielements.v4.lrop",
+            "version": "1.0.0"
+        },
+        "crossNavigation": {
+            "inbounds": {
+                "migrationtasks-inbound": {
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    },
+                    "semanticObject": "migrationtasks",
+                    "action": "manage",
+                    "title": "Migration Tasks",
+                    "subTitle": "Tasks",
+                    "icon": ""
+                }
+            }
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "resources": {
+            "js": [],
+            "css": []
+        },
+        "dependencies": {
+            "minUI5Version": "1.95.0",
+            "libs": {
+                "sap.ui.core": {},
+                "sap.fe.templates": {}
+            }
+        },
+        "models": {
+            "i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "uri": "i18n/i18n.properties"
+            },
+            "": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "synchronizationMode": "None",
+                    "operationMode": "Server",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true
+                }
+            }
+        },
+        "routing": {
+            "routes": [
+                {
+                    "pattern": ":?query:",
+                    "name": "MigrationTasksList",
+                    "target": "MigrationTasksList"
+                },
+                {
+                    "pattern": "MigrationTasks({key}):?query:",
+                    "name": "MigrationTasksObjectPage",
+                    "target": "MigrationTasksObjectPage"
+                },
+                {
+                    "pattern": "MigrationTasks({key})/toMigrationJobs({key2}):?query:",
+                    "name": "MigrationJobsObjectPage",
+                    "target": "MigrationJobsObjectPage"
+                }
+            ],
+            "targets": {
+                "MigrationTasksList": {
+                    "type": "Component",
+                    "id": "MigrationTasksList",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "entitySet": "MigrationTasks",
+                            "enhanceI18n": "i18n/i18n.properties",
+                            "variantManagement": "None",
+                            "navigation": {
+                                "MigrationTasks": {
+                                    "detail": {
+                                        "route": "MigrationTasksObjectPage"
+                                    }
+                                }
+                            },
+                            "initialLoad": true,
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "selectionMode": "Multi"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "MigrationTasksObjectPage": {
+                    "type": "Component",
+                    "id": "MigrationTasksObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "editableHeaderContent": false,
+                            "entitySet": "MigrationTasks",
+                            "enhanceI18n": "i18n/i18n.properties",
+                            "navigation": {
+                                "toMigrationJobs": {
+                                    "detail": {
+                                        "route": "MigrationJobsObjectPage"
+                                    }
+                                }
+                            },
+                            "controlConfiguration": {
+                                "toTaskNodes/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "enableFullScreen": true,
+                                        "quickVariantSelection": {
+                                            "paths": [
+                                                {
+                                                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#Packages"
+                                                },
+                                                {
+                                                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#Security"
+                                                },
+                                                {
+                                                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#Others"
+                                                }
+                                            ],
+                                            "showCounts": false,
+                                            "hideTableTitle": false
+                                        }
+                                    }
+                                },
+                                "toMigrationJobs/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "MigrationJobsObjectPage": {
+                    "type": "Component",
+                    "id": "MigrationJobsObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "editableHeaderContent": false,
+                            "entitySet": "MigrationJobs",
+                            "content": {
+                                "body": {
+                                    "sections": {
+                                        "logPage": {
+                                            "type": "XMLFragment",
+                                            "name": "migrationtasks/custom/logPage",
+                                            "title": "Log"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "contentDensities": {
+            "compact": true,
+            "cozy": true
+        }
+    },
+    "sap.platform.abap": {
+        "_version": "1.1.0",
+        "uri": ""
+    },
+    "sap.platform.hcp": {
+        "_version": "1.1.0",
+        "uri": ""
+    },
+    "sap.fiori": {
+        "_version": "1.1.0",
+        "registrationIds": [],
+        "archeType": "transactional"
+    }
+}
