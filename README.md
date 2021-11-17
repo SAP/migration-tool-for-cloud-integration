@@ -65,7 +65,7 @@ Please search or create a new Issue in this Github repository to obtain support.
 
 ## Contributing
 
-Contributions are welcome, please create an Issue or Pull Request in this Github repository.
+Contributions are certainly welcome, see [ways to contribute](CONTRIBUTING.md).
 
 ## Code of Conduct
 
