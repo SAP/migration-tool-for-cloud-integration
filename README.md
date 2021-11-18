@@ -30,6 +30,23 @@ This tool is designed to run locally on your own laptop, server or VM. It is dev
 
 Locally stored data is kept in a local SQLite database file.
 
+### Use Docker
+
+You can use the provided Dockerfile to install and run the application:
+
+In Terminal or Command Prompt, run:
+1. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git`
+2. Build this tool: `docker build -t migrationtool ./migration-tool-for-cloud-integration`
+
+Now the tool is build and can be started:
+
+1. Start the tool: `docker run -p 4004:4004 migrationtool`
+2. Open your local browser to: `http://localhost:4004/home.html`
+
+To stop the tool, in Terminal or Command Prompt, press `control-C`
+
+### Manual Install
+
 It is required to have an active installation of Node.js (version 14.5 or later), available from the [Node.js](https://nodejs.org/) website, including Node Package Manager (NPM). You can verify your installed version via `node -v`.
 
 To install, in Terminal or Command Prompt, run:
