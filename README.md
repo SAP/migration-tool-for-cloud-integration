@@ -2,7 +2,7 @@
 
 ## Description
 
-This tool aims to assist in migration projects for SAP customers using SAP Cloud Integration on Neo datacenters who wish to move to SAP Integration Suite on Multi-Cloud datacenters.
+This tool aims to assist SAP customers using SAP Cloud Integration on Neo datacenters who wish to upgrade to SAP Integration Suite on Multi-Cloud datacenters.
 
 **Important:**
 There is an official migration pack available via [SAP Note 2937549](https://launchpad.support.sap.com/#/notes/2937549) which leverages a collection of Postman scripts. This Github repository is **not** related with the official migration pack mentioned in the SAP Note. However, the functionality is very similar (as compared to Postman collection version 1.5.0 (Feb 2021)).
@@ -20,9 +20,8 @@ This tool is provided as-is and is not covered by SAP Support.
 You will need:
 - A SAP Cloud Integration tenant on Neo (source system)
 - A SAP Integration Suite tenant on Cloud Foundry (target system)
-- Node.js v14.5 or higher
 
-If you don't have a SAP Integration Suite license yet, you can use a trial account. See https://www.sap.com/products/business-technology-platform/trial.html
+If you don't have a SAP Integration Suite license yet, you can use the BTP Free Tier available at no cost. See https://blogs.sap.com/2021/11/17/sap-integration-suite-free-tier-is-now-available-on-sap-btp/
 
 ## Download & Installation
 
