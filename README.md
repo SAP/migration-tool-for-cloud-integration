@@ -90,3 +90,5 @@ See [Our Code of Conduct](CODE_OF_CONDUCT.md).
 ## Licensing
 
 Copyright 2021 SAP SE or an SAP affiliate company and migration-tool-for-cloud-integration contributors. Please see our [LICENSE](LICENSE) for copyright and license information.
+
+[![REUSE status](https://api.reuse.software/badge/github.com/SAP/migration-tool-for-cloud-integration)](https://api.reuse.software/info/github.com/SAP/migration-tool-for-cloud-integration)
