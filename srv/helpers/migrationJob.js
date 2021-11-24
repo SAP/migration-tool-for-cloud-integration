@@ -253,8 +253,8 @@ class MigrationJob {
         const downloader = new DownloadHelper.ContentDownloader()
         const result = await downloader.searchForEnvVarsInPackage(itemBinary);
         if (result) {
-            const resultTexts = result.filter(x => x.count > 0).map(x => x.file + ' contains ' + x.count + ' occurrences of system.getenv()');
-            const resultTextErrors = result.filter(x => x.count == -1).map(x => x.file);
+            const resultTexts = result.filter(x => x.count > 0).map(x => x.artifact + ': ' + x.file + ' contains ' + x.count + ' occurrences of system.getenv()');
+            const resultTextErrors = result.filter(x => x.count == -1).map(x => x.artifact + ': ' + x.file);
             if (resultTexts.length == 0) {
                 await this.addLogEntry(3, 'Analyzing scripts: No script files in package, or no usage of Environment Variables found.');
             } else {

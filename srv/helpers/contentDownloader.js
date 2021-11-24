@@ -460,7 +460,7 @@ class ContentDownloader {
             console.log('Error: Skipping file: ' + (e.message || e));
             return [{
                 'artifact': entry.displayName,
-                'file': 'Error while unzipping artefact: ' + (e.message || e),
+                'file': 'Could not analyze usage of system.getenv(): ' + (e.message || e),
                 'count': -1
             }];
         }
