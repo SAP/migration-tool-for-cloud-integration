@@ -304,7 +304,7 @@ class MigrationJob {
 
             await this.Customizations.onMigrateConfiguration(configuration);
 
-            const paramKey = encodeURI(configuration.ParameterKey);
+            const paramKey = encodeURIComponent(configuration.ParameterKey);
             payload = payload + "\r\n--changeset_77162fcd-b8da-41ac-a9f8-9357efbbd621\r\n"
                 + "Content-Type: application/http\r\n"
                 + "Content-Transfer-Encoding: binary\r\n\r\n"
