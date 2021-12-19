@@ -15,11 +15,13 @@ annotate ConfigService.MigrationTasks with @(UI : {
     Identification           : [
         {Value : ObjectID},
         {
+            ![@UI.Hidden] : {$edmJson : {$Not : [{$Path : 'IsActiveEntity'}]}},
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Change Target ...',
             Action : 'ConfigService.Task_setTargetTenant'
         },
         {
+            ![@UI.Hidden] : {$edmJson : {$Not : [{$Path : 'IsActiveEntity'}]}},
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Run Now',
             Action : 'ConfigService.Task_startMigration'
