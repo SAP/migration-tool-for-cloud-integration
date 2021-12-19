@@ -46,6 +46,7 @@ class MigrationTask {
                 Id: item.Id,
                 Name: item.Name,
                 Component: Settings.ComponentNames.Package,
+                PackageVendor: item.Vendor,
                 toMigrationTask_ObjectID: this.Task.ObjectID
             });
             for (let artifact of item.toIntegrationDesigntimeArtifacts) {
@@ -208,7 +209,7 @@ class MigrationTask {
                 default:
                     break;
             };
-            node.Included && node.ExistInSource == false && includedItemsNoLongerInSource.push(node.Id);
+            node.Included && node.ExistInSource == false && includedItemsNoLongerInSource.push(node.Id + ' (' + node.Component + ')');
         };
         return includedItemsNoLongerInSource;
     };

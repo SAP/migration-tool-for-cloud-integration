@@ -313,6 +313,11 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
                 CriticalityRepresentation : #WithoutIcon
             },
             {
+                Value                     : PackageVendor,
+                Criticality               : Status,
+                CriticalityRepresentation : #WithoutIcon
+            },
+            {
                 Value                     : Component,
                 Criticality               : Status,
                 CriticalityRepresentation : #WithoutIcon
@@ -354,4 +359,5 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
     ConfigureOnlyText @title : 'Configuration';
     Included          @UI.Hidden;
     ConfigureOnly     @UI.Hidden;
+    PackageVendor     @title : 'Vendor';
 };

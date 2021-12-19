@@ -311,6 +311,7 @@ entity MigrationTaskNodes {
         virtual ConfigureOnlyText        : String(20)@Core.Computed;
         virtual ConfigureOnlyCriticality : CriticalityType;
         virtual flagCanConfigure         : TechnicalBooleanFlag not null default false;
+        PackageVendor                    : String; //used only for Integration Packages to show which are SAP and which are Custom
 };
 
 type TechnicalBooleanFlag : Boolean @Core.Computed  @UI.Hidden;
