@@ -5,6 +5,7 @@ const MigrationJobHelper = require('./helpers/migrationJob');
 const MigrationTaskHelper = require('./helpers/migrationTask');
 const Settings = require('./config/settings');
 const assert = require('assert');
+const fs = require('fs');
 
 const { Tenants, MigrationTasks, MigrationJobs, MigrationTaskNodes, extIntegrationPackages } = cds.entities;
 
@@ -137,7 +138,25 @@ module.exports = async (srv) => {
         req.notify(201, 'Migration Task created.');
         return Task;
     });
-
+    srv.on('Tenant_export', async (req) => {
+        const TenantList = await srv.read(Tenants);
+        const headers = 'ObjectID;Name;Host;Token_host;Oauth_clientid;Oauth_secret;Role;Environment';
+        const content = [headers];
+        for (const t of TenantList) {
+            content.push([
+                t.ObjectID,
+                t.Name,
+                t.Host,
+                t.Token_host,
+                t.Oauth_clientid,
+                t.Oauth_secret,
+                t.Role,
+                t.Environment
+            ].join(';'));
+        }
+        fs.writeFileSync('db/data/migrationtool-Tenants.csv', content.join('\r\n'));
+        req.notify(201, 'CSV created: ' + TenantList.length + ' registration(s) exported.');
+    });
 
     srv.after('READ', srv.entities.MigrationTasks, async (tasks, req) => {
         const taskList = Array.isArray(tasks) ? tasks : [tasks];

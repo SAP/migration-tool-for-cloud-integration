@@ -148,14 +148,20 @@ service RegistrationService {
     @odata.draft.enabled
     entity Tenants     as projection on my.Tenants actions {
 
-        @cds.odata.bindingparameter.name : '_it'
-        @Core.OperationAvailable         : _it.IsActiveEntity
+            @cds.odata.bindingparameter.name : '_it'
+            @Core.OperationAvailable         : _it.IsActiveEntity
         action Tenant_testConnection() returns Boolean;
-    };
+
+            // @cds.odata.bindingparameter.name : '_it'
+            // @Core.OperationAvailable         : _it.IsActiveEntity
+            @Common.IsActionCritical           : true
+            action Tenant_export() returns     Boolean;
+        };
 
     @readonly
     entity SystemRoles as projection on my.SystemRoles;
 
     @readonly
     entity Landscapes  as projection on my.Landscapes;
+
 };

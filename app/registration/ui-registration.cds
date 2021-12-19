@@ -31,6 +31,11 @@ annotate RegistrationService.Tenants with @(UI : {
             Label       : 'Test Connection',
             Determining : false,
             Action      : 'RegistrationService.Tenant_testConnection'
+        },
+        {
+            $Type       : 'UI.DataFieldForAction',
+            Label       : 'Export All to CSV',
+            Action      : 'RegistrationService.Tenant_export'
         }
     ],
     HeaderFacets                : [{
