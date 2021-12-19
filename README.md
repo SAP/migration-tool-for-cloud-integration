@@ -68,6 +68,26 @@ To stop the tool, in Terminal or Command Prompt, press `control-C`
 
 To learn how to use the tool, please refer to the [user documentation](/docs).
 
+## Version Dependencies
+
+### SAP UI5 version info and issue log
+
+- **1.95.0**: Most stable, but does not support showCount=true (manifest) for Task Items table in MigrationTasks > Detail screen
+- **1.96.2**: Issue: does not show Integration Artifacts table in Explore Tenant > Integration Packages > Detail screen
+- **1.97.0**: Issue: does not show Integration Artifacts table in Explore Tenant > Integration Packages > Detail screen, but solves the showCount issue of 1.95.0
+
+Specify the version to be used in [/app/home.html](./app/home.html)
+
+Version availability: https://ui5.sap.com/versionoverview.html
+
+### SAP CDS version info and issue log
+
+- **5.5.4**: Works
+- **5.6.2**: Issue: UPDATE function to update ExistInSource columns in MigrationTasks has bugs
+- **5.7.3**: Stable
+
+More information on changelog: https://cap.cloud.sap/docs/releases
+
 ## Known Issues
 
 The very first time that the tool is started, it might not start correctly.

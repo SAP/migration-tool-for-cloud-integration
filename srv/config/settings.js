@@ -88,7 +88,7 @@ module.exports = {
     DefaultPassword: 'default',
     Flags: {
         DeletePackagesFromTargetBeforeOverwriting: true, //Used in migrationJob class. The 'overwrite' POST call might not overwrite all settings, so it's cleaner to first delete existing content. Default is true.
-        DownloadConfigurationsAndResources: false //Used in contentDownloader class. Not always necessary to have this information in 'Explore Tenants', so default false.
+        DownloadConfigurationsAndResources: false //Used in contentDownloader class. Not really necessary to have this information in 'Explore Tenants' as this really slows down the synchronization, so default false.
         // ,DownloadTargetIntegrationContentAfterMigrationRun: true //Used in migrationJob class. This will automatically refresh the Integration Content of the Target tenant after a migration job run. Default is true.
     },
     RegEx: {
