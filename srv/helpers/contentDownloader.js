@@ -61,11 +61,9 @@ class ContentDownloader {
         const items = await this.Connector.externalCall(Settings.Paths.IntegrationPackages.path);
         await this.checkIntegrationPackages(items);
 
+        this.removeInvalidParameters(cds.entities.extIntegrationPackages, items);
         for (let each of items) {
             delete each.IntegrationDesigntimeArtifacts;
-            delete each.ValueMappingDesigntimeArtifacts;
-            delete each.CustomTags;
-            delete each.PackageContent;
 
             each.toParent_ObjectID = this.Tenant.ObjectID;
             each.ModifiedDateFormatted = (new Date(parseInt(each.ModifiedDate))).toUTCString();
@@ -96,12 +94,10 @@ class ContentDownloader {
         const items = await this.Connector.externalCall(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.path.replace('{PACKAGE_ID}', package_id));
         await this.checkIntegrationDesigntimeArtifacts(items);
 
+        this.removeInvalidParameters(cds.entities.extIntegrationDesigntimeArtifacts, items);
         for (let each of items) {
             delete each.Configurations;
             delete each.Resources;
-
-            delete each.Sender;
-            delete each.Receiver;
 
             each.toParent_ObjectID = parent_id;
             each.toParent_Id = package_id;
@@ -130,6 +126,8 @@ class ContentDownloader {
     getConfigurations = async (package_id, artifact_id, parent_id) => {
         console.log('getConfigurations ' + package_id + ' / ' + artifact_id);
         const items = await this.Connector.externalCall(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.Configurations.path.replace('{ARTIFACT_ID}', artifact_id));
+
+        this.removeInvalidParameters(cds.entities.extConfigurations, items);
         for (let each of items) {
             each.toParent_ObjectID = parent_id;
             each.toParent_Id = artifact_id;
@@ -146,6 +144,8 @@ class ContentDownloader {
         // HACK:
         // if (package_id != 'eDocumentElectronicInvoicingforItaly') {
         const items = await this.Connector.externalCall(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.Resources.path.replace('{ARTIFACT_ID}', artifact_id));
+
+        this.removeInvalidParameters(cds.entities.extResources, items);
         for (let each of items) {
             each.toParent_ObjectID = parent_id;
             each.toParent_Id = artifact_id;
@@ -164,6 +164,7 @@ class ContentDownloader {
         const items = await this.Connector.externalCall(Settings.Paths.IntegrationPackages.ValueMappingDesigntimeArtifacts.path.replace('{PACKAGE_ID}', package_id));
         await this.checkValueMappingDesigntimeArtifacts(items);
 
+        this.removeInvalidParameters(cds.entities.extValueMappingDesigntimeArtifacts, items);
         for (let each of items) {
             delete each.ValMapSchema;
             each.toParent_ObjectID = parent_id;
@@ -193,6 +194,8 @@ class ContentDownloader {
     getValMapSchema = async (package_id, artifact_id, version_id, parent_id) => {
         console.log('getValMapSchema ' + package_id + ' / ' + artifact_id);
         const items = await this.Connector.externalCall(Settings.Paths.IntegrationPackages.ValueMappingDesigntimeArtifacts.ValMapSchema.path.replace('{ARTIFACT_ID}', artifact_id).replace('{VERSION_ID}', version_id));
+
+        this.removeInvalidParameters(cds.entities.extValMapSchema, items);
         for (let each of items) {
             delete each.ValMaps;
             delete each.DefaultValMaps;
@@ -210,6 +213,8 @@ class ContentDownloader {
     getCustomTags = async (package_id, parent_id) => {
         console.log('getCustomTags ' + package_id);
         const items = await this.Connector.externalCall(Settings.Paths.IntegrationPackages.CustomTags.path.replace('{PACKAGE_ID}', package_id));
+
+        this.removeInvalidParameters(cds.entities.extCustomTags, items);
         for (let each of items) {
             each.toParent_ObjectID = parent_id;
             each.toParent_Id = package_id;
@@ -230,6 +235,7 @@ class ContentDownloader {
             await this.createError('Keystore Entry', 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + notSupported.length + ' keystore entries which are not supported for migration: ' + notSupported.join(', '));
         }
 
+        this.removeInvalidParameters(cds.entities.extKeyStoreEntries, itemsSupported);
         for (let each of itemsSupported) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
@@ -242,6 +248,8 @@ class ContentDownloader {
     getNumberRanges = async () => {
         console.log('getNumberRanges ' + this.Tenant.ObjectID);
         const items = await this.Connector.externalCall(Settings.Paths.NumberRanges.path);
+
+        this.removeInvalidParameters(cds.entities.extNumberRanges, items);
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
@@ -255,6 +263,8 @@ class ContentDownloader {
         console.log('getCustomTagConfigurations ' + this.Tenant.ObjectID);
         var items = await this.Connector.externalCall(Settings.Paths.CustomTagConfigurations.path);
         items = items.customTagsConfiguration;
+
+        this.removeInvalidParameters(cds.entities.extCustomTagConfigurations, items);
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
@@ -275,6 +285,7 @@ class ContentDownloader {
         }
         await this.checkUserCredentials(itemsSupported);
 
+        this.removeInvalidParameters(cds.entities.extUserCredentials, itemsSupported, ['SecurityArtifactDescriptor']);
         for (let each of itemsSupported) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
@@ -300,6 +311,7 @@ class ContentDownloader {
 
         this.OAuth2ClientCredentialsList = items.map(x => x.Name); // save the OAuth credentials which will come back in UserCredentials
 
+        this.removeInvalidParameters(cds.entities.extOAuth2ClientCredentials, items);
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
@@ -323,11 +335,12 @@ class ContentDownloader {
         console.log('The next call might result in an error. This just means that JMS is not activated. The error will be ignored.');
         const item = await this.Connector.externalCall(Settings.Paths.JMSBrokers.path, true);
         await DELETE.from('extJMSBrokers').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+
         if (item) {
             await this.checkJMSBrokers(item);
             item.zKey = item.Key;
-            delete item.Key;
-            delete item.QueueStates;
+
+            this.removeInvalidParameters(cds.entities.extJMSBrokers, item);
 
             item.toParent_ObjectID = this.Tenant.ObjectID;
             await INSERT(item).into('extJMSBrokers');
@@ -341,9 +354,9 @@ class ContentDownloader {
     getAccessPolicies = async () => {
         console.log('getAccessPolicies ' + this.Tenant.ObjectID);
         const items = await this.Connector.externalCall(Settings.Paths.AccessPolicies.path);
-        for (let each of items) {
-            delete each.ArtifactReferences;
 
+        this.removeInvalidParameters(cds.entities.extAccessPolicies, items);
+        for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
         await DELETE.from('extAccessPolicies').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
@@ -357,9 +370,9 @@ class ContentDownloader {
     getArtifactReferences = async (accesspolicy_id, parent_id) => {
         console.log('getArtifactReferences ' + accesspolicy_id);
         const items = await this.Connector.externalCall(Settings.Paths.AccessPolicies.ArtifactReferences.path.replace('{ACCESSPOLICY_ID}', accesspolicy_id));
-        for (let each of items) {
-            delete each.AccessPolicy;
 
+        this.removeInvalidParameters(cds.entities.extArtifactReferences, items);
+        for (let each of items) {
             each.toParent_ObjectID = parent_id;
         };
         await DELETE.from('extArtifactReferences').where({ 'toParent_ObjectID': parent_id });
@@ -396,10 +409,21 @@ class ContentDownloader {
             ComponentName: (item && item.Name) || 'Generic',
             Description: text,
             Path: path ? ('https://' + this.Tenant.Host + path) : '',
-            Severity: (type === 'Error' ? Settings.CriticalityCodes.Red : (type === 'Warning' ? Settings.CriticalityCodes.Orange:Settings.CriticalityCodes.Blue))
+            Severity: (type === 'Error' ? Settings.CriticalityCodes.Red : (type === 'Warning' ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Blue))
         };
         await INSERT(errorBody).into('Errors');
         return 1;
+    };
+    removeInvalidParameters = (entity, items, allow = []) => {
+        const entityParams = Object.keys(entity.elements).concat(allow);
+        const removed = [];
+        for (let each of Array.isArray(items) ? items : [items]) {
+            const itemParams = Object.keys(each);
+            const deleteParams = itemParams.filter(x => !entityParams.includes(x));
+            deleteParams.map(x => removed.push(x) && delete each[x]);
+        }
+        const removedText = removed.filter((x, i) => i === removed.indexOf(x)).join(', ');
+        removedText.length > 0 && console.log('  the folowing parameters were provided by API, but not stored in database (extend database?): ' + removedText);
     };
 
     /************************* */
