@@ -36,7 +36,6 @@ Generic limitations of SAP Integration Suite on Multi Cloud are also documented 
 |JDBC Material can not be migrated|No suitable API available
 |Message Store can not be migrated|No suitable API available
 |JMS Queue Entries can not be migrated|Not necessary|Empty queue on Neo tenant before migration
-|JDBC Material can not be migrated|Tool roadmap item
 
 ## Other Artifacts
 
