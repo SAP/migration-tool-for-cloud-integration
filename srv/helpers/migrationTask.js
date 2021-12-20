@@ -4,16 +4,29 @@ class MigrationTask {
     constructor(t) {
         this.Task = t;
     };
-    generateTaskNodes = async () => {
+    generateTaskNodes = async (preset) => {
         this.Task.toTaskNodes = await this._createNodes();
         await this._updateExistInTenantFlags();
-        this._setOptimalValues();
+
+        switch (preset) {
+            case 'Skip All':
+                this._setSkipAllValues();
+                break;
+            case 'Include All':
+                this._setIncludeAllValues();
+                break;
+            case 'Optimal':
+                this._setOptimalValues();
+                break;
+            default:
+                break;
+        }
 
         this.Task.toTaskNodes.length > 0 && await INSERT(this.Task.toTaskNodes).into(cds.entities.MigrationTaskNodes);
     };
-    resetTaskNodes = async () => {
+    resetTaskNodes = async (preset) => {
         await DELETE.from(cds.entities.MigrationTaskNodes).where({ 'toMigrationTask_ObjectID': this.Task.ObjectID });
-        await this.generateTaskNodes();
+        await this.generateTaskNodes(preset);
     };
     updateExistInTenantFlags = async () => {
         const errorList = await this._updateExistInTenantFlags();
@@ -216,6 +229,16 @@ class MigrationTask {
     _setOptimalValues = () => {
         this.Task.toTaskNodes.forEach(node => {
             node.Included = (node.ExistInSource && !node.ExistInTarget);
+        });
+    };
+    _setIncludeAllValues = () => {
+        this.Task.toTaskNodes.forEach(node => {
+            node.Included = true;
+        });
+    };
+    _setSkipAllValues = () => {
+        this.Task.toTaskNodes.forEach(node => {
+            node.Included = false;
         });
     };
 };

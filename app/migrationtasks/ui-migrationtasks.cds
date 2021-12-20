@@ -128,7 +128,7 @@ annotate ConfigService.MigrationTasks with @(UI : {
         {Value : Statistics_numOtherArtifacts},
         {
             $Type  : 'UI.DataFieldForAction',
-            Label  : 'Reset / Regenerated Content List',
+            Label  : 'Reset / Regenerate Task Items',
             Action : 'ConfigService.Task_resetTaskNodes'
         }
     ]},

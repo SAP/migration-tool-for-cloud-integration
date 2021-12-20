@@ -8,8 +8,8 @@ service ConfigService {
     } group by ObjectID actions {
         action Tenant_testConnection() returns            Boolean;
 
-                    @cds.odata.bindingparameter.name   : '_it'
-                    @Common.SideEffects.TargetEntities : [
+                        @cds.odata.bindingparameter.name   : '_it'
+                        @Common.SideEffects.TargetEntities : [
                 _it.toAccessPolicies,
                 _it.toCustomTagConfigurations,
                 _it.toErrors,
@@ -22,17 +22,17 @@ service ConfigService {
             ]
             action Tenant_getIntegrationContent() returns Tenants;
 
-                    @cds.odata.bindingparameter.name   : '_it'
-                    @Common.SideEffects.TargetEntities : [_it.toMigrationTasks]
+                        @cds.odata.bindingparameter.name   : '_it'
+                        @Common.SideEffects.TargetEntities : [_it.toMigrationTasks]
                 action Tenant_createNewMigrationTask(
-                    @UI.ParameterDefaultValue          : 'My new migration task'
-                    @title                             : 'Task Name'
-                    @mandatory
+                        @UI.ParameterDefaultValue          : 'My new migration task'
+                        @title                             : 'Task Name'
+                        @mandatory
                 Name :                                    String, Description : String,
 
-                    @title                             : 'Target Tenant'
-                    @mandatory
-                    @(Common : {
+                        @title                             : 'Target Tenant'
+                        @mandatory
+                        @(Common : {
                         ValueListWithFixedValues : true,
                         ValueListMapping         : {
                             CollectionPath : 'Tenants',
@@ -43,8 +43,24 @@ service ConfigService {
                             }]
                         }
                     })
-                    TargetTenant :                        UUID) returns MigrationTasks;
-                };
+                    TargetTenant :                        UUID,
+
+                        @title                             : 'How do you want to generate the task'
+                        @mandatory
+                        @UI.ParameterDefaultValue          : 'Optimal'
+                        @(Common : {
+                            ValueListWithFixedValues : true,
+                            ValueListMapping         : {
+                                CollectionPath : 'MigrationTaskPresets',
+                                Parameters     : [{
+                                    $Type             : 'Common.ValueListParameterOut',
+                                    ValueListProperty : 'Code',
+                                    LocalDataProperty : 'Preset'
+                                }]
+                            }
+                        })
+                        Preset :                          String) returns MigrationTasks;
+                    };
 
     entity IntegrationPackages             as projection on my.extIntegrationPackages actions {
         action Package_analyzeScriptFiles() returns many String;
@@ -87,7 +103,22 @@ service ConfigService {
                 _it
             ]
             @Common.IsActionCritical           : true
-            action Task_resetTaskNodes();
+            action Task_resetTaskNodes(
+            @title                             : 'How would you like to preset the items'
+            @mandatory
+            @UI.ParameterDefaultValue          : 'Optimal'
+            @(Common : {
+                ValueListWithFixedValues : true,
+                ValueListMapping         : {
+                    CollectionPath : 'MigrationTaskPresets',
+                    Parameters     : [{
+                        $Type             : 'Common.ValueListParameterOut',
+                        ValueListProperty : 'Code',
+                        LocalDataProperty : 'Preset'
+                    }]
+                }
+            })
+            Preset :                         String);
 
             @cds.odata.bindingparameter.name   : '_it'
             @Common.SideEffects.TargetEntities : [
@@ -116,6 +147,9 @@ service ConfigService {
 
     @readonly
     entity Landscapes                      as projection on my.Landscapes;
+
+    @readonly
+    entity MigrationTaskPresets            as projection on my.MigrationTaskPresets;
 
     @sap.creatable : false
     entity MigrationJobs                   as projection on my.MigrationJobs;
@@ -154,7 +188,7 @@ service RegistrationService {
 
             // @cds.odata.bindingparameter.name : '_it'
             // @Core.OperationAvailable         : _it.IsActiveEntity
-            @Common.IsActionCritical           : true
+            @Common.IsActionCritical         : true
             action Tenant_export() returns     Boolean;
         };
 

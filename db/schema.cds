@@ -8,6 +8,7 @@ using {IntegrationContent as external} from '../srv/external/IntegrationContent'
 
 entity SystemRoles : CodeList {};
 entity Landscapes : CodeList {};
+entity MigrationTaskPresets : CodeList {};
 
 aspect CodeList {
     key Code : String(10)@title : 'Code'  @Common.Text : Value;

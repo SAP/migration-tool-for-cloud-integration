@@ -133,7 +133,7 @@ module.exports = async (srv) => {
 
         const Task = await srv.read(MigrationTasks, uuid, t => { t('*'), t.toTaskNodes(n => n('*')) });
         const migrationTask = new MigrationTaskHelper.MigrationTask(Task);
-        await migrationTask.generateTaskNodes();
+        await migrationTask.generateTaskNodes(req.data.Preset);
 
         req.notify(201, 'Migration Task created.');
         return Task;
@@ -283,9 +283,9 @@ module.exports = async (srv) => {
 
         const Task = await srv.read(MigrationTasks, task_id, t => { t('*'), t.toTaskNodes(n => n('*')) });
         const migrationTask = new MigrationTaskHelper.MigrationTask(Task);
-        await migrationTask.resetTaskNodes();
+        await migrationTask.resetTaskNodes(req.data.Preset);
 
-        req.notify(200, 'Migration Task reset.');
+        req.notify(200, 'Migration Task items reset.');
     });
     srv.on('Task_setTargetTenant', async (req) => {
         const task_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
