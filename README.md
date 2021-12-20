@@ -95,7 +95,7 @@ If the following line is **not** shown when starting the script you should resta
 
 `[cds] - mocking IntegrationContent.sap.hci.api { at: '/api' }`
 
-See also: [FAQ](/docs/FAQ.md)
+See also: [FAQ](/docs/FAQ.md) and [Limitations](/docs/Limitations.md)
 
 ## How to Obtain Support
 

@@ -398,8 +398,6 @@ class ContentDownloader {
         variables.length > 0 && await this.createError('Variables', 'Limitation', { Name: 'See documentation' },
             'This tenant contains ' + variables.length + ' variable(s) which are not supported for migration: ' + variables.join(', '));
 
-        // no API for JDBC
-        // full list: https://wiki.wdf.sap.corp/wiki/display/CPI/CPI+Migration+Assistant
     };
     createError = async (component, type, item, text, path = null) => {
         const errorBody = {

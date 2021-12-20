@@ -1,6 +1,6 @@
 # Documentation
 
-See also: [FAQ](FAQ.md)
+See also: [FAQ](FAQ.md) and [Limitations](Limitations.md)
 
 ## General Concept
 
