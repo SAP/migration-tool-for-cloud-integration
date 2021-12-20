@@ -5,18 +5,27 @@
   "repository": "https://github.com/SAP/migration-tool-for-cloud-integration",
   "license": "Apache-2.0",
   "private": false,
+  "author": {
+    "name": "Willem Pardaens",
+    "email": "willem.pardaens@sap.com"
+  },
   "engines": {
     "node": ">=14.5"
   },
+  "keywords": [
+    "SAP Integration Suite",
+    "SAP Cloud Integration",
+    "Migration tool"
+  ],
   "dependencies": {
-    "@sap/cds": "^5.7.3",
+    "@sap/cds": "~5.7.3",
     "axios": "^0.24",
-    "sqlite3": "^5",
-    "yauzl": "^2.10.0",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "sqlite3": "https://github.com/mapbox/node-sqlite3/tarball/master",
+    "yauzl": "^2.10.0"
   },
   "devDependencies": {
-    "@sap/ux-specification": "^1.90.13"
+    "@sap/ux-specification": "^1.95"
   },
   "scripts": {
     "start": "cds run --with-mocks"
