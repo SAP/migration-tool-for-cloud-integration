@@ -4,7 +4,8 @@ module.exports = {
             AllPackages: '/itspaces/shell/design',
             PackageOverview: '/itspaces/shell/design/contentpackage/{PACKAGE_ID}',
             PackageArtifacts: '/itspaces/shell/design/contentpackage/{PACKAGE_ID}?section=ARTIFACTS',
-            SecurityMaterial: '/itspaces/shell/monitoring/SecurityMaterials'
+            SecurityMaterial: '/itspaces/shell/monitoring/SecurityMaterials',
+            LimitationsDocument: 'https://github.com/SAP/migration-tool-for-cloud-integration/blob/main/docs/Limitations.md'
         },
         IntegrationPackages: {
             path: '/api/v1/IntegrationPackages',
@@ -82,7 +83,7 @@ module.exports = {
         NumberRange: 'Number Range',
         AccessPolicy: 'Access Policy',
         CustomTags: 'Custom Tag',
-        JMSBrokers:'JMS Broker'
+        JMSBrokers: 'JMS Broker'
     },
 
     DefaultPassword: 'default',

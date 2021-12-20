@@ -232,7 +232,7 @@ class ContentDownloader {
         const itemsSupported = items.filter(x => x.Type == 'Certificate');
         if (items.length > itemsSupported.length) {
             const notSupported = items.filter(x => !itemsSupported.includes(x)).map(x => x.Alias);
-            await this.createError('Keystore Entry', 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + notSupported.length + ' keystore entries which are not supported for migration: ' + notSupported.join(', '));
+            await this.createError('Keystore Entry', 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + notSupported.length + ' keystore entries which are not supported for migration: ' + notSupported.join(', '),Settings.Paths.DeepLinks.LimitationsDocument);
         }
 
         this.removeInvalidParameters(cds.entities.extKeyStoreEntries, itemsSupported);
@@ -281,7 +281,7 @@ class ContentDownloader {
         const itemsSupported = items.filter(x => (x.Kind == 'default' || x.Kind == 'successfactors'));
         const itemsNotSupported = items.filter(x => (!itemsSupported.includes(x) && (!this.OAuth2ClientCredentialsList.includes(x.Name)))).map(x => x.Name);
         if (itemsNotSupported.length > 0) {
-            await this.createError('User Credential', 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + itemsNotSupported.length + ' user credential(s) which are not supported for migration: ' + itemsNotSupported.join(', '));
+            await this.createError('User Credential', 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + itemsNotSupported.length + ' user credential(s) which are not supported for migration: ' + itemsNotSupported.join(', '),Settings.Paths.DeepLinks.LimitationsDocument);
         }
         await this.checkUserCredentials(itemsSupported);
 
@@ -387,26 +387,27 @@ class ContentDownloader {
         if (this.Tenant.Environment == 'Neo') {
             const certificateUserMappings = (await this.Connector.externalCall(Settings.Paths.CertificateUserMappings.path)).map(x => x.User);
             certificateUserMappings.length > 0 && await this.createError('Certificate User Mapping', 'Limitation', { Name: 'See documentation' },
-                'This tenant contains ' + certificateUserMappings.length + ' certificate user mapping(s) which are not supported for migration: ' + certificateUserMappings.join(', '));
+                'This tenant contains ' + certificateUserMappings.length + ' certificate user mapping(s) which are not supported for migration: ' + certificateUserMappings.join(', '),Settings.Paths.DeepLinks.LimitationsDocument);
         }
 
         const dataStores = (await this.Connector.externalCall(Settings.Paths.DataStores.path)).map(x => x.DataStoreName);
         dataStores.length > 0 && await this.createError('Data Store', 'Limitation', { Name: 'See documentation' },
-            'This tenant contains ' + dataStores.length + ' data store(s) which are not supported for migration: ' + dataStores.join(', '));
+            'This tenant contains ' + dataStores.length + ' data store(s) which are not supported for migration: ' + dataStores.join(', '),Settings.Paths.DeepLinks.LimitationsDocument);
 
         const variables = (await this.Connector.externalCall(Settings.Paths.Variables.path)).map(x => x.VariableName);
         variables.length > 0 && await this.createError('Variables', 'Limitation', { Name: 'See documentation' },
-            'This tenant contains ' + variables.length + ' variable(s) which are not supported for migration: ' + variables.join(', '));
+            'This tenant contains ' + variables.length + ' variable(s) which are not supported for migration: ' + variables.join(', '),Settings.Paths.DeepLinks.LimitationsDocument);
 
     };
     createError = async (component, type, item, text, path = null) => {
+        const fullPath = path ? (path.indexOf('https://') == 0 ? path : 'https://' + this.Tenant.Host + path) : '';
         const errorBody = {
             toParent: this.Tenant.ObjectID,
             Type: type,
             Component: component,
             ComponentName: (item && item.Name) || 'Generic',
             Description: text,
-            Path: path ? ('https://' + this.Tenant.Host + path) : '',
+            Path: fullPath,
             Severity: (type === 'Error' ? Settings.CriticalityCodes.Red : (type === 'Warning' ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Blue))
         };
         await INSERT(errorBody).into('Errors');
