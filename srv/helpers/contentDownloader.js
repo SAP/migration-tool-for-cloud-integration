@@ -311,7 +311,7 @@ class ContentDownloader {
 
         this.OAuth2ClientCredentialsList = items.map(x => x.Name); // save the OAuth credentials which will come back in UserCredentials
 
-        this.removeInvalidParameters(cds.entities.extOAuth2ClientCredentials, items);
+        this.removeInvalidParameters(cds.entities.extOAuth2ClientCredentials, items, ['SecurityArtifactDescriptor']);
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
