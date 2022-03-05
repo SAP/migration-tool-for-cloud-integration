@@ -167,10 +167,17 @@ class ExternalConnection {
             const buffer = Buffer.from(error.response.data, 'binary').toString('utf8');
             return {
                 code: error.response.status,
-                value: JSON.parse(buffer)
+                value: this._tryJSONparse(buffer)
             };
         }
     };
+    _tryJSONparse(data) {
+        try {
+            return JSON.parse(data);
+        } catch (e) {
+            return data;
+        }
+    }
 };
 module.exports = {
     ExternalConnection: ExternalConnection

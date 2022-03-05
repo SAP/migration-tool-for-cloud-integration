@@ -357,8 +357,8 @@ class MigrationJob {
         var valmapsResult = true;
         const values = await this.ConnectorSource.externalCall(UrlValMaps + '/ValMaps');
         for (let value of values) {
-            const srcValue = encodeURI(value.Value.SrcValue);
-            const tgtValue = encodeURI(value.Value.TgtValue);
+            const srcValue = encodeURIComponent(value.Value.SrcValue);
+            const tgtValue = encodeURIComponent(value.Value.TgtValue);
             payload = payload + "\r\n--changeset_77162fcd-b8da-41ac-a9f8-9357efbbd621\r\n"
                 + "Content-Type: application/http\r\n"
                 + "Content-Transfer-Encoding: binary\r\n\r\n"
@@ -383,8 +383,8 @@ class MigrationJob {
         }
         if (defaults.length == 1) {
             await this.addLogEntry(5, 'This item has a default value configured:');
-            defSrcValue = defaults[0].Value.SrcValue;
-            defTgtValue = defaults[0].Value.TgtValue;
+            defSrcValue = encodeURIComponent(defaults[0].Value.SrcValue);
+            defTgtValue = encodeURIComponent(defaults[0].Value.TgtValue);
 
             const urlDefaultValMapID = UrlValMaps + '/ValMaps?$filter= Value/SrcValue eq \'' + defSrcValue + '\' and Value/TgtValue eq \'' + defTgtValue + '\'';
             const mapIDs = await this.ConnectorTarget.externalCall(urlDefaultValMapID);
@@ -688,14 +688,16 @@ class MigrationJob {
     // Helpers
     validateResponse = async (component, name, response, indent = 3, warnings = [], ignores = [], generatePositiveLog = true) => {
         var result = true;
+        // console.log(response);
+        const errorMessage = response.value.error ? response.value.error.message.value : response.value;
         if (ignores.includes(response.code)) {
-            await this.addLogEntry(indent, 'Ignored (' + response.code + ') ' + response.value.error.message.value);
+            await this.addLogEntry(indent, 'Ignored (' + response.code + ') ' + errorMessage);
         } else if (warnings.includes(response.code)) {
-            await this.addLogEntry(indent, 'Warning (' + response.code + ') ' + response.value.error.message.value);
-            await this.generateWarning(component, name, response.code + ' ' + response.value.error.message.value);
+            await this.addLogEntry(indent, 'Warning (' + response.code + ') ' + errorMessage);
+            await this.generateWarning(component, name, response.code + ' ' + errorMessage);
         } else if (response.code >= 400) {
-            await this.addLogEntry(indent, 'Error (' + response.code + ') ' + response.value.error.message.value);
-            await this.generateError(component, name, response.code + ' ' + response.value.error.message.value);
+            await this.addLogEntry(indent, 'Error (' + response.code + ') ' + errorMessage);
+            await this.generateError(component, name, response.code + ' ' + errorMessage);
             result = false;
         } else {
             generatePositiveLog && await this.addLogEntry(indent, 'Success (' + response.code + ') ' + response.value.statusText);
