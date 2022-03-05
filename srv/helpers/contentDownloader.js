@@ -20,7 +20,8 @@ class ContentDownloader {
             Statistics_numAccessPolicies: 0,
             Statistics_numAccessPolicyReferences: 0,
             Statistics_numOAuth2ClientCredentials: 0,
-            Statistics_numJMSBrokers: 0
+            Statistics_numJMSBrokers: 0,
+            Statistics_numVariables: 0
         };
         this.Connector = this.Tenant && new Connectivity.ExternalConnection(this.Tenant);
         this.OAuth2ClientCredentialsList = [];
@@ -41,10 +42,11 @@ class ContentDownloader {
 
         await this.getOAuth2ClientCredentials().then(n => this.stats.Statistics_numOAuth2ClientCredentials += n);
         await this.getUserCredentials().then(n => this.stats.Statistics_numUserCredentials += n);
-
-        await this.generateLimitationNotices();
+        await this.getVariables().then(n => this.stats.Statistics_numVariables += n);
 
         await this.getJMSBrokers().then(n => this.stats.Statistics_numJMSBrokers += n);
+
+        await this.generateLimitationNotices();
 
         var count = 0;
         for (let i of Object.keys(this.stats)) { count += this.stats[i] };
@@ -232,7 +234,7 @@ class ContentDownloader {
         const itemsSupported = items.filter(x => x.Type == 'Certificate');
         if (items.length > itemsSupported.length) {
             const notSupported = items.filter(x => !itemsSupported.includes(x)).map(x => x.Alias);
-            await this.createError('Keystore Entry', 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + notSupported.length + ' keystore entries which are not supported for migration: ' + notSupported.join(', '),Settings.Paths.DeepLinks.LimitationsDocument);
+            await this.createError('Keystore Entry', 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + notSupported.length + ' keystore entries which are not supported for migration: ' + notSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument);
         }
 
         this.removeInvalidParameters(cds.entities.extKeyStoreEntries, itemsSupported);
@@ -281,7 +283,7 @@ class ContentDownloader {
         const itemsSupported = items.filter(x => (x.Kind == 'default' || x.Kind == 'successfactors'));
         const itemsNotSupported = items.filter(x => (!itemsSupported.includes(x) && (!this.OAuth2ClientCredentialsList.includes(x.Name)))).map(x => x.Name);
         if (itemsNotSupported.length > 0) {
-            await this.createError('User Credential', 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + itemsNotSupported.length + ' user credential(s) which are not supported for migration: ' + itemsNotSupported.join(', '),Settings.Paths.DeepLinks.LimitationsDocument);
+            await this.createError('User Credential', 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + itemsNotSupported.length + ' user credential(s) which are not supported for migration: ' + itemsNotSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument);
         }
         await this.checkUserCredentials(itemsSupported);
 
@@ -381,22 +383,38 @@ class ContentDownloader {
         return items.length;
     };
 
+    getVariables = async () => {
+        console.log('getVariables ' + this.Tenant.ObjectID);
+        const items = await this.Connector.externalCall(Settings.Paths.Variables.path);
+
+        this.removeInvalidParameters(cds.entities.extVariables, items);
+        for (let each of items) {
+            each.UpdatedAt = new Date(parseInt(each.UpdatedAt.match(Settings.RegEx.dateTimestamp)[1]));
+            each.RetainUntil = new Date(parseInt(each.RetainUntil.match(Settings.RegEx.dateTimestamp)[1]));
+            each.toParent_ObjectID = this.Tenant.ObjectID;
+        };
+        await DELETE.from('extVariables').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        items.length > 0 && await INSERT(items).into('extVariables');
+
+        return items.length;
+    };
+
     generateLimitationNotices = async () => {
         console.log('generateLimitationNotices ' + this.Tenant.ObjectID);
 
         if (this.Tenant.Environment == 'Neo') {
             const certificateUserMappings = (await this.Connector.externalCall(Settings.Paths.CertificateUserMappings.path)).map(x => x.User);
             certificateUserMappings.length > 0 && await this.createError('Certificate User Mapping', 'Limitation', { Name: 'See documentation' },
-                'This tenant contains ' + certificateUserMappings.length + ' certificate user mapping(s) which are not supported for migration: ' + certificateUserMappings.join(', '),Settings.Paths.DeepLinks.LimitationsDocument);
+                'This tenant contains ' + certificateUserMappings.length + ' certificate user mapping(s) which are not supported for migration: ' + certificateUserMappings.join(', '), Settings.Paths.DeepLinks.LimitationsDocument);
         }
 
         const dataStores = (await this.Connector.externalCall(Settings.Paths.DataStores.path)).map(x => x.DataStoreName);
         dataStores.length > 0 && await this.createError('Data Store', 'Limitation', { Name: 'See documentation' },
-            'This tenant contains ' + dataStores.length + ' data store(s) which are not supported for migration: ' + dataStores.join(', '),Settings.Paths.DeepLinks.LimitationsDocument);
+            'This tenant contains ' + dataStores.length + ' data store(s) which are not supported for migration: ' + dataStores.join(', '), Settings.Paths.DeepLinks.LimitationsDocument);
 
-        const variables = (await this.Connector.externalCall(Settings.Paths.Variables.path)).map(x => x.VariableName);
-        variables.length > 0 && await this.createError('Variables', 'Limitation', { Name: 'See documentation' },
-            'This tenant contains ' + variables.length + ' variable(s) which are not supported for migration: ' + variables.join(', '),Settings.Paths.DeepLinks.LimitationsDocument);
+        // const variables = (await this.Connector.externalCall(Settings.Paths.Variables.path)).map(x => x.VariableName);
+        // variables.length > 0 && await this.createError('Variables', 'Limitation', { Name: 'See documentation' },
+        //     'This tenant contains ' + variables.length + ' variable(s) which are not supported for migration: ' + variables.join(', '), Settings.Paths.DeepLinks.LimitationsDocument);
 
     };
     createError = async (component, type, item, text, path = null) => {

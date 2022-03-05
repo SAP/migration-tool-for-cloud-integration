@@ -2,6 +2,9 @@ const Connectivity = require('./externalConnection');
 const Settings = require('../config/settings');
 const CustomLogicHelper = require('../customizing/customLogic');
 const DownloadHelper = require('../helpers/contentDownloader');
+const ZipHelper = require('./zip');
+const fs = require('fs');
+const xml2js = require('xml2js');
 
 class MigrationJob {
     constructor(j) {
@@ -18,6 +21,8 @@ class MigrationJob {
 
         this.runResult = false;
         this.Customizations = null;
+
+        this.Variables = [];
     };
 
     execute = async () => {
@@ -94,6 +99,10 @@ class MigrationJob {
             this.MigrationContent.OAuth2ClientCredentials = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.OAuthCredential && x.Included)).map(x => x.Id);
             this.MigrationContent.AccessPolicies = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.AccessPolicy && x.Included)).map(x => x.Id);
             this.MigrationContent.JMSBrokers = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.JMSBrokers && x.Included)).map(x => x.Id);
+            this.MigrationContent.GlobalVariables = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Variables && x.Included)).map(x => x.Id);
+
+            await this.getListOfVariables();
+            await this.migrateGlobalVariables();
 
             await this.migrateIntegrationPackages();
             await this.migrateCustomCertificates();
@@ -112,6 +121,254 @@ class MigrationJob {
         }
     };
 
+    getListOfVariables = async () => {
+        await this.addLogEntry(1, 'VARIABLES:');
+        const items = await this.ConnectorSource.externalCall(Settings.Paths.Variables.path);
+
+        for (let item of items) {
+            this.Variables.push(item);
+            if (item.Visibility == 'Global') {
+                await this.addLogEntry(2, 'Variable ' + item.VariableName + ' (global)');
+            } else {
+                await this.addLogEntry(2, 'Variable ' + item.VariableName + ' (local to ' + item.IntegrationFlow + ')');
+            }
+        }
+    };
+    migrateGlobalVariables = async () => {
+        await this.addLogEntry(1, 'GLOBAL VARIABLES:');
+
+        const items = await this.ConnectorSource.externalCall(Settings.Paths.Variables.path);
+        const itemsInScope = items.filter(x => this.MigrationContent.GlobalVariables.includes(x.VariableName));
+
+        const itemsNotFound = this.MigrationContent.GlobalVariables.filter(x => !itemsInScope.find(e => e.VariableName == x));
+        itemsNotFound && await this.addMissingContentErrors(itemsNotFound);
+
+        await this.addLogEntry(2, 'Retrieving Variables:');
+        const variables = [];
+        for (let item of itemsInScope) {
+            const keyvaluepair = await this.getVariableData(item);
+            await this.Customizations.onMigrateGlobalVariable(keyvaluepair);
+            if (keyvaluepair != null) {
+                variables.push(
+                    '<row>'
+                    + '<cell>' + keyvaluepair.key + '</cell>'
+                    + '<cell></cell>'
+                    + '<cell>constant</cell>'
+                    + '<cell>' + keyvaluepair.value + '</cell>'
+                    + '<cell>' + 'global' + '</cell>'
+                    + '</row>'
+                );
+            }
+        };
+
+        const variablesByFlows = [{
+            flowId: Settings.Defaults.Variables.flowId,
+            variables: variables
+        }];
+        if (variables.length > 0) {
+            const successCount = await this.migrateVariables(variablesByFlows, Settings.Defaults.Variables.packageId);
+            await this.addLogEntry(2, successCount + '/' + itemsInScope.length + ' successful.');
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.');
+        }
+    }
+    migrateLocalVariables = async (flowIds) => {
+        await this.addLogEntry(2, 'START LOCAL VARIABLES for package:');
+
+        const items = await this.ConnectorSource.externalCall(Settings.Paths.Variables.path);
+        const itemsInScope = items.filter(x => x.Visibility == 'Integration Flow' && flowIds.includes(x.IntegrationFlow));
+
+        await this.addLogEntry(2, 'Retrieving Variables:');
+        const variablesByFlows = [];
+        for (const flowId of flowIds) {
+            const variablesByFlow = {
+                flowId: flowId,
+                variables: []
+            };
+            for (let item of itemsInScope.filter(x => x.IntegrationFlow == flowId)) {
+                const keyvaluepair = await this.getVariableData(item);
+                await this.Customizations.onMigrateLocalVariable(keyvaluepair);
+                if (keyvaluepair != null) {
+                    variablesByFlow.variables.push(
+                        '<row>'
+                        + '<cell>' + keyvaluepair.key + '</cell>'
+                        + '<cell></cell>'
+                        + '<cell>constant</cell>'
+                        + '<cell>' + keyvaluepair.value + '</cell>'
+                        + '<cell>' + 'local' + '</cell>'
+                        + '</row>'
+                    );
+                }
+            };
+            if (variablesByFlow.variables.length > 0) {
+                variablesByFlows.push(variablesByFlow);
+            }
+        }
+
+        if (variablesByFlows.length > 0) {
+            const successCount = await this.migrateVariables(variablesByFlows, Settings.Defaults.Variables.packageId);
+            await this.addLogEntry(2, successCount + '/' + itemsInScope.length + ' successful.');
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.');
+        }
+
+        await this.addLogEntry(2, 'END LOCAL VARIABLES for package.');
+    }
+    migrateVariables = async (variablesByFlows, packageId) => {
+        await this.addLogEntry(2, 'Compiling integration flows ...');
+        var successCount = 0;
+
+        console.log(variablesByFlows);
+
+        const createPackageSuccess = await this.variablesCreateIntegrationPackage(packageId);
+        if (createPackageSuccess) {
+            for (const variablesByFlow of variablesByFlows) {
+                const zipHelper = new ZipHelper.ZipHelper();
+                const updatedIntegrationFlowContent = await zipHelper.manipulateZipFile(Settings.Defaults.Variables.templateFile, Settings.Defaults.Variables.iflwFileInZip, async data => {
+                    return await this.variablesSetValueInXML(data, variablesByFlow.variables.join(''));
+                });
+
+                await this.addLogEntry(2, 'Uploading Variables for ' + variablesByFlow.flowId + ':');
+                const createFlowSuccess = await this.variablesCreateIntegrationFlow(packageId, variablesByFlow.flowId, updatedIntegrationFlowContent);
+                const deployFlowSuccess = createFlowSuccess && await this.variablesDeployIntegrationFlow(variablesByFlow.flowId);
+
+                if (deployFlowSuccess) {
+                    await this.addLogEntry(3, 'Checking status of flow ' + variablesByFlow.flowId);
+                    const startTime = Date.now();
+                    var deployStatus = '';
+                    var waitAndFetchAgain = true;
+                    while (waitAndFetchAgain) {
+                        await this.sleep(Settings.Defaults.Variables.sleepInterval);
+                        deployStatus = await this.variablesGetIntegrationFlowDeploymentStatus(variablesByFlow.flowId);
+                        await this.addLogEntry(4, '... ' + deployStatus);
+                        waitAndFetchAgain = deployStatus !== Settings.Defaults.Variables.successStatus
+                            && deployStatus !== Settings.Defaults.Variables.errorStatus
+                            && (Date.now() - startTime < Settings.Defaults.Variables.maxWait);
+                    };
+                    if (deployStatus == Settings.Defaults.Variables.successStatus) {
+                        successCount += variablesByFlow.variables.length;
+                    } else {
+                        if (deployStatus == Settings.Defaults.Variables.errorStatus) {
+                            const errorText = 'Error: Integration flow ' + variablesByFlow.flowId + ' encountered an error during deployment. Try manually uploading generated zip file.'
+                            await this.addLogEntry(4, errorText);
+                            await this.generateError('Variable', 'Flow deployment status', errorText);
+                        } else {
+                            const errorText = 'Error: Integration flow ' + variablesByFlow.flowId + ' was not successfully deployed within ' + Settings.Defaults.Variables.maxWait + 'ms.'
+                            await this.addLogEntry(4, errorText);
+                            await this.generateError('Variable', 'Flow deployment status', errorText);
+                        }
+                    }
+                }
+                await this.addLogEntry(2, 'Cleaning up temporary artifacts:');
+                deployFlowSuccess && await this.variablesUndeployIntegrationFlow(variablesByFlow.flowId);
+                createFlowSuccess && await this.variablesDeleteIntegrationFlow(variablesByFlow.flowId);
+            }
+        }
+
+        createPackageSuccess && await this.variablesDeleteIntegrationPackage(packageId);
+
+        return successCount;
+    };
+    getVariableData = async (item) => {
+        await this.addLogEntry(3, 'Downloading variable ' + item.VariableName);
+        const response = await this.ConnectorSource.externalAxiosBinary(Settings.Paths.Variables.download.replace('{FLOW_ID}', item.IntegrationFlow).replace('{VARIABLE_NAME}', encodeURIComponent(item.VariableName)));
+        if (response.code < 400) {
+            try {
+                const zipHelper = new ZipHelper.ZipHelper();
+                const unzipped = await zipHelper.readZip(Buffer.from(response.value.data, 'binary'));
+                const content = Buffer.from(unzipped['headers.prop'], 'binary').toString('utf-8');
+                if (content.length > 0) {
+                    const keyvaluepairs = Array.from(content.matchAll(Settings.RegEx.keyvaluepair), x => { return { key: x[1], value: x[2] } });
+                    const keyvaluepair = keyvaluepairs[0];
+                    await this.addLogEntry(4, 'Found variable ' + keyvaluepair.key + ' with value ' + keyvaluepair.value);
+                    return keyvaluepair;
+                }
+            } catch (error) {
+                await this.addLogEntry(4, 'Error: ' + error);
+                await this.generateError('Variable', item.VariableName, error);
+            }
+        } else {
+            await this.addLogEntry(4, 'Error: Could not download variable ' + item.VariableName);
+            await this.generateError('Variable', item.VariableName, 'Could not download variable');
+        }
+        return null;
+    };
+    variablesSetValueInXML = async (inputXML, newValue) => {
+        try {
+            const json = await new Promise((resolve, reject) => {
+                xml2js.parseString(inputXML, (err, result) => {
+                    if (err) return reject(err);
+                    resolve(result);
+                });
+            });
+            const properties = json['bpmn2:definitions']['bpmn2:process'][0]['bpmn2:callActivity'][0]['bpmn2:extensionElements'][0]['ifl:property'];
+            const variableProperty = properties.find(x => x.key[0] == 'variable');
+            variableProperty.value[0] = newValue;
+
+            const builder = new xml2js.Builder({ cdata: false, xmldec: { version: '1.0', encoding: 'UTF-8' } });
+            const outputXML = builder.buildObject(json);
+            return outputXML;
+        } catch (error) {
+            await this.addLogEntry(2, 'Error: ' + error);
+            await this.generateError('Variable', 'XML set value', error);
+            return '';
+        }
+    };
+    variablesCreateIntegrationPackage = async (packageId) => {
+        await this.addLogEntry(3, 'Creating package ' + packageId);
+        const payload = {
+            Id: packageId,
+            Name: packageId,
+            Description: 'Helper Package for Global Variable Migration',
+            ShortText: 'Helper Package for Global Variable Migration',
+            Version: '1.0',
+            SupportedPlatform: 'SAP Cloud Integration',
+            Products: 'SAP Cloud Integration',
+            Keywords: 'SAP Cloud Integration',
+            Countries: '',
+            Industries: '',
+            LineOfBusiness: ''
+        };
+        const response = await this.ConnectorTarget.externalPost(Settings.Paths.IntegrationPackages.path, payload);
+        return await this.validateResponse('Variables', 'Package creation', response, 4, [], []); //409 ignore
+    };
+    variablesCreateIntegrationFlow = async (packageId, flowId, binaryContent) => {
+        await this.addLogEntry(3, 'Creating flow ' + flowId);
+        const artifactContent = Buffer.from(binaryContent, 'binary').toString('base64');
+        const payload = {
+            Name: flowId,
+            Id: flowId,
+            PackageId: packageId,
+            ArtifactContent: artifactContent
+        };
+        const response = await this.ConnectorTarget.externalPost(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.create, payload);
+        return await this.validateResponse('Variables', 'Flow creation', response, 4);
+    };
+    variablesDeployIntegrationFlow = async (flowId) => {
+        await this.addLogEntry(3, 'Deploying flow ' + flowId);
+        const response = await this.ConnectorTarget.externalPost(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.deploy.replace('{ARTIFACT_ID}', flowId));
+        return await this.validateResponse('Variables', 'Flow deployment', response, 4);
+    };
+    variablesGetIntegrationFlowDeploymentStatus = async (flowId) => {
+        const response = await this.ConnectorTarget.externalCall(Settings.Paths.IntegrationPackages.IntegrationRuntimeArtifacts.path.replace('{ARTIFACT_ID}', flowId), true);
+        const status = response ? response.Status : 'DEPLOYING';
+        return status;
+    };
+    variablesUndeployIntegrationFlow = async (flowId) => {
+        await this.addLogEntry(3, 'Undeploying flow ' + flowId);
+        const response = await this.ConnectorTarget.externalDelete(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.undeploy.replace('{ARTIFACT_ID}', flowId));
+        return await this.validateResponse('Variables', 'Flow undeployment', response, 4, [], [404]);
+    };
+    variablesDeleteIntegrationFlow = async (flowId) => {
+        await this.addLogEntry(3, 'Deleting flow ' + flowId);
+        const response = await this.ConnectorTarget.externalDelete(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.delete.replace('{ARTIFACT_ID}', flowId));
+        return await this.validateResponse('Variables', 'Flow deletion', response, 4, [], [404]);
+    };
+    variablesDeleteIntegrationPackage = async (packageId) => {
+        await this.addLogEntry(3, 'Deleting package ' + packageId);
+        const response = await this.ConnectorTarget.externalDelete(Settings.Paths.IntegrationPackages.delete.replace('{PACKAGE_ID}', packageId));
+        return await this.validateResponse('Variables', 'Package deletion', response, 4, [], [404]);
+    };
 
     migrateIntegrationPackages = async () => {
         const items = await this.ConnectorSource.externalCall(Settings.Paths.IntegrationPackages.path);
@@ -229,7 +486,17 @@ class MigrationJob {
                 PackageContent: base64Data
             };
 
+            // Deleting existing package
             deleteBeforeHand && await this.deleteIntegrationPackage(item);
+
+            // Migrating variables before the actual content
+            const integrationFlowIds = await this.listIntegrationFlowsInPackage(customizedData);
+            const localVariables = this.Variables.filter(x => x.Visibility == 'Integration Flow' && integrationFlowIds.includes(x.IntegrationFlow));
+            if (localVariables.length > 0) {
+                await this.migrateLocalVariables(integrationFlowIds);
+            }
+
+            // Migrating actual content
             await this.addLogEntry(3, 'Uploading Package ' + item.Name);
             const uploadResponse = await this.ConnectorTarget.externalPost(Settings.Paths.IntegrationPackages.upload, payload);
             return await this.validateResponse('Package', item.Name, uploadResponse, 4);
@@ -266,6 +533,16 @@ class MigrationJob {
                 resultTextErrors.forEach(async warning => await this.generateWarning('Package', item.Name, warning, this.Task.SourceTenant.Host + Settings.Paths.DeepLinks.PackageOverview.replace('{PACKAGE_ID}', item.Id)));
             }
         }
+    };
+    listIntegrationFlowsInPackage = async (zipFile) => {
+        const zip = new ZipHelper.ZipHelper();
+        const zipContent = await zip.readZip(Buffer.from(zipFile));
+        if (zipContent && zipContent['resources.cnt']) {
+            const resourcesBase64 = Buffer.from(zipContent['resources.cnt']).toString('utf-8');
+            const resourcesJson = JSON.parse(Buffer.from(resourcesBase64, 'base64').toString('utf-8'));
+            return resourcesJson.resources.filter(x => x.resourceType == 'IFlow').map(x => x.uniqueId);
+        }
+        return [];
     };
 
     // Copy over the settings for each of the iFlows / value mappings inside the package
@@ -762,6 +1039,9 @@ class MigrationJob {
     setEndTime = async () => {
         await UPDATE('MigrationJobs', { ObjectID: this.Job.ObjectID }).set({ EndTime: new Date().toISOString() });
     };
+    sleep = async (ms) => {
+        await new Promise(resolve => setTimeout(resolve, ms));
+    }
 };
 module.exports = {
     MigrationJob: MigrationJob

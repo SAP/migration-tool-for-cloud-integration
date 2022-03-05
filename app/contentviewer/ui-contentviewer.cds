@@ -149,6 +149,15 @@ annotate ConfigService.Tenants with @(UI : {
                         $Type  : 'UI.ReferenceFacet',
                         Target : 'toCustomTagConfigurations/@UI.LineItem'
                     }]
+                },
+                {
+                    $Type  : 'UI.CollectionFacet',
+                    ID     : 'variablescontent',
+                    Label  : 'Variables',
+                    Facets : [{
+                        $Type  : 'UI.ReferenceFacet',
+                        Target : 'toVariables/@UI.LineItem'
+                    }]
                 }
             ]
         },
@@ -189,7 +198,8 @@ annotate ConfigService.Tenants with @(UI : {
         {Value : Statistics_numAccessPolicies},
         {Value : Statistics_numAccessPolicyReferences},
         {Value : Statistics_numOAuth2ClientCredentials},
-        {Value : Statistics_numJMSBrokers}
+        {Value : Statistics_numJMSBrokers},
+        {Value : Statistics_numVariables}
     ]},
     FieldGroup #Tasks    : {Data : [{
         $Type  : 'UI.DataFieldForAction',
@@ -223,6 +233,7 @@ annotate ConfigService.Tenants with @(UI : {
         numAccessPolicyReferences          @title : 'Artifact References';
         numOAuth2ClientCredentials         @title : 'OAuth2 Client Credentials';
         numJMSBrokers                      @title : 'JMS Brokers';
+        numVariables                       @title : 'Variables';
     }
 };
 
@@ -934,4 +945,46 @@ annotate ConfigService.ArtifactReferences with @(UI : {
     ConditionAttribute @title : 'Attribute';
     ConditionValue     @title : 'Value';
     ConditionType      @title : 'Condition';
+};
+
+// Variables ----------------------------------------------------------------------------
+annotate ConfigService.Variables with @(UI : {
+    PresentationVariant : {
+        SortOrder      : [{Property : VariableName}],
+        Visualizations : ['@UI.LineItem']
+    },
+    HeaderInfo          : {
+        TypeName       : 'Variable',
+        TypeNamePlural : 'Variables',
+        Title          : {Value : VariableName}
+    },
+    LineItem            : [
+        {Value : VariableName},
+        {Value : Visibility},
+        {Value : IntegrationFlow},
+        {Value : UpdatedAt},
+        {Value : RetainUntil}
+    ],
+    Facets              : [{
+        $Type  : 'UI.CollectionFacet',
+        ID     : 'metadata',
+        Label  : 'Metadata',
+        Facets : [{
+            $Type  : 'UI.ReferenceFacet',
+            Target : '@UI.FieldGroup#Basic'
+        }]
+    }],
+    FieldGroup #Basic   : {Data : [
+        {Value : VariableName},
+        {Value : IntegrationFlow},
+        {Value : Visibility},
+        {Value : UpdatedAt},
+        {Value : RetainUntil}
+    ]}
+}) {
+    VariableName    @title : 'Name';
+    IntegrationFlow @title : 'Flow';
+    Visibility      @title : 'Visibility';
+    UpdatedAt       @title : 'Updated at';
+    RetainUntil     @title : 'Retain until';
 };

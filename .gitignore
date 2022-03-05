@@ -6,7 +6,7 @@ default-*.json
 gen/
 node_modules/
 target/
-
+srv/config/*.output.zip
 
 # Web IDE, App Studio
 .che/

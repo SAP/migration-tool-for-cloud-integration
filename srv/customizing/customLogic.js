@@ -44,6 +44,13 @@ class CustomLogic {
     onMigrateAccessPolicyReference = async (item) => {
         this.customConfiguration.name_prefix && (item.Name = this.customConfiguration.name_prefix + item.Name);
     };
+    onMigrateGlobalVariable = async (item) => {
+        this.customConfiguration.name_prefix && (item.key = this.customConfiguration.name_prefix + item.key);
+    };
+    onMigrateLocalVariable = async (item) => {
+        this.customConfiguration.name_prefix && (item.key = this.customConfiguration.name_prefix + item.key);
+    };
+
     onMigrateJMSBroker = async (item) => { };
     // onMigrateValMapSchema= async(item) => { };
     // onMigrateCustomCertificate=async (item) => { };

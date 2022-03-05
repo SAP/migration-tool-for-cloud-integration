@@ -63,6 +63,8 @@ entity Tenants : managed {
                                         on toAccessPolicies.toParent = $self;
         toJMSBrokers              : Composition of many extJMSBrokers
                                         on toJMSBrokers.toParent = $self;
+        toVariables               : Composition of many extVariables
+                                        on toVariables.toParent = $self;
 };
 
 type TenantStatisticsType {
@@ -81,6 +83,7 @@ type TenantStatisticsType {
     numAccessPolicies                  : Integer default 0;
     numAccessPolicyReferences          : Integer default 0;
     numJMSBrokers                      : Integer default 0;
+    numVariables                       : Integer default 0;
 };
 
 
@@ -271,6 +274,19 @@ entity extArtifactReferences {
         ConditionType      : String;
 };
 
+// Global Variables ------------------------------------------------------------------------------------
+entity extVariables {
+    key ObjectID        : UUID @Core.Computed;
+        toParent        : Association to one Tenants;
+        VariableName    : String;
+        IntegrationFlow : String;
+        Visibility      : String;
+        UpdatedAt       : DateTime;
+        RetainUntil     : DateTime;
+};
+
+
+// Migration Tasks ------------------------------------------------------------------------------------
 entity MigrationTasks : managed {
     key ObjectID                      : UUID               @Core.Computed;
         SourceTenant                  : Association to one Tenants;

@@ -16,15 +16,15 @@ annotate ConfigService.MigrationTasks with @(UI : {
         {Value : ObjectID},
         {
             ![@UI.Hidden] : {$edmJson : {$Not : [{$Path : 'IsActiveEntity'}]}},
-            $Type  : 'UI.DataFieldForAction',
-            Label  : 'Change Target ...',
-            Action : 'ConfigService.Task_setTargetTenant'
+            $Type         : 'UI.DataFieldForAction',
+            Label         : 'Change Target ...',
+            Action        : 'ConfigService.Task_setTargetTenant'
         },
         {
             ![@UI.Hidden] : {$edmJson : {$Not : [{$Path : 'IsActiveEntity'}]}},
-            $Type  : 'UI.DataFieldForAction',
-            Label  : 'Run Now',
-            Action : 'ConfigService.Task_startMigration'
+            $Type         : 'UI.DataFieldForAction',
+            Label         : 'Run Now',
+            Action        : 'ConfigService.Task_startMigration'
         }
     ],
     CreateHidden             : true,
@@ -90,7 +90,7 @@ annotate ConfigService.MigrationTasks with @(UI : {
                 {
                     $Type  : 'UI.ReferenceFacet',
                     Target : '@UI.FieldGroup#NodesHeader',
-                    Label : 'Number of items selected for migration'
+                    Label  : 'Number of items selected for migration'
                 },
                 {
                     $Type  : 'UI.ReferenceFacet',
@@ -284,6 +284,12 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
                     Sign   : #I,
                     Option : #EQ,
                     Low    : 'JMS Broker'
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Global Variable'
                 }
             ]
         }]

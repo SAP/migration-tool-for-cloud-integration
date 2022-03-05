@@ -18,7 +18,8 @@ service ConfigService {
                 _it.toKeyStoreEntries,
                 _it.toNumberRanges,
                 _it.toOAuth2ClientCredentials,
-                _it.toUserCredentials
+                _it.toUserCredentials,
+                _it.toVariables
             ]
             action Tenant_getIntegrationContent() returns Tenants;
 
@@ -80,6 +81,7 @@ service ConfigService {
     entity AccessPolicies                  as projection on my.extAccessPolicies;
     entity ArtifactReferences              as projection on my.extArtifactReferences;
     entity JMSBrokers                      as projection on my.extJMSBrokers;
+    entity Variables                       as projection on my.extVariables;
 
     @sap.deletable : false
     entity Errors                          as projection on my.Errors;

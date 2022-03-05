@@ -50,7 +50,8 @@ class MigrationTask {
                 { ref: ['toNumberRanges'], expand: ['*'] },
                 { ref: ['toAccessPolicies'], expand: ['*'] },
                 { ref: ['toCustomTagConfigurations'], expand: ['*'] },
-                { ref: ['toJMSBrokers'], expand: ['*'] }
+                { ref: ['toJMSBrokers'], expand: ['*'] },
+                { ref: ['toVariables'], expand: ['*'] }
             ]);
 
         for (let item of SourceTenant.toIntegrationPackages) {
@@ -146,6 +147,15 @@ class MigrationTask {
                 toMigrationTask_ObjectID: this.Task.ObjectID
             });
         };
+        for (let item of SourceTenant.toVariables.filter(x => x.Visibility == 'Global')) {
+            nodes.push({
+                ObjectID: item.ObjectID,
+                Id: item.VariableName,
+                Name: item.VariableName,
+                Component: Settings.ComponentNames.Variables,
+                toMigrationTask_ObjectID: this.Task.ObjectID
+            });
+        };
         return nodes;
     }
     _updateExistInTenantFlags = async () => {
@@ -165,7 +175,8 @@ class MigrationTask {
                 { ref: ['toNumberRanges'], expand: ['*'] },
                 { ref: ['toAccessPolicies'], expand: ['*'] },
                 { ref: ['toCustomTagConfigurations'], expand: ['*'] },
-                { ref: ['toJMSBrokers'], expand: ['*'] }
+                { ref: ['toJMSBrokers'], expand: ['*'] },
+                { ref: ['toVariables'], expand: ['*'] }
             ]);
         const TargetTenant = await SELECT.from(cds.entities.Tenants, { ObjectID: this.Task.TargetTenant_ObjectID })
             .columns(['ObjectID',
@@ -182,7 +193,8 @@ class MigrationTask {
                 { ref: ['toNumberRanges'], expand: ['*'] },
                 { ref: ['toAccessPolicies'], expand: ['*'] },
                 { ref: ['toCustomTagConfigurations'], expand: ['*'] },
-                { ref: ['toJMSBrokers'], expand: ['*'] }
+                { ref: ['toJMSBrokers'], expand: ['*'] },
+                { ref: ['toVariables'], expand: ['*'] }
             ]);
 
         for (let node of this.Task.toTaskNodes) {
@@ -218,6 +230,10 @@ class MigrationTask {
                 case Settings.ComponentNames.JMSBrokers:
                     node.ExistInSource = SourceTenant.toJMSBrokers.findIndex(x => x.zKey == node.Id) >= 0;
                     node.ExistInTarget = TargetTenant.toJMSBrokers.findIndex(x => x.zKey == node.Id) >= 0;
+                    break;
+                case Settings.ComponentNames.Variables:
+                    node.ExistInSource = SourceTenant.toVariables.findIndex(x => x.VariableName == node.Id) >= 0;
+                    node.ExistInTarget = TargetTenant.toVariables.findIndex(x => x.VariableName == node.Id) >= 0;
                     break;
                 default:
                     break;

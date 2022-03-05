@@ -7,7 +7,11 @@
 This tool aims to assist SAP customers using SAP Cloud Integration on Neo datacenters who wish to upgrade to SAP Integration Suite on Multi-Cloud datacenters.
 
 **Important:**
-There is an official migration pack available via [SAP Note 2937549](https://launchpad.support.sap.com/#/notes/2937549) which leverages a collection of Postman scripts. This Github repository is **not** related with the official migration pack mentioned in the SAP Note. However, the functionality is very similar (as compared to Postman collection version 1.5.0 (Feb 2021)).
+There is an official migration pack available via [SAP Note 2937549](https://launchpad.support.sap.com/#/notes/2937549) which leverages a collection of Postman scripts. This Github repository is **not** related with the official migration pack mentioned in the SAP Note. However, the functionality is very similar:
+
+This repo keeps track of versions via Tags:
+- Tag v1.0.x: scope similar to Postman collection v1.5.0 (26 Feb 2021)
+- Tag v1.1.x: scope similar to Postman collection v1.6.0 (14 Feb 2022)
 
 This Github repository is an alternative tool which aims to achieve the same as the Postman collection while offering greater flexibility and control over your migration project. Areas where this tool provides an advantage over the Postman collection:
 - Creation of 'Migration Tasks' which focus on a subset of the content in the tenant;

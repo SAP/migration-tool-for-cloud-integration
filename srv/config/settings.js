@@ -17,8 +17,15 @@ module.exports = {
             createCopy: '/api/v1/CopyIntegrationPackage?Id=\'{PACKAGE_ID}\'&ImportMode=\'CREATE_COPY\'&Suffix=\'{SUFFIX}\'',
             IntegrationDesigntimeArtifacts: {
                 path: '/api/v1/IntegrationPackages(\'{PACKAGE_ID}\')/IntegrationDesigntimeArtifacts',
+                create: '/api/v1/IntegrationDesigntimeArtifacts',
+                deploy: '/api/v1/DeployIntegrationDesigntimeArtifact?Id=\'{ARTIFACT_ID}\'&Version=\'active\'',
+                undeploy: '/api/v1/IntegrationRuntimeArtifacts(\'{ARTIFACT_ID}\')',
+                delete: '/api/v1/IntegrationDesigntimeArtifacts(Id=\'{ARTIFACT_ID}\',Version=\'active\')',
                 Configurations: { path: 'api/v1/IntegrationDesigntimeArtifacts(Id=\'{ARTIFACT_ID}\',Version=\'active\')/Configurations' },
                 Resources: { path: 'api/v1/IntegrationDesigntimeArtifacts(Id=\'{ARTIFACT_ID}\',Version=\'active\')/Resources' }
+            },
+            IntegrationRuntimeArtifacts: {
+                path: '/api/v1/IntegrationRuntimeArtifacts(\'{ARTIFACT_ID}\')'
             },
             ValueMappingDesigntimeArtifacts: {
                 path: '/api/v1/IntegrationPackages(\'{PACKAGE_ID}\')/ValueMappingDesigntimeArtifacts',
@@ -70,7 +77,10 @@ module.exports = {
         Batch: '/api/v1/$batch',
         CertificateUserMappings: { path: '/api/v1/CertificateUserMappings' },
         DataStores: { path: '/api/v1/DataStores' },
-        Variables: { path: '/api/v1/Variables' }
+        Variables: {
+            path: '/api/v1/Variables',
+            download: '/api/v1/Variables(VariableName=\'{VARIABLE_NAME}\',IntegrationFlow=\'{FLOW_ID}\')/$value'
+        }
     },
 
     ComponentNames: {
@@ -83,18 +93,22 @@ module.exports = {
         NumberRange: 'Number Range',
         AccessPolicy: 'Access Policy',
         CustomTags: 'Custom Tag',
-        JMSBrokers: 'JMS Broker'
+        JMSBrokers: 'JMS Broker',
+        Variables: 'Global Variable'
     },
 
     DefaultPassword: 'default',
     Flags: {
-        DeletePackagesFromTargetBeforeOverwriting: true, //Used in migrationJob class. The 'overwrite' POST call might not overwrite all settings, so it's cleaner to first delete existing content. Default is true.
-        DownloadConfigurationsAndResources: false //Used in contentDownloader class. Not really necessary to have this information in 'Explore Tenants' as this really slows down the synchronization, so default false.
-        // ,DownloadTargetIntegrationContentAfterMigrationRun: true //Used in migrationJob class. This will automatically refresh the Integration Content of the Target tenant after a migration job run. Default is true.
+        DeletePackagesFromTargetBeforeOverwriting: true, //Used in migrationJob class. The 'overwrite' POST call might not overwrite all settings, so it's cleaner to first delete existing content. Also, if false, Local Variables can not be migrated. Default is true.
+        DownloadConfigurationsAndResources: false, //Used in contentDownloader class. Not really necessary to have this information in 'Explore Tenants' as this really slows down the synchronization, so default false.
+        // DownloadTargetIntegrationContentAfterMigrationRun: true //Used in migrationJob class. This will automatically refresh the Integration Content of the Target tenant after a migration job run. Default is true. //Not working
+        ManipulateZipFileProduceOutputFile: false //Used in ziphelper class. For debugging you can generate a physical zip file before uploading it to the tenant. Default is false.
     },
     RegEx: {
         scriptFile: /^src\/main\/resources\/script\/(.*)\.(groovy||gsh||js)$/gi,
-        scriptLine: /(system\.getenv\()/gmi
+        scriptLine: /(system\.getenv\()/gmi,
+        dateTimestamp: /^\/Date\((\d*)\)\/$/i, //matches the string /Date(123456)/ to extract the number only
+        keyvaluepair: /^([^#].*?)(?<!\\)=(.*)$/gm, //matches a keyvalue pair separated by '=' but ignores '\='
     },
     CriticalityCodes: {
         /*
@@ -109,5 +123,18 @@ module.exports = {
         Orange: 2,
         Green: 3,
         Blue: 5
+    },
+
+    Defaults: {
+        Variables: {
+            packageId: 'migrationtoolMigrateVariables',
+            flowId: 'migrationtoolCreateVariables',
+            templateFile: 'srv/config/migrationtoolCreateVariables.zip',
+            iflwFileInZip: 'src/main/resources/scenarioflows/integrationflow/CreateGlobalVariable.iflw',
+            sleepInterval: 2000,
+            successStatus: 'STARTED',
+            errorStatus: 'ERROR',
+            maxWait: 60000
+        }
     }
 };

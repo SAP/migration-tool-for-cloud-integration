@@ -182,7 +182,8 @@ module.exports = async (srv) => {
             t.Statistics_numOtherArtifacts = nodes.filter(x => x.Included && (
                 x.Component == Settings.ComponentNames.NumberRange ||
                 x.Component == Settings.ComponentNames.CustomTags ||
-                x.Component == Settings.ComponentNames.JMSBrokers
+                x.Component == Settings.ComponentNames.JMSBrokers ||
+                x.Component == Settings.ComponentNames.Variables
             )).length;
         }
     });
@@ -202,7 +203,11 @@ module.exports = async (srv) => {
 
         each.IncludedText = each.Included ? 'Include' : 'Skip';
         each.flagCanConfigure = each.Included && (each.Component == Settings.ComponentNames.Package);
-        each.ConfigureOnlyText = each.ConfigureOnly ? 'Configuration Only' : '-';
+        if (each.Component == Settings.ComponentNames.Package) {
+            each.ConfigureOnlyText = each.ConfigureOnly ? 'Configuration only' : 'Full copy with variables';
+        } else {
+            each.ConfigureOnlyText = 'Default';
+        }
 
         each.ExistInSourceCriticality = each.ExistInSource ? Settings.CriticalityCodes.Green : Settings.CriticalityCodes.Red;
         each.ExistInTargetCriticality = each.ExistInTarget ? Settings.CriticalityCodes.Green : Settings.CriticalityCodes.Blue;

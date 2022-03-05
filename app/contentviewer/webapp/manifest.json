@@ -160,6 +160,11 @@
                     "pattern": "Tenants({key})/toOAuth2ClientCredentials({key2}):?query:",
                     "name": "OAuth2ClientCredentialsObjectPage_toOAuth2ClientCredentials",
                     "target": "OAuth2ClientCredentialsObjectPage_toOAuth2ClientCredentials"
+                },
+                {
+                    "pattern": "Tenants({key})/toVariables({key2}):?query:",
+                    "name": "VariablesObjectPage_toVariables",
+                    "target": "VariablesObjectPage_toVariables"
                 }
             ],
             "targets": {
@@ -236,6 +241,11 @@
                                     "detail": {
                                         "route": "OAuth2ClientCredentialsObjectPage_toOAuth2ClientCredentials"
                                     }
+                                },
+                                "toVariables": {
+                                    "detail": {
+                                        "route": "VariablesObjectPage_toVariables"
+                                    }
                                 }
                             },
                             "content": {},
@@ -282,6 +292,11 @@
                                     }
                                 },
                                 "toMigrationTasks/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                },
+                                "toVariables/@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
                                         "enableFullScreen": true
                                     }
@@ -474,6 +489,18 @@
                     "options": {
                         "settings": {
                             "entitySet": "OAuth2ClientCredentials",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "VariablesObjectPage_toVariables": {
+                    "type": "Component",
+                    "id": "VariablesObjectPage_toVariables",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "Variables",
                             "navigation": {},
                             "content": {}
                         }
