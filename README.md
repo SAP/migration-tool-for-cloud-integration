@@ -59,7 +59,7 @@ To install, in Terminal or Command Prompt, run:
 1. Install the SAP CAP SDK 'CDS-DK': `npm i -g @sap/cds-dk`
 2. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git`
 3. Install this tool: `npm install`
-4. Prepare/rebuild the SQLite database: `cds deploy --to sqlite --with-mocks`
+4. Prepare/rebuild the SQLite database: `cds deploy --to sqlite`
 
 Now the tool is installed and can be started:
 

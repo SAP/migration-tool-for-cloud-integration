@@ -5,7 +5,7 @@ COPY . .
 
 RUN npm install -g @sap/cds-dk
 RUN npm install
-RUN cds deploy --to sqlite --with-mocks
+RUN cds deploy --to sqlite
 
 EXPOSE 4004
 
