@@ -4,15 +4,14 @@ using {
     managed,
     cuid
 } from '@sap/cds/common';
-using {IntegrationContent as external} from '../srv/external/IntegrationContent';
 
 entity SystemRoles : CodeList {};
 entity Landscapes : CodeList {};
 entity MigrationTaskPresets : CodeList {};
 
 aspect CodeList {
-    key Code : String(10)@title : 'Code'  @Common.Text : Value;
-    Value    : String(50)@title : 'Description';
+    key Code : String(10) @title : 'Code'  @Common.Text : Value;
+    Value    : String(50) @title : 'Description';
 }
 
 // Errors ----------------------------------------------------------------
@@ -26,7 +25,6 @@ entity Errors {
         Path          : String;
         Severity      : Integer;
 };
-
 
 // Tenants ---------------------------------------------------------------
 entity Tenants : managed {
@@ -88,78 +86,101 @@ type TenantStatisticsType {
 
 
 // Integration Packages -----------------------------------------------------
-entity extIntegrationPackages             as projection on external.sap.hci.api.IntegrationPackages;
-
-extend external.sap.hci.api.IntegrationPackages with {
-    key ObjectID                      : UUID @Core.Computed;
-    toParent                          : Association to one Tenants;
-    ModifiedDateFormatted             : Date;
-    toIntegrationDesigntimeArtifacts  : Composition of many external.sap.hci.api.IntegrationDesigntimeArtifacts
-                                            on toIntegrationDesigntimeArtifacts.toParent = $self;
-    toValueMappingDesigntimeArtifacts : Composition of many external.sap.hci.api.ValueMappingDesigntimeArtifacts
-                                            on toValueMappingDesigntimeArtifacts.toParent = $self;
-    toCustomTags                      : Composition of many external.sap.hci.api.CustomTags
-                                            on toCustomTags.toParent = $self;
-
-    //missing in CSN:
-    PartnerContent                    : Boolean;
-    UpdateAvailable                   : Boolean;
+entity extIntegrationPackages {
+    key ObjectID                          : UUID @Core.Computed;
+    key Id                                : String;
+        Name                              : String;
+        Description                       : String;
+        ShortText                         : String;
+        Version                           : String;
+        Vendor                            : String;
+        Mode                              : String;
+        SupportedPlatform                 : String;
+        ModifiedBy                        : String;
+        CreationDate                      : String;
+        ModifiedDate                      : String;
+        CreatedBy                         : String;
+        Products                          : String;
+        Keywords                          : String;
+        Countries                         : String;
+        Industries                        : String;
+        LineOfBusiness                    : String;
+        PartnerContent                    : Boolean;
+        UpdateAvailable                   : Boolean;
+        toParent                          : Association to one Tenants;
+        ModifiedDateFormatted             : Date;
+        toIntegrationDesigntimeArtifacts  : Composition of many extIntegrationDesigntimeArtifacts
+                                                on toIntegrationDesigntimeArtifacts.toParent = $self;
+        toValueMappingDesigntimeArtifacts : Composition of many extValueMappingDesigntimeArtifacts
+                                                on toValueMappingDesigntimeArtifacts.toParent = $self;
+        toCustomTags                      : Composition of many extCustomTags
+                                                on toCustomTags.toParent = $self;
 };
-
 
 // Integration Designtime Artifacts -----------------------------------------------------
-entity extIntegrationDesigntimeArtifacts  as projection on external.sap.hci.api.IntegrationDesigntimeArtifacts;
-
-extend external.sap.hci.api.IntegrationDesigntimeArtifacts with {
-    key ObjectID     : UUID @Core.Computed;
-    toParent         : Association to one external.sap.hci.api.IntegrationPackages;
-    toConfigurations : Composition of many external.sap.hci.api.Configurations
-                           on toConfigurations.toParent = $self;
-    toResources      : Composition of many external.sap.hci.api.Resources
-                           on toResources.toParent = $self;
+entity extIntegrationDesigntimeArtifacts {
+    key ObjectID         : UUID @Core.Computed;
+    key Id               : String;
+        Version          : String;
+        PackageId        : String;
+        Name             : String;
+        Description      : String;
+        ArtifactContent  : Binary;
+        toParent         : Association to one extIntegrationPackages;
+        toConfigurations : Composition of many extConfigurations
+                               on toConfigurations.toParent = $self;
+        toResources      : Composition of many extResources
+                               on toResources.toParent = $self;
 };
 
-entity extConfigurations                  as projection on external.sap.hci.api.Configurations;
-
-extend external.sap.hci.api.Configurations with {
-    key ObjectID : UUID @Core.Computed;
-    toParent     : Association to one external.sap.hci.api.IntegrationDesigntimeArtifacts;
+entity extConfigurations {
+    key ObjectID       : UUID @Core.Computed;
+    key ParameterKey   : String;
+        ParameterValue : String;
+        DataType       : String;
+        toParent       : Association to one extIntegrationDesigntimeArtifacts;
 };
 
-entity extResources                       as projection on external.sap.hci.api.Resources;
-
-extend external.sap.hci.api.Resources with {
-    key ObjectID : UUID @Core.Computed;
-    toParent     : Association to one external.sap.hci.api.IntegrationDesigntimeArtifacts;
+entity extResources {
+    key ObjectID               : UUID @Core.Computed;
+    key Name                   : String;
+    key ResourceType           : String;
+        ReferencedResourceType : String;
+        ResourceContent        : Binary;
+        toParent               : Association to one extIntegrationDesigntimeArtifacts;
 };
-
 
 // ValueMapping Designtime Artifacts -----------------------------------------------------
-entity extValueMappingDesigntimeArtifacts as projection on external.sap.hci.api.ValueMappingDesigntimeArtifacts;
-
-extend external.sap.hci.api.ValueMappingDesigntimeArtifacts with {
-    key ObjectID   : UUID @Core.Computed;
-    toParent       : Association to one external.sap.hci.api.IntegrationPackages;
-    toValMapSchema : Composition of many external.sap.hci.api.ValMapSchema
-                         on toValMapSchema.toParent = $self;
+entity extValueMappingDesigntimeArtifacts {
+    key ObjectID        : UUID @Core.Computed;
+    key Id              : String;
+    key Version         : String;
+        PackageId       : String;
+        Name            : String;
+        Description     : String;
+        ArtifactContent : Binary;
+        toParent        : Association to one extIntegrationPackages;
+        toValMapSchema  : Composition of many extValMapSchema
+                              on toValMapSchema.toParent = $self;
 };
 
-entity extValMapSchema                    as projection on external.sap.hci.api.ValMapSchema;
-
-extend external.sap.hci.api.ValMapSchema with {
-    key ObjectID : UUID @Core.Computed;
-    toParent     : Association to one external.sap.hci.api.ValueMappingDesigntimeArtifacts;
+entity extValMapSchema {
+    key ObjectID  : UUID @Core.Computed;
+    key SrcAgency : String;
+    key SrcId     : String;
+    key TgtAgency : String;
+    key TgtId     : String;
+        State     : String;
+        toParent  : Association to one extValueMappingDesigntimeArtifacts;
 };
-
 
 // Custom Tags ----------------------------------------------------------------------------
-entity extCustomTags                      as projection on external.sap.hci.api.CustomTags;
-
-extend external.sap.hci.api.CustomTags with {
+entity extCustomTags {
     key ObjectID : UUID @Core.Computed;
-    toParent     : Association to one external.sap.hci.api.IntegrationPackages;
+    key Name     : String;
+        Value    : String;
+        toParent : Association to one extIntegrationPackages;
 };
-
 
 // KeyStore Entries ----------------------------------------------------------------------------
 entity extKeyStoreEntries {
@@ -170,7 +191,6 @@ entity extKeyStoreEntries {
         Type     : String;
         Owner    : String;
 };
-
 
 // User Credentials ----------------------------------------------------------------------------
 entity extUserCredentials {
@@ -192,7 +212,6 @@ type extSecurityArtifactDescriptorType {
     Status     : String;
 };
 
-
 // Custom Tag Configurations ----------------------------------------------------------------------------
 entity extCustomTagConfigurations {
     key ObjectID        : UUID @Core.Computed;
@@ -201,7 +220,6 @@ entity extCustomTagConfigurations {
         permittedValues : String;
         isMandatory     : Boolean;
 };
-
 
 // Number Ranges ----------------------------------------------------------------------------
 entity extNumberRanges {
@@ -217,7 +235,6 @@ entity extNumberRanges {
         DeployedBy   : String;
         DeployedOn   : Date;
 };
-
 
 // OAuth2Client Credentials ----------------------------------------------------------------------------
 entity extOAuth2ClientCredentials {
@@ -249,6 +266,8 @@ entity extJMSBrokers {
         CapacityOk               : Integer;
         CapacityWarning          : Integer;
         CapacityError            : Integer;
+        IsQueuesHigh             : Integer;
+        IsMessageSpoolHigh       : Integer;
 };
 
 // Access Policies ------------------------------------------------------------------------------------
@@ -285,7 +304,6 @@ entity extVariables {
         RetainUntil     : DateTime;
 };
 
-
 // Migration Tasks ------------------------------------------------------------------------------------
 entity MigrationTasks : managed {
     key ObjectID                      : UUID               @Core.Computed;
@@ -310,7 +328,7 @@ type TaskStatisticsType {
 };
 
 entity MigrationTaskNodes {
-    key ObjectID                         : UUID      @Core.Computed;
+    key ObjectID                         : UUID       @Core.Computed;
     key toMigrationTask                  : Association to one MigrationTasks;
         Id                               : String;
         Name                             : String;
@@ -322,10 +340,10 @@ entity MigrationTaskNodes {
         ExistInTarget                    : Boolean;
         virtual ExistInTargetCriticality : CriticalityType;
         Included                         : Boolean default true;
-        virtual IncludedText             : String(10)@Core.Computed;
+        virtual IncludedText             : String(10) @Core.Computed;
         virtual IncludedCriticality      : CriticalityType;
         ConfigureOnly                    : Boolean default false;
-        virtual ConfigureOnlyText        : String(20)@Core.Computed;
+        virtual ConfigureOnlyText        : String(20) @Core.Computed;
         virtual ConfigureOnlyCriticality : CriticalityType;
         virtual flagCanConfigure         : TechnicalBooleanFlag not null default false;
         PackageVendor                    : String; //used only for Integration Packages to show which are SAP and which are Custom

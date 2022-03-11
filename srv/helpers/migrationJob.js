@@ -218,8 +218,6 @@ class MigrationJob {
         await this.addLogEntry(2, 'Compiling integration flows ...');
         var successCount = 0;
 
-        console.log(variablesByFlows);
-
         const createPackageSuccess = await this.variablesCreateIntegrationPackage(packageId);
         if (createPackageSuccess) {
             for (const variablesByFlow of variablesByFlows) {

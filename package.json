@@ -30,14 +30,10 @@
     "@sap/ux-specification": "^1.95"
   },
   "scripts": {
-    "start": "cds run --with-mocks"
+    "start": "cds run"
   },
   "cds": {
     "requires": {
-      "IntegrationContent.sap.hci.api": {
-        "kind": "odata",
-        "model": "srv/external/IntegrationContent"
-      },
       "db": {
         "kind": "sqlite",
         "credentials": {
