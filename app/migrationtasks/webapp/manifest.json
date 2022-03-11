@@ -164,8 +164,8 @@
                                                     "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#Others"
                                                 }
                                             ],
-                                            "showCounts": false,
-                                            "hideTableTitle": false
+                                            "showCounts": true,
+                                            "hideTableTitle": true
                                         }
                                     }
                                 },
