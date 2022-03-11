@@ -90,6 +90,7 @@ Version availability: https://ui5.sap.com/versionoverview.html
 - **5.5.4**: Works
 - **5.6.2**: Issue: UPDATE function to update ExistInSource columns in MigrationTasks has bugs
 - **5.7.3**: Stable
+- **5.8.3**: Stable
 
 More information on changelog: https://cap.cloud.sap/docs/releases
 
