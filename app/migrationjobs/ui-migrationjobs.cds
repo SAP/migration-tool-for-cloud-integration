@@ -1,51 +1,90 @@
 using ConfigService from '../../srv/service';
+using from '../contentviewer/ui-errors';
 
 annotate ConfigService.MigrationJobs with @(UI : {
-    PresentationVariant   : {
+    PresentationVariant           : {
         SortOrder      : [{
             Property   : StartTime,
             Descending : true
         }],
         Visualizations : ['@UI.LineItem']
     },
-    Identification        : [{Value : ObjectID}],
-    SelectionFields       : [
+    PresentationVariant #Embedded : {
+        SortOrder      : [{
+            Property   : StartTime,
+            Descending : true
+        }],
+        Visualizations : ['@UI.LineItem#Embedded']
+    },
+    Identification                : [{Value : ObjectID}],
+    SelectionFields               : [
         StartTime,
         EndTime
     ],
-    HeaderInfo            : {
+    HeaderInfo                    : {
         TypeName       : 'Migration Job',
         TypeNamePlural : 'Migration Jobs',
         Title          : {Value : toMigrationTask.Name},
         Description    : {Value : ObjectID},
         TypeImageUrl   : 'sap-icon://survey'
     },
-    HeaderFacets          : [{
+    HeaderFacets                  : [{
         $Type  : 'UI.ReferenceFacet',
         Target : '@UI.FieldGroup#Execution'
     }],
-    CreateHidden          : true,
-    LineItem              : [
-        {Value : ObjectID},
-        {Value : toMigrationTask.Name},
-        {Value : StartTime},
-        {Value : EndTime},
+    CreateHidden                  : true,
+    LineItem                      : [
+        {
+            Value                 : ObjectID,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
+        {
+            Value                 : toMigrationTask.Name,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
+        {
+            Value                 : StartTime,
+            ![@HTML5.CssDefaults] : {width : '15rem'}
+        },
+        {
+            Value                 : EndTime,
+            ![@HTML5.CssDefaults] : {width : '15rem'}
+        },
         {
             Value                     : Status,
             Criticality               : StatusCriticality,
             CriticalityRepresentation : #WithIcon
         }
     ],
-    Facets                : [{
+    LineItem #Embedded            : [
+        {
+            Value                 : ObjectID,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
+        {
+            Value                 : StartTime,
+            ![@HTML5.CssDefaults] : {width : '15rem'}
+        },
+        {
+            Value                 : EndTime,
+            ![@HTML5.CssDefaults] : {width : '15rem'}
+        },
+        {
+            Value                     : Status,
+            Criticality               : StatusCriticality,
+            CriticalityRepresentation : #WithIcon
+        }
+    ],
+    Facets                        : [{
         $Type  : 'UI.CollectionFacet',
         ID     : 'errors',
         Label  : 'Result',
         Facets : [{
             $Type  : 'UI.ReferenceFacet',
-            Target : 'toErrors/@UI.LineItem'
+            Target : 'toErrors/@UI.PresentationVariant'
         }]
     }],
-    FieldGroup #Execution : {Data : [
+    FieldGroup #Execution         : {Data : [
         {
             Value                     : Status,
             Criticality               : StatusCriticality,
@@ -54,7 +93,7 @@ annotate ConfigService.MigrationJobs with @(UI : {
         {Value : StartTime},
         {Value : EndTime}
     ]},
-    FieldGroup #Log       : {Data : [{Value : Log}]}
+    FieldGroup #Log               : {Data : [{Value : Log}]}
 }) {
     ObjectID          @title : 'Job Identifier'  @readonly;
     StartTime         @title : 'Start Time'  @readonly;

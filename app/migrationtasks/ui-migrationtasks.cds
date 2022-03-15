@@ -1,4 +1,5 @@
 using ConfigService from '../../srv/service';
+using from '../migrationjobs/ui-migrationjobs';
 
 annotate ConfigService.MigrationTasks with @(UI : {
     PresentationVariant      : {
@@ -48,15 +49,23 @@ annotate ConfigService.MigrationTasks with @(UI : {
         }
     ],
     LineItem                 : [
-        {Value : modifiedAt},
-        {Value : Name},
         {
-            Value : SourceTenant.Name,
-            Label : 'Source'
+            Value                 : modifiedAt,
+            ![@HTML5.CssDefaults] : {width : '15rem'}
         },
         {
-            Value : TargetTenant.Name,
-            Label : 'Target'
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
+        {
+            Value                 : SourceTenant.Name,
+            Label                 : 'Source',
+            ![@HTML5.CssDefaults] : {width : '15rem'}
+        },
+        {
+            Value                 : TargetTenant.Name,
+            Label                 : 'Target',
+            ![@HTML5.CssDefaults] : {width : '15rem'}
         },
         {
             Value                     : LastStatus,
@@ -77,7 +86,7 @@ annotate ConfigService.MigrationTasks with @(UI : {
                 },
                 {
                     $Type  : 'UI.ReferenceFacet',
-                    Target : 'toMigrationJobs/@UI.LineItem'
+                    Target : 'toMigrationJobs/@UI.PresentationVariant#Embedded'
                 }
             ]
         },
@@ -94,7 +103,7 @@ annotate ConfigService.MigrationTasks with @(UI : {
                 },
                 {
                     $Type  : 'UI.ReferenceFacet',
-                    Target : 'toTaskNodes/@UI.LineItem',
+                    Target : 'toTaskNodes/@UI.PresentationVariant'
                 }
             ]
         },
@@ -205,10 +214,7 @@ annotate ConfigService.MigrationTasks with {
 
 annotate ConfigService.MigrationTaskNodes with @(UI : {
     PresentationVariant        : {
-        SortOrder      : [{
-            Property   : Name,
-            Descending : false
-        }],
+        SortOrder      : [{Property : Name}],
         Visualizations : ['@UI.LineItem'],
         RequestAtLeast : [
             Included,
@@ -318,33 +324,39 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
             {
                 Value                     : Name,
                 Criticality               : Status,
-                CriticalityRepresentation : #WithoutIcon
+                CriticalityRepresentation : #WithoutIcon,
+                ![@HTML5.CssDefaults]     : {width : '20rem'}
             },
             {
                 Value                     : PackageVendor,
                 Criticality               : Status,
-                CriticalityRepresentation : #WithoutIcon
+                CriticalityRepresentation : #WithoutIcon,
+                ![@HTML5.CssDefaults]     : {width : '8rem'}
             },
             {
                 Value                     : Component,
                 Criticality               : Status,
-                CriticalityRepresentation : #WithoutIcon
+                CriticalityRepresentation : #WithoutIcon,
+                ![@HTML5.CssDefaults]     : {width : '10rem'}
             },
             {
                 Value                     : ExistInSource,
                 Criticality               : ExistInSourceCriticality,
-                CriticalityRepresentation : #OnlyIcon
+                CriticalityRepresentation : #OnlyIcon,
+                ![@HTML5.CssDefaults]     : {width : '5rem'}
             },
             {
                 Value                     : ExistInTarget,
                 Criticality               : ExistInTargetCriticality,
-                CriticalityRepresentation : #WithoutIcon
+                CriticalityRepresentation : #WithoutIcon,
+                ![@HTML5.CssDefaults]     : {width : '5rem'}
 
             },
             {
                 Value                     : IncludedText,
                 Criticality               : IncludedCriticality,
-                CriticalityRepresentation : #WithoutIcon
+                CriticalityRepresentation : #WithoutIcon,
+                ![@HTML5.CssDefaults]     : {width : '10rem'}
             },
             {
                 $Type       : 'UI.DataFieldForAction',
@@ -353,9 +365,7 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
                 Inline      : true,
                 Criticality : ConfigureOnlyCriticality
             },
-            {Value : ConfigureOnlyText},
-            {Value : Included},
-            {Value : ConfigureOnly}
+            {Value : ConfigureOnlyText}
         ]
     }
 }) {
@@ -365,7 +375,5 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
     ExistInTarget     @title : 'In Target'  @readonly;
     IncludedText      @title : 'Selected for Migration';
     ConfigureOnlyText @title : 'Configuration';
-    Included          @UI.Hidden;
-    ConfigureOnly     @UI.Hidden;
     PackageVendor     @title : 'Vendor';
 };

@@ -4,7 +4,8 @@ annotate RegistrationService.Tenants with @(UI : {
     PresentationVariant         : {
         $Type          : 'UI.PresentationVariantType',
         SortOrder      : [{Property : Name}],
-        Visualizations : ['@UI.LineItem']
+        Visualizations : ['@UI.LineItem'],
+        RequestAtLeast : [ReadOnly]
     },
     Identification              : [{Value : ObjectID}],
     HeaderInfo                  : {
@@ -20,12 +21,41 @@ annotate RegistrationService.Tenants with @(UI : {
         Environment
     ],
     LineItem                    : [
-        {Value : Name},
-        {Value : Environment},
-        {Value : Host},
-        {Value : Token_host},
-        {Value : Oauth_clientid},
-        {Value : Role},
+        {
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '15rem'},
+            ![@UI.Importance]     : #High
+        },
+        {
+            Value                 : Environment,
+            ![@HTML5.CssDefaults] : {width : '9rem'},
+            ![@UI.Importance]     : #High
+        },
+        {
+            Value                 : ReadOnlyText,
+            ![@HTML5.CssDefaults] : {width : '8rem'},
+            ![@UI.Importance]     : #High
+        },
+        {
+            Value                 : Host,
+            ![@HTML5.CssDefaults] : {width : '17rem'},
+            ![@UI.Importance]     : #High
+        },
+        {
+            Value                 : Token_host,
+            ![@HTML5.CssDefaults] : {width : '17rem'},
+            ![@UI.Importance]     : #Low
+        },
+        {
+            Value                 : Oauth_clientid,
+            ![@HTML5.CssDefaults] : {width : '17rem'},
+            ![@UI.Importance]     : #Low
+        },
+        {
+            Value                 : Role,
+            ![@HTML5.CssDefaults] : {width : '9rem'},
+            ![@UI.Importance]     : #Medium
+        },
         {
             $Type       : 'UI.DataFieldForAction',
             Label       : 'Test Connection',
@@ -33,9 +63,9 @@ annotate RegistrationService.Tenants with @(UI : {
             Action      : 'RegistrationService.Tenant_testConnection'
         },
         {
-            $Type       : 'UI.DataFieldForAction',
-            Label       : 'Export All to CSV',
-            Action      : 'RegistrationService.Tenant_export'
+            $Type  : 'UI.DataFieldForAction',
+            Label  : 'Export All to CSV',
+            Action : 'RegistrationService.Tenant_export'
         }
     ],
     HeaderFacets                : [{
@@ -88,13 +118,15 @@ annotate RegistrationService.Tenants with @(UI : {
     ]}
 }) {
     ObjectID       @title : 'View Content'  @Common.SemanticObject : 'tenants';
-    Name           @title : 'Name'  @mandatory;
-    Host           @title : 'Tenant Host'  @mandatory;
-    Token_host     @title : 'Token Host'  @mandatory;
-    Oauth_clientid @title : 'oAuth Client ID'  @mandatory;
-    Oauth_secret   @title : 'oAuth Secret'  @mandatory  @Common.MaskedAlways : true;
-    Role           @title : 'System Role'  @mandatory;
-    Environment    @title : 'Environment'  @mandatory;
+    Name           @title : 'Name'  @mandatory  @UI.Placeholder            : 'Please provide a name';
+    Host           @title : 'Tenant Host'  @mandatory  @UI.Placeholder     : '{subdomain}.{environment}.cfapps.eu10-001.hana.ondemand.com';
+    Token_host     @title : 'Token Host'  @mandatory  @UI.Placeholder      : '{subdomain}.authentication.eu10.hana.ondemand.com';
+    Oauth_clientid @title : 'oAuth Client ID'  @mandatory  @UI.Placeholder : 'See OAuth Client credentials';
+    Oauth_secret   @title : 'oAuth Secret'  @mandatory  @UI.Placeholder    : 'See OAuth Client credentials'  @Common.MaskedAlways : true;
+    Role           @title : 'System Role'  @mandatory  @UI.Placeholder     : 'Select role';
+    Environment    @title : 'Environment'  @mandatory  @UI.Placeholder     : 'Select environment';
+    ReadOnly       @title : 'Source-only system';
+    ReadOnlyText   @title : 'Mode';
 };
 
 annotate RegistrationService.Tenants with {

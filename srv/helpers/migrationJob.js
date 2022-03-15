@@ -127,12 +127,14 @@ class MigrationJob {
 
         for (let item of items) {
             this.Variables.push(item);
-            if (item.Visibility == 'Global') {
-                await this.addLogEntry(2, 'Variable ' + item.VariableName + ' (global)');
-            } else {
-                await this.addLogEntry(2, 'Variable ' + item.VariableName + ' (local to ' + item.IntegrationFlow + ')');
-            }
+            // if (item.Visibility == 'Global') {
+            //     await this.addLogEntry(2, 'Variable ' + item.VariableName + ' (global)');
+            // } else {
+            //     await this.addLogEntry(2, 'Variable ' + item.VariableName + ' (local to ' + item.IntegrationFlow + ')');
+            // }
         }
+        await this.addLogEntry(2, 'Found ' + this.Variables.filter(x => x.Visibility == 'Global').length + ' Global variables');
+        await this.addLogEntry(2, 'Found ' + this.Variables.filter(x => x.Visibility != 'Global').length + ' Local variables');
     };
     migrateGlobalVariables = async () => {
         await this.addLogEntry(1, 'GLOBAL VARIABLES:');

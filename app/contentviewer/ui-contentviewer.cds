@@ -1,4 +1,6 @@
 using ConfigService from '../../srv/service';
+using from '../migrationtasks/ui-migrationtasks';
+using from './ui-errors';
 
 // Tenants ---------------------------------------------------------------
 annotate ConfigService.Tenants with @(UI : {
@@ -38,14 +40,36 @@ annotate ConfigService.Tenants with @(UI : {
     ],
     DeleteHidden         : true,
     LineItem             : [
-        {Value : Name},
-        {Value : Environment},
-        {Value : Host},
-        {Value : Role},
-        {Value : RefreshedDate},
         {
-            Value       : ErrorsText,
-            Criticality : ErrorsCriticality
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '15rem'},
+            ![@UI.Importance]     : #High
+        },
+        {
+            Value                 : Environment,
+            ![@HTML5.CssDefaults] : {width : '9rem'},
+            ![@UI.Importance]     : #High
+        },
+        {
+            Value                 : Host,
+            ![@HTML5.CssDefaults] : {width : '30rem'},
+            ![@UI.Importance]     : #Low
+        },
+        {
+            Value                 : Role,
+            ![@HTML5.CssDefaults] : {width : '9rem'},
+            ![@UI.Importance]     : #High
+        },
+        {
+            Value                 : RefreshedDate,
+            ![@HTML5.CssDefaults] : {width : '15rem'},
+            ![@UI.Importance]     : #Medium
+        },
+        {
+            Value                 : ErrorsText,
+            Criticality           : ErrorsCriticality,
+            ![@HTML5.CssDefaults] : {width : '10rem'},
+            ![@UI.Importance]     : #High
         },
         {
             $Type  : 'UI.DataFieldForAction',
@@ -71,7 +95,7 @@ annotate ConfigService.Tenants with @(UI : {
                 },
                 {
                     $Type  : 'UI.ReferenceFacet',
-                    Target : 'toErrors/@UI.LineItem'
+                    Target : 'toErrors/@UI.PresentationVariant'
                 }
             ]
         },
@@ -81,7 +105,7 @@ annotate ConfigService.Tenants with @(UI : {
             Label  : 'Integration Packages',
             Facets : [{
                 $Type  : 'UI.ReferenceFacet',
-                Target : 'toIntegrationPackages/@UI.LineItem'
+                Target : 'toIntegrationPackages/@UI.PresentationVariant'
             }]
         },
         {
@@ -95,7 +119,7 @@ annotate ConfigService.Tenants with @(UI : {
                     Label  : 'User Credentials',
                     Facets : [{
                         $Type  : 'UI.ReferenceFacet',
-                        Target : 'toUserCredentials/@UI.LineItem'
+                        Target : 'toUserCredentials/@UI.PresentationVariant'
                     }]
                 },
                 {
@@ -104,7 +128,7 @@ annotate ConfigService.Tenants with @(UI : {
                     Label  : 'Key Stores',
                     Facets : [{
                         $Type  : 'UI.ReferenceFacet',
-                        Target : 'toKeyStoreEntries/@UI.LineItem'
+                        Target : 'toKeyStoreEntries/@UI.PresentationVariant'
                     }]
                 },
                 {
@@ -113,7 +137,7 @@ annotate ConfigService.Tenants with @(UI : {
                     Label  : 'OAuth2 Client Credentials',
                     Facets : [{
                         $Type  : 'UI.ReferenceFacet',
-                        Target : 'toOAuth2ClientCredentials/@UI.LineItem'
+                        Target : 'toOAuth2ClientCredentials/@UI.PresentationVariant'
                     }]
                 },
                 {
@@ -122,7 +146,7 @@ annotate ConfigService.Tenants with @(UI : {
                     Label  : 'Access Policies',
                     Facets : [{
                         $Type  : 'UI.ReferenceFacet',
-                        Target : 'toAccessPolicies/@UI.LineItem'
+                        Target : 'toAccessPolicies/@UI.PresentationVariant'
                     }]
                 }
             ]
@@ -138,7 +162,7 @@ annotate ConfigService.Tenants with @(UI : {
                     Label  : 'Number Ranges',
                     Facets : [{
                         $Type  : 'UI.ReferenceFacet',
-                        Target : 'toNumberRanges/@UI.LineItem'
+                        Target : 'toNumberRanges/@UI.PresentationVariant'
                     }]
                 },
                 {
@@ -147,7 +171,7 @@ annotate ConfigService.Tenants with @(UI : {
                     Label  : 'Custom Tags',
                     Facets : [{
                         $Type  : 'UI.ReferenceFacet',
-                        Target : 'toCustomTagConfigurations/@UI.LineItem'
+                        Target : 'toCustomTagConfigurations/@UI.PresentationVariant'
                     }]
                 },
                 {
@@ -156,7 +180,7 @@ annotate ConfigService.Tenants with @(UI : {
                     Label  : 'Variables',
                     Facets : [{
                         $Type  : 'UI.ReferenceFacet',
-                        Target : 'toVariables/@UI.LineItem'
+                        Target : 'toVariables/@UI.PresentationVariant'
                     }]
                 }
             ]
@@ -172,7 +196,7 @@ annotate ConfigService.Tenants with @(UI : {
                 },
                 {
                     $Type  : 'UI.ReferenceFacet',
-                    Target : 'toMigrationTasks/@UI.LineItem'
+                    Target : 'toMigrationTasks/@UI.PresentationVariant'
                 }
             ]
         }
@@ -286,7 +310,10 @@ annotate ConfigService.IntegrationPackages with @(UI : {
         Description    : {Value : ShortText}
     },
     LineItem            : [
-        {Value : Name},
+        {
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '30rem'}
+        },
         {Value : Vendor},
         {Value : Version},
         {Value : Mode},
@@ -314,15 +341,15 @@ annotate ConfigService.IntegrationPackages with @(UI : {
             Facets : [
                 {
                     $Type  : 'UI.ReferenceFacet',
-                    Target : 'toIntegrationDesigntimeArtifacts/@UI.LineItem',
+                    Target : 'toIntegrationDesigntimeArtifacts/@UI.PresentationVariant',
                 },
                 {
                     $Type  : 'UI.ReferenceFacet',
-                    Target : 'toValueMappingDesigntimeArtifacts/@UI.LineItem',
+                    Target : 'toValueMappingDesigntimeArtifacts/@UI.PresentationVariant',
                 },
                 {
                     $Type  : 'UI.ReferenceFacet',
-                    Target : 'toCustomTags/@UI.LineItem',
+                    Target : 'toCustomTags/@UI.PresentationVariant',
                 }
             ]
         }
@@ -357,10 +384,15 @@ annotate ConfigService.IntegrationDesigntimeArtifacts with @(UI : {
         Description    : {Value : Description}
     },
     LineItem            : [
-        {Value : Name},
+        {
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '30rem'}
+        },
         {Value : Version},
-        {Value : Description},
-        {Value : ArtifactContent}
+        {
+            Value                 : Description,
+            ![@HTML5.CssDefaults] : {width : '30rem'}
+        }
     ],
     Facets              : [
         {
@@ -379,11 +411,11 @@ annotate ConfigService.IntegrationDesigntimeArtifacts with @(UI : {
             Facets : [
                 {
                     $Type  : 'UI.ReferenceFacet',
-                    Target : 'toConfigurations/@UI.LineItem',
+                    Target : 'toConfigurations/@UI.PresentationVariant',
                 },
                 {
                     $Type  : 'UI.ReferenceFacet',
-                    Target : 'toResources/@UI.LineItem',
+                    Target : 'toResources/@UI.PresentationVariant',
                 }
             ]
         }
@@ -487,17 +519,23 @@ annotate ConfigService.ValueMappingDesigntimeArtifacts with @(UI : {
         Visualizations : ['@UI.LineItem']
     },
     HeaderInfo          : {
-        TypeName       : 'ValueMappingDesigntimeArtifact',
-        TypeNamePlural : 'ValueMappingDesigntimeArtifacts',
+        TypeName       : 'Value Mapping',
+        TypeNamePlural : 'Value Mappings',
         Title          : {Value : Name},
         Description    : {Value : Description}
     },
     LineItem            : [
-        {Value : Id},
+        {
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '30rem'}
+        },
+
         {Value : Version},
-        {Value : Name},
-        {Value : Description},
-        {Value : ArtifactContent}
+        {Value : Id},
+        {
+            Value                 : Description,
+            ![@HTML5.CssDefaults] : {width : '30rem'}
+        }
     ],
     Facets              : [
         {
@@ -515,7 +553,7 @@ annotate ConfigService.ValueMappingDesigntimeArtifacts with @(UI : {
             Label  : 'Content',
             Facets : [{
                 $Type  : 'UI.ReferenceFacet',
-                Target : 'toValMapSchema/@UI.LineItem',
+                Target : 'toValMapSchema/@UI.PresentationVariant',
             }]
         }
     ],
@@ -541,8 +579,8 @@ annotate ConfigService.ValMapSchema with @(UI : {
         Visualizations : ['@UI.LineItem']
     },
     HeaderInfo          : {
-        TypeName       : 'ValMap Schema',
-        TypeNamePlural : 'ValMap Schemas',
+        TypeName       : 'Value Mapping Schema',
+        TypeNamePlural : 'Value Mapping Schemas',
         Title          : {Value : SrcAgency},
         Description    : {Value : TgtAgency}
     },
@@ -590,7 +628,10 @@ annotate ConfigService.CustomTags with @(UI : {
         Title          : {Value : Name}
     },
     LineItem            : [
-        {Value : Name},
+        {
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
         {Value : Value}
     ],
     Facets              : [{
@@ -611,47 +652,6 @@ annotate ConfigService.CustomTags with @(UI : {
     Value @title : 'Value';
 };
 
-
-// KeyStore Entries ----------------------------------------------------------------------------
-annotate ConfigService.KeyStoreEntries with @(UI : {
-    PresentationVariant : {
-        SortOrder      : [{Property : Alias}],
-        Visualizations : ['@UI.LineItem']
-    },
-    HeaderInfo          : {
-        TypeName       : 'KeyStore Entry',
-        TypeNamePlural : 'KeyStore Entries',
-        Title          : {Value : Alias},
-        Description    : {Value : Owner}
-    },
-    LineItem            : [
-        {Value : Type},
-        {Value : Alias},
-        {Value : Owner}
-    ],
-    Facets              : [{
-        $Type  : 'UI.CollectionFacet',
-        ID     : 'metadata',
-        Label  : 'Metadata',
-        Facets : [{
-            $Type  : 'UI.ReferenceFacet',
-            Target : '@UI.FieldGroup#Basic'
-        }]
-    }],
-    FieldGroup #Basic   : {Data : [
-        {Value : Hexalias},
-        {Value : Alias},
-        {Value : Type},
-        {Value : Owner}
-    ]}
-}) {
-    Hexalias @title : 'HEX';
-    Alias    @title : 'Alias';
-    Type     @title : 'Type';
-    Owner    @title : 'Owner';
-};
-
-
 // User Credentials ----------------------------------------------------------------------------
 annotate ConfigService.UserCredentials with @(UI : {
     PresentationVariant : {
@@ -665,7 +665,10 @@ annotate ConfigService.UserCredentials with @(UI : {
         Description    : {Value : Kind}
     },
     LineItem            : [
-        {Value : Name},
+        {
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
         {Value : Kind},
         {Value : SecurityArtifactDescriptor_Type},
         {Value : SecurityArtifactDescriptor_Status}
@@ -705,22 +708,25 @@ annotate ConfigService.UserCredentials with @(UI : {
     }
 };
 
-
-// Custom Tag Configurations ----------------------------------------------------------------------------
-annotate ConfigService.CustomTagConfigurations with @(UI : {
+// KeyStore Entries ----------------------------------------------------------------------------
+annotate ConfigService.KeyStoreEntries with @(UI : {
     PresentationVariant : {
-        SortOrder      : [{Property : tagName}],
+        SortOrder      : [{Property : Alias}],
         Visualizations : ['@UI.LineItem']
     },
     HeaderInfo          : {
-        TypeName       : 'Custom Tag Configuration',
-        TypeNamePlural : 'Custom Tag Configurations',
-        Title          : {Value : tagName}
+        TypeName       : 'KeyStore Entry',
+        TypeNamePlural : 'KeyStore Entries',
+        Title          : {Value : Alias},
+        Description    : {Value : Owner}
     },
     LineItem            : [
-        {Value : tagName},
-        {Value : permittedValues},
-        {Value : isMandatory}
+        {
+            Value                 : Alias,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
+        {Value : Type},
+        {Value : Owner}
     ],
     Facets              : [{
         $Type  : 'UI.CollectionFacet',
@@ -732,60 +738,16 @@ annotate ConfigService.CustomTagConfigurations with @(UI : {
         }]
     }],
     FieldGroup #Basic   : {Data : [
-        {Value : tagName},
-        {Value : permittedValues},
-        {Value : isMandatory}
+        {Value : Hexalias},
+        {Value : Alias},
+        {Value : Type},
+        {Value : Owner}
     ]}
 }) {
-    toTenant        @title : 'Tenant';
-    tagName         @title : 'Tag Name';
-    permittedValues @title : 'Permitted';
-    isMandatory     @title : 'Mandatory';
-};
-
-
-// Number Ranges ----------------------------------------------------------------------------
-annotate ConfigService.NumberRanges with @(UI : {
-    PresentationVariant : {
-        SortOrder      : [{Property : Name}],
-        Visualizations : ['@UI.LineItem']
-    },
-    HeaderInfo          : {
-        TypeName       : 'Number Range',
-        TypeNamePlural : 'Number Ranges',
-        Title          : {Value : Name}
-    },
-    LineItem            : [
-        {Value : Name},
-        {Value : CurrentValue},
-        {Value : MinValue},
-        {Value : MaxValue},
-    ],
-    Facets              : [{
-        $Type  : 'UI.CollectionFacet',
-        ID     : 'metadata',
-        Label  : 'Metadata',
-        Facets : [{
-            $Type  : 'UI.ReferenceFacet',
-            Target : '@UI.FieldGroup#Basic'
-        }]
-    }],
-    FieldGroup #Basic   : {Data : [
-        {Value : Name},
-        {Value : CurrentValue},
-        {Value : FieldLength},
-        {Value : MinValue},
-        {Value : MaxValue},
-        {Value : Rotate}
-    ]}
-}) {
-    Name         @title : 'Name';
-    Description  @title : 'Description';
-    MaxValue     @title : 'Max Value';
-    MinValue     @title : 'Min Value';
-    Rotate       @title : 'Rotate';
-    CurrentValue @title : 'Current Value';
-    FieldLength  @title : 'Field Length';
+    Hexalias @title : 'HEX';
+    Alias    @title : 'Alias';
+    Type     @title : 'Type';
+    Owner    @title : 'Owner';
 };
 
 // OAuth2Client Credentials ----------------------------------------------------------------------------
@@ -801,7 +763,10 @@ annotate ConfigService.OAuth2ClientCredentials with @(UI : {
         Description    : {Value : SecurityArtifactDescriptor_Status}
     },
     LineItem            : [
-        {Value : Name},
+        {
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
         {Value : SecurityArtifactDescriptor_Type},
         {Value : SecurityArtifactDescriptor_Status}
     ],
@@ -854,7 +819,10 @@ annotate ConfigService.AccessPolicies with @(UI : {
         Description    : {Value : ObjectID}
     },
     LineItem            : [
-        {Value : RoleName},
+        {
+            Value                 : RoleName,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
         {Value : Description}
     ],
     Facets              : [
@@ -873,7 +841,7 @@ annotate ConfigService.AccessPolicies with @(UI : {
             Label  : 'Content',
             Facets : [{
                 $Type  : 'UI.ReferenceFacet',
-                Target : 'toArtifactReferences/@UI.LineItem',
+                Target : 'toArtifactReferences/@UI.PresentationVariant',
             }]
         }
     ],
@@ -900,7 +868,10 @@ annotate ConfigService.ArtifactReferences with @(UI : {
         Description    : {Value : ObjectID}
     },
     LineItem              : [
-        {Value : Name},
+        {
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
         {Value : Type},
         {Value : ConditionAttribute},
         {Value : ConditionType},
@@ -947,6 +918,104 @@ annotate ConfigService.ArtifactReferences with @(UI : {
     ConditionType      @title : 'Condition';
 };
 
+
+// Number Ranges ----------------------------------------------------------------------------
+annotate ConfigService.NumberRanges with @(UI : {
+    PresentationVariant : {
+        SortOrder      : [{Property : Name}],
+        Visualizations : ['@UI.LineItem']
+    },
+    HeaderInfo          : {
+        TypeName       : 'Number Range',
+        TypeNamePlural : 'Number Ranges',
+        Title          : {Value : Name}
+    },
+    LineItem            : [
+        {
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
+        {
+            Value                 : CurrentValue,
+            ![@HTML5.CssDefaults] : {width : '15rem'}
+        },
+        {
+            Value                 : MinValue,
+            ![@HTML5.CssDefaults] : {width : '15rem'}
+        },
+        {
+            Value                 : MaxValue,
+            ![@HTML5.CssDefaults] : {width : '15rem'}
+        },
+    ],
+    Facets              : [{
+        $Type  : 'UI.CollectionFacet',
+        ID     : 'metadata',
+        Label  : 'Metadata',
+        Facets : [{
+            $Type  : 'UI.ReferenceFacet',
+            Target : '@UI.FieldGroup#Basic'
+        }]
+    }],
+    FieldGroup #Basic   : {Data : [
+        {Value : Name},
+        {Value : CurrentValue},
+        {Value : FieldLength},
+        {Value : MinValue},
+        {Value : MaxValue},
+        {Value : Rotate}
+    ]}
+}) {
+    Name         @title : 'Name';
+    Description  @title : 'Description';
+    MaxValue     @title : 'Max Value';
+    MinValue     @title : 'Min Value';
+    Rotate       @title : 'Rotate';
+    CurrentValue @title : 'Current Value';
+    FieldLength  @title : 'Field Length';
+};
+
+// Custom Tag Configurations ----------------------------------------------------------------------------
+annotate ConfigService.CustomTagConfigurations with @(UI : {
+    PresentationVariant : {
+        SortOrder      : [{Property : tagName}],
+        Visualizations : ['@UI.LineItem']
+    },
+    HeaderInfo          : {
+        TypeName       : 'Custom Tag Configuration',
+        TypeNamePlural : 'Custom Tag Configurations',
+        Title          : {Value : tagName}
+    },
+    LineItem            : [
+        {
+            Value                 : tagName,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
+        {Value : permittedValues},
+        {Value : isMandatory}
+    ],
+    Facets              : [{
+        $Type  : 'UI.CollectionFacet',
+        ID     : 'metadata',
+        Label  : 'Metadata',
+        Facets : [{
+            $Type  : 'UI.ReferenceFacet',
+            Target : '@UI.FieldGroup#Basic'
+        }]
+    }],
+    FieldGroup #Basic   : {Data : [
+        {Value : tagName},
+        {Value : permittedValues},
+        {Value : isMandatory}
+    ]}
+}) {
+    toTenant        @title : 'Tenant';
+    tagName         @title : 'Tag Name';
+    permittedValues @title : 'Permitted';
+    isMandatory     @title : 'Mandatory';
+};
+
+
 // Variables ----------------------------------------------------------------------------
 annotate ConfigService.Variables with @(UI : {
     PresentationVariant : {
@@ -959,7 +1028,10 @@ annotate ConfigService.Variables with @(UI : {
         Title          : {Value : VariableName}
     },
     LineItem            : [
-        {Value : VariableName},
+        {
+            Value                 : VariableName,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
         {Value : Visibility},
         {Value : IntegrationFlow},
         {Value : UpdatedAt},
