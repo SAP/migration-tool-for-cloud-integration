@@ -19,6 +19,8 @@ Use the **Register Tenants** app to register all your tenant systems (source, ta
 
 For Cloud Foundry based tenants, you can use the Import button where you can paste the JSON of the Service Key to automatically fill in all fields.
 
+The flag 'Source-only system' indicates if this tenant will be available as a migration target. If the flag is true, you won't be able to edit or post any content on this tenant with the migration tool as any call which is not a GET call will be blocked. This is purely a safety setting.
+
 Once a tenant is created / saved, you can use **Test Connection** to validate the settings. This will reach out to the Authentication Server to generate a token, and use this token on the Integration Tenant for a generic call to test the access.
 
 ### Creating oAuth Clients on Source and Target systems
@@ -63,7 +65,7 @@ This is a very important step in the entire migration process. The **Migration T
     In **Migration Content** you have a list of all items which have been downloaded from the Source tenant (see: Get Integration Content). They are divided in 3 categories based on the 'Content Type' column:
     - Integration Packages;
     - Security Artifacts (User Credentials, Certificates, oAuth Credentials and Access Policies);
-    - Other Artifacts (Number Ranges, Custom Tags and JMS Brokers)
+    - Other Artifacts (Number Ranges, Custom Tags, Variables and JMS Brokers)
 
     This table has the following extra columns:
     - In Source: this should always be YES to signal that the item is present in the source tenant. If this value is NO, or there are items present in the source tenant which are not shown in the list, you can use the **Reset / Regenerated Content List** button to rebuild the list.

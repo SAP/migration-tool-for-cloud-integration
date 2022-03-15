@@ -75,8 +75,10 @@ annotate RegistrationService.Tenants with @(UI : {
             Label  : 'Test Connection',
             Action : 'RegistrationService.Tenant_testConnection',
         },
+        {Value : Name},
         {Value : Role},
-        {Value : Environment}
+        {Value : Environment},
+        {Value : ReadOnly}
     ]},
     FieldGroup #Connection_gen  : {Data : [{Value : Host}]},
     FieldGroup #Connection_auth : {Data : [

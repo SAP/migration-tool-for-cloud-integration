@@ -18,6 +18,7 @@ module.exports = async (srv) => {
             each.ErrorsText = 'No errors';
             each.ErrorsCriticality = Settings.CriticalityCodes.Green;
         }
+        each.ReadOnlyText = each.ReadOnly ? 'Read only' : 'Read/Write';
     });
     srv.before('DELETE', srv.entities.Tenants, async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
@@ -140,7 +141,7 @@ module.exports = async (srv) => {
     });
     srv.on('Tenant_export', async (req) => {
         const TenantList = await srv.read(Tenants);
-        const headers = 'ObjectID;Name;Host;Token_host;Oauth_clientid;Oauth_secret;Role;Environment';
+        const headers = 'ObjectID;Name;Host;Token_host;Oauth_clientid;Oauth_secret;Role;Environment;ReadOnly';
         const content = [headers];
         for (const t of TenantList) {
             content.push([
@@ -151,7 +152,8 @@ module.exports = async (srv) => {
                 t.Oauth_clientid,
                 t.Oauth_secret,
                 t.Role,
-                t.Environment
+                t.Environment,
+                t.ReadOnly
             ].join(';'));
         }
         fs.writeFileSync('db/data/migrationtool-Tenants.csv', content.join('\r\n'));

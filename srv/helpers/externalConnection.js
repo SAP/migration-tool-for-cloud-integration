@@ -127,6 +127,14 @@ class ExternalConnection {
         return await this.doAxiosCall(request);
     };
     doAxiosCall = async (request) => {
+        if (this.Tenant.ReadOnly && request.method != 'GET') {
+            const error = request.method + ' call blocked for security reasons: writing to read-only tenant is not allowed';
+            console.log(error);
+            return {
+                code: 400,
+                value: error
+            };
+        }
         try {
             const response = await axios(request);
             return {

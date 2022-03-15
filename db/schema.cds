@@ -38,6 +38,8 @@ entity Tenants : managed {
         Environment               : String;
         Statistics                : TenantStatisticsType;
         RefreshedDate             : DateTime;
+        ReadOnly                  : Boolean default false;
+        virtual ReadOnlyText      : String;
         virtual ErrorsText        : String  @Core.Computed;
         virtual ErrorsCriticality : CriticalityType;
         virtual numberOfErrors    : Integer @Core.Computed;
