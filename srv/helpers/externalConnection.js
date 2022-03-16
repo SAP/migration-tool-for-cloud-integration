@@ -1,5 +1,6 @@
 const axios = require("axios").default;
 const assert = require('assert');
+const Settings = require('../config/settings');
 
 class ExternalConnection {
     constructor(tenantData) {
@@ -13,7 +14,7 @@ class ExternalConnection {
     };
 
     refreshToken = async () => this.Token = await this.getOAuthToken();
-    pingTenant = () => this.externalCall('/api/v1?$format=json');
+    pingTenant = () => this.externalCall(Settings.Paths.IntegrationPackages.path);
     openConnection = async (url) => {
         const external = await cds.connect.to({
             kind: 'odata',

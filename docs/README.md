@@ -31,7 +31,8 @@ Once a tenant is created / saved, you can use **Test Connection** to validate th
     3. Assign the following Roles to user 'oauth_client_*\<client ID\>*':
         - AuthGroup.IntegrationDeveloper
         - AuthGroup.Administrator
-    4. Copy the Token Endpoint (see branding tab), Client ID, and Client Secret for later use.
+        - AuthGroup.BusinessExpert (required for Variables)
+    4. Copy the Token Endpoint (see branding tab), Client ID, and Client Secret to use in the migration application.
 
     If you are not familiar with the process, please follow the steps here: [see Neo documentation](https://help.sap.com/viewer/368c481cd6954bdfa5d0435479fd4eaf/Cloud/en-US/040d8110293d44b1bfaa75674530d395.html), go to 'OAuth with Client Credentials Grant' and follow steps 1 and 2.
 
@@ -39,8 +40,10 @@ Once a tenant is created / saved, you can use **Test Connection** to validate th
   1. Navigate to your SAP BTP cockpit of the Cloud Foundry subaccount, go to 'Services', then 'Service Marketplace' and select 'Process Integration'
   2. Create a new instance with service plan 'api' and with the following configuration:
        - Grant-types: 'client_credentials'
-       - Roles: 'AuthGroup_IntegrationDeveloper' and 'AuthGroup_Administrator'
-  3. Create a Service Key and copy the entire JSON text for later use.
+       - Roles:
+         - AuthGroup_IntegrationDeveloper
+         - AuthGroup_Administrator
+  3. Create a Service Key and copy the entire JSON text to your clipboard to use in the migration application (use the 'Import JSON' button).
 
     If you are not familiar with the process, please follow the steps here: [see CF documentation](https://help.sap.com/viewer/368c481cd6954bdfa5d0435479fd4eaf/Cloud/en-US/20e26a837a8449c4b8b934b07f71cb76.html) and follow the steps in 'Define a Service Instance and Service Key for the API Client'.
 

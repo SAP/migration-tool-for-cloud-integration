@@ -288,7 +288,7 @@ class MigrationJob {
                 await this.generateError('Variable', item.VariableName, error);
             }
         } else {
-            await this.addLogEntry(4, 'Error: Could not download variable ' + item.VariableName);
+            await this.addLogEntry(4, 'Error: Could not download variable ' + item.VariableName + '. OAuth client missing \'AuthGroup.BusinessExpert\' role?');
             await this.generateError('Variable', item.VariableName, 'Could not download variable');
         }
         return null;
