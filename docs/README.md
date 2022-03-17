@@ -43,6 +43,7 @@ Once a tenant is created / saved, you can use **Test Connection** to validate th
        - Roles:
          - AuthGroup_IntegrationDeveloper
          - AuthGroup_Administrator
+         - AuthGroup_BusinessExpert (required for Variables, used only if this tenant is used as a Source system for migration)
   3. Create a Service Key and copy the entire JSON text to your clipboard to use in the migration application (use the 'Import JSON' button).
 
     If you are not familiar with the process, please follow the steps here: [see CF documentation](https://help.sap.com/viewer/368c481cd6954bdfa5d0435479fd4eaf/Cloud/en-US/20e26a837a8449c4b8b934b07f71cb76.html) and follow the steps in 'Define a Service Instance and Service Key for the API Client'.
