@@ -14,7 +14,21 @@ sap.ui.define([
             return oBindingContext.sPath.match(/(IsActiveEntity=false)/) != null;
         },
         setValues: function () {
-            if (!this.oInputJSONDialog) {
+            const requireValidJSON = (text, required = []) => {
+                var isValid = text.length > 0;
+                try {
+                    const json = JSON.parse(text);
+                    for (const require of required) {
+                        isValid = isValid && json['oauth'][require].length > 0;
+                    }
+                } catch (e) { isValid = false }
+                return isValid;
+            };
+            
+            const environmentField = '#registration\\:\\:TenantsObjectPage--fe\\:\\:FormContainer\\:\\:FieldGroup\\:\\:Basic\\:\\:FormElement\\:\\:DataField\\:\\:Environment\\:\\:Field-edit-inner-inner';
+            if (document.querySelector(environmentField).value == 'Neo') {
+                MessageBox.warning('Importing JSON configuration is only possible for Cloud Foundry tenants. Please set Environment to \'Cloud Foundry\' first');
+            } else {
                 this.oInputJSONDialog = new Dialog({
                     type: DialogType.Message,
                     title: "Import Settings",
@@ -26,10 +40,17 @@ sap.ui.define([
                         new TextArea("inputJSON", {
                             width: "100%",
                             rows: 10,
-                            placeholder: "{ ... }",
+                            placeholder: "\\{\n  \"oauth\": \\{\n     \"clientid\":     \"...\",\n     \"clientsecret\": \"...\",\n     \"tokenurl\":     \"...\",\n     \"url\":          \"...\"\n  \\}\n\\}",
                             liveChange: function (oEvent) {
-                                var sText = oEvent.getParameter("value");
-                                this.oInputJSONDialog.getBeginButton().setEnabled(sText.length > 0);
+                                const sText = oEvent.getParameter("value");
+                                const isValid = requireValidJSON(sText, [
+                                    'url',
+                                    'tokenurl',
+                                    'clientid',
+                                    'clientsecret'
+                                ]);
+                                this.oInputJSONDialog.getBeginButton().setEnabled(isValid);
+                                oEvent.getSource().setValueState(isValid ? sap.ui.core.ValueState.None : sap.ui.core.ValueState.Error);
                             }.bind(this)
                         })
                     ],
@@ -56,6 +77,10 @@ sap.ui.define([
                                 {
                                     field: '#registration\\:\\:TenantsObjectPage--fe\\:\\:FormContainer\\:\\:FieldGroup\\:\\:Connection_auth\\:\\:FormElement\\:\\:DataField\\:\\:Oauth_secret\\:\\:Field-edit-inner',
                                     value: imported.oauth.clientsecret
+                                },
+                                {
+                                    field: '#registration\\:\\:TenantsObjectPage--fe\\:\\:FormContainer\\:\\:FieldGroup\\:\\:Basic\\:\\:FormElement\\:\\:DataField\\:\\:Environment\\:\\:Field-edit-inner-inner',
+                                    value: 'Cloud Foundry'
                                 }
                             ];
                             values.forEach(e => {
@@ -73,14 +98,11 @@ sap.ui.define([
                         press: function () {
                             this.oInputJSONDialog.close();
                         }.bind(this)
-                    })
+                    }),
+                    afterClose: function () {
+                        this.destroy();
+                    }
                 });
-
-            }
-            const environmentField = '#registration\\:\\:TenantsObjectPage--fe\\:\\:FormContainer\\:\\:FieldGroup\\:\\:Basic\\:\\:FormElement\\:\\:DataField\\:\\:Environment\\:\\:Field-edit-inner-inner';
-            if (document.querySelector(environmentField).value != 'Cloud Foundry') {
-                MessageBox.warning('Importing JSON configuration is only possible for Cloud Foundry tenants. Please set Environment to \'Cloud Foundry\' first');
-            } else {
                 this.oInputJSONDialog.open();
             }
         },

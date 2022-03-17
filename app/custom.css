@@ -1,8 +1,8 @@
 #migrationtasks\:\:MigrationTasksObjectPage--fe\:\:FormContainer\:\:FieldGroup\:\:CustomConfig\:\:FormElement\:\:DataField\:\:CustomConfig\:\:Field-edit-inner,
 #migrationtasks\:\:MigrationJobsObjectPage--fe\:\:CustomSubSection\:\:logPage--logTextArea-inner,
 #migrationjobs\:\:MigrationJobsObjectPage--fe\:\:CustomSubSection\:\:logPage--logTextArea-inner,
-#migrationtasks\:\:MigrationTasksObjectPage--fe\:\:FormContainer\:\:FieldGroup\:\:CustomConfig\:\:FormElement\:\:DataField\:\:CustomConfig\:\:Field-content
-  > div {
+#migrationtasks\:\:MigrationTasksObjectPage--fe\:\:FormContainer\:\:FieldGroup\:\:CustomConfig\:\:FormElement\:\:DataField\:\:CustomConfig\:\:Field-content>div,
+#inputJSON-inner {
   font-family: "Courier New", Courier, monospace;
   font-size: small;
 }
