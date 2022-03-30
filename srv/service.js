@@ -205,10 +205,12 @@ module.exports = async (srv) => {
 
         each.IncludedText = each.Included ? 'Include' : 'Skip';
         each.flagCanConfigure = each.Included && (each.Component == Settings.ComponentNames.Package);
-        if (each.Component == Settings.ComponentNames.Package) {
-            each.ConfigureOnlyText = each.ConfigureOnly ? 'Configuration only' : 'Full copy with variables';
-        } else {
-            each.ConfigureOnlyText = 'Default';
+        if (each.Included) {
+            if (each.Component == Settings.ComponentNames.Package) {
+                each.ConfigureOnlyText = each.ConfigureOnly ? 'Configuration only' : 'Full copy with variables';
+            } else {
+                each.ConfigureOnlyText = 'Default';
+            }
         }
 
         each.ExistInSourceCriticality = each.ExistInSource ? Settings.CriticalityCodes.Green : Settings.CriticalityCodes.Red;

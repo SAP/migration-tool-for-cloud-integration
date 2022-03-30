@@ -325,7 +325,8 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
                 Value                     : Name,
                 Criticality               : Status,
                 CriticalityRepresentation : #WithoutIcon,
-                ![@HTML5.CssDefaults]     : {width : '20rem'}
+                ![@HTML5.CssDefaults]     : {width : '20rem'},
+                ![@UI.Importance]         : #High
             },
             {
                 Value                     : PackageVendor,
@@ -337,7 +338,8 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
                 Value                     : Component,
                 Criticality               : Status,
                 CriticalityRepresentation : #WithoutIcon,
-                ![@HTML5.CssDefaults]     : {width : '10rem'}
+                ![@HTML5.CssDefaults]     : {width : '10rem'},
+                ![@UI.Importance]         : #High
             },
             {
                 Value                     : ExistInSource,
@@ -356,16 +358,21 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
                 Value                     : IncludedText,
                 Criticality               : IncludedCriticality,
                 CriticalityRepresentation : #WithoutIcon,
-                ![@HTML5.CssDefaults]     : {width : '10rem'}
+                ![@HTML5.CssDefaults]     : {width : '10rem'},
+                ![@UI.Importance]         : #High
             },
             {
-                $Type       : 'UI.DataFieldForAction',
-                Label       : 'Configure ...',
-                Action      : 'ConfigService.Nodes_ConfigurePackage',
-                Inline      : true,
-                Criticality : ConfigureOnlyCriticality
+                $Type             : 'UI.DataFieldForAction',
+                Label             : 'Configure ...',
+                Action            : 'ConfigService.Nodes_ConfigurePackage',
+                Inline            : true,
+                Criticality       : ConfigureOnlyCriticality,
+                ![@UI.Importance] : #High
             },
-            {Value : ConfigureOnlyText}
+            {
+                Value             : ConfigureOnlyText,
+                ![@UI.Importance] : #High
+            }
         ]
     }
 }) {
