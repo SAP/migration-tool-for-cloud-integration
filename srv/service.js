@@ -303,4 +303,15 @@ module.exports = async (srv) => {
         await migrationTask.updateExistInTenantFlags();
     });
     srv.on('Task_refreshJobsTable', req => { }); //empty function, but triggers side effect to refresh the table
+    srv.on('READ', 'LaunchpadInfo', async (req) => {
+        const settings = {
+            AppVersion: process.env.npm_package_version || 'n/a',
+            TileRegistration: 123,
+            TileTenants: 123,
+            TileTasks: 123,
+            TileJobs: 123
+        };
+        const LaunchpadInfo = { Script: "const LaunchpadInfo = " + JSON.stringify(settings) };
+        return req.reply(LaunchpadInfo);
+    });
 };

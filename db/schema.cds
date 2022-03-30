@@ -14,6 +14,11 @@ aspect CodeList {
     Value    : String(50) @title : 'Description';
 }
 
+@cds.persistence.skip
+entity LaunchpadInfo {
+    Script  : String;
+};
+
 // Errors ----------------------------------------------------------------
 entity Errors {
     key ObjectID      : UUID @Core.Computed;

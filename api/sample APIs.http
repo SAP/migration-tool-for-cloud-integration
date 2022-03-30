@@ -55,3 +55,8 @@ Content-Type:application/json;charset=UTF-8;IEEE754Compatible=true
 
 {}
 ###
+
+#API used to create dynamic tiles and show version information:
+GET http://localhost:4004/app-information/LaunchpadInfo/Script/$value HTTP/1.1
+
+###

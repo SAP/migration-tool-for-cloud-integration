@@ -209,3 +209,7 @@ service RegistrationService {
     entity Landscapes  as projection on my.Landscapes;
 
 };
+
+service AppInformation {
+    entity LaunchpadInfo as projection on my.LaunchpadInfo;
+};

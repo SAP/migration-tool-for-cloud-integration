@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2022 SAP SE, All Rights Reserved
-// Modified for the migration tool for cloud integration: added line 88 to allow for icons on the FLP
+// Modified for the migration tool for cloud integration: added line 82 and 88 to allow for icons on the FLP
 
 /**
  * @fileOverview The Unified Shell's bootstrap code for development sandbox scenarios.
@@ -79,7 +79,7 @@
                  id: "sap_ushell_generated_tile_id_" + iIdSuffix,
                  title: sApplicationTitle,
                  size: "1x1",
-                 tileType: "sap.ushell.ui.tile.StaticTile",
+                 tileType: oApplication.tileType || "sap.ushell.ui.tile.StaticTile", //Changed line for migrationtool
                  properties: {
                      chipId: "sap_ushell_generated_chip_id",
                      title: sApplicationTitle,
