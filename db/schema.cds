@@ -16,7 +16,7 @@ aspect CodeList {
 
 @cds.persistence.skip
 entity LaunchpadInfo {
-    Script  : String;
+    Script : String;
 };
 
 // Errors ----------------------------------------------------------------
@@ -47,7 +47,7 @@ entity Tenants : managed {
         virtual ReadOnlyText      : String;
         virtual ErrorsText        : String  @Core.Computed;
         virtual ErrorsCriticality : CriticalityType;
-        virtual numberOfErrors    : Integer @Core.Computed;
+        virtual NumberOfErrors    : Integer @Core.Computed;
         toMigrationTasks          : Association to many MigrationTasks
                                         on toMigrationTasks.SourceTenant = $self;
         toErrors                  : Composition of many Errors
@@ -94,7 +94,7 @@ type TenantStatisticsType {
 
 // Integration Packages -----------------------------------------------------
 entity extIntegrationPackages {
-    key ObjectID                          : UUID @Core.Computed;
+    key ObjectID                          : UUID    @Core.Computed;
     key Id                                : String;
         Name                              : String;
         Description                       : String;
@@ -116,28 +116,38 @@ entity extIntegrationPackages {
         UpdateAvailable                   : Boolean;
         toParent                          : Association to one Tenants;
         ModifiedDateFormatted             : Date;
+        virtual NumberOfErrors            : Integer @Core.Computed;
+        virtual Criticality               : Integer @Core.Computed;
         toIntegrationDesigntimeArtifacts  : Composition of many extIntegrationDesigntimeArtifacts
                                                 on toIntegrationDesigntimeArtifacts.toParent = $self;
         toValueMappingDesigntimeArtifacts : Composition of many extValueMappingDesigntimeArtifacts
                                                 on toValueMappingDesigntimeArtifacts.toParent = $self;
         toCustomTags                      : Composition of many extCustomTags
                                                 on toCustomTags.toParent = $self;
+        toErrors                          : Association to many Errors
+                                                on  toErrors.ComponentName = Name
+                                                and toErrors.Component     = 'Integration Package';
 };
 
 // Integration Designtime Artifacts -----------------------------------------------------
 entity extIntegrationDesigntimeArtifacts {
-    key ObjectID         : UUID @Core.Computed;
-    key Id               : String;
-        Version          : String;
-        PackageId        : String;
-        Name             : String;
-        Description      : String;
-        ArtifactContent  : Binary;
-        toParent         : Association to one extIntegrationPackages;
-        toConfigurations : Composition of many extConfigurations
-                               on toConfigurations.toParent = $self;
-        toResources      : Composition of many extResources
-                               on toResources.toParent = $self;
+    key ObjectID               : UUID    @Core.Computed;
+    key Id                     : String;
+        Version                : String;
+        PackageId              : String;
+        Name                   : String;
+        Description            : String;
+        ArtifactContent        : Binary;
+        virtual NumberOfErrors : Integer @Core.Computed;
+        virtual Criticality    : Integer @Core.Computed;
+        toParent               : Association to one extIntegrationPackages;
+        toConfigurations       : Composition of many extConfigurations
+                                     on toConfigurations.toParent = $self;
+        toResources            : Composition of many extResources
+                                     on toResources.toParent = $self;
+        toErrors               : Association to many Errors
+                                     on  toErrors.ComponentName = Name
+                                     and toErrors.Component     = 'Integration Flow';
 };
 
 entity extConfigurations {

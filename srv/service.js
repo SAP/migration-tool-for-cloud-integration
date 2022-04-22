@@ -11,8 +11,8 @@ const { Tenants, MigrationTasks, MigrationJobs, MigrationTaskNodes, extIntegrati
 
 module.exports = async (srv) => {
     srv.after('READ', srv.entities.Tenants, each => {
-        if (each.numberOfErrors > 0) {
-            each.ErrorsText = each.numberOfErrors + ' errors found';
+        if (each.NumberOfErrors > 0) {
+            each.ErrorsText = each.NumberOfErrors + ' errors found';
             each.ErrorsCriticality = Settings.CriticalityCodes.Red;
         } else {
             each.ErrorsText = 'No errors';
@@ -158,6 +158,9 @@ module.exports = async (srv) => {
         }
         fs.writeFileSync('db/data/migrationtool-Tenants.csv', content.join('\r\n'));
         req.notify(201, 'CSV created: ' + TenantList.length + ' registration(s) exported.');
+    });
+    srv.after('READ', ['IntegrationPackages', 'IntegrationDesigntimeArtifacts'], each => {
+        each.Criticality = each.NumberOfErrors > 0 ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Default;
     });
 
     srv.after('READ', srv.entities.MigrationTasks, async (tasks, req) => {

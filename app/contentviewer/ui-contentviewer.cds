@@ -7,7 +7,7 @@ annotate ConfigService.Tenants with @(UI : {
     PresentationVariant  : {
         SortOrder      : [{Property : Name}],
         Visualizations : ['@UI.LineItem'],
-        RequestAtLeast : [numberOfErrors]
+        RequestAtLeast : [NumberOfErrors]
     },
     Identification       : [
         {Value : ObjectID},
@@ -292,8 +292,15 @@ annotate ConfigService.Tenants with {
 // Integration Packages -----------------------------------------------------
 annotate ConfigService.IntegrationPackages with @(UI : {
     PresentationVariant : {
-        SortOrder      : [{Property : Name}],
-        Visualizations : ['@UI.LineItem']
+        SortOrder      : [
+            {
+                Property   : NumberOfErrors,
+                Descending : true
+            },
+            {Property : Name}
+        ],
+        Visualizations : ['@UI.LineItem'],
+        RequestAtLeast : [NumberOfErrors]
     },
     Identification      : [
         {Value : Name},
@@ -311,8 +318,17 @@ annotate ConfigService.IntegrationPackages with @(UI : {
     },
     LineItem            : [
         {
+            $Type                 : 'UI.DataFieldForAnnotation',
+            Target                : '@UI.DataPoint#Alerts',
+            ![@HTML5.CssDefaults] : {width : '3rem'},
+            ![@UI.Hidden]         : {$edmJson : {$Eq : [
+                {$Path : 'NumberOfErrors'},
+                0
+            ]}}
+        },
+        {
             Value                 : Name,
-            ![@HTML5.CssDefaults] : {width : '30rem'}
+            ![@HTML5.CssDefaults] : {width : '30rem'},
         },
         {Value : Vendor},
         {Value : Version},
@@ -324,6 +340,12 @@ annotate ConfigService.IntegrationPackages with @(UI : {
             Inline : false
         }
     ],
+    DataPoint #Alerts   : {
+        Value                     : NumberOfErrors,
+        Criticality               : Criticality,
+        CriticalityRepresentation : #OnlyIcon,
+        ![@Common.QuickInfo]      : 'One or more error(s) will prevent migration of this item.'
+    },
     Facets              : [
         {
             $Type  : 'UI.CollectionFacet',
@@ -352,9 +374,23 @@ annotate ConfigService.IntegrationPackages with @(UI : {
                     Target : 'toCustomTags/@UI.PresentationVariant',
                 }
             ]
+        },
+        {
+            ![@UI.Hidden] : {$edmJson : {$Eq : [
+                {$Path : 'NumberOfErrors'},
+                0
+            ]}},
+            $Type         : 'UI.CollectionFacet',
+            ID            : 'errors',
+            Label         : 'Errors',
+            Facets        : [{
+                $Type  : 'UI.ReferenceFacet',
+                Target : 'toErrors/@UI.PresentationVariant',
+            }, ]
         }
     ],
     FieldGroup #Basic   : {Data : [
+        {Value : Id},
         {Value : Vendor},
         {Value : Version},
         {Value : Mode},
@@ -374,8 +410,15 @@ annotate ConfigService.IntegrationPackages with @(UI : {
 annotate ConfigService.IntegrationDesigntimeArtifacts with @(UI : {
     Identification      : [{Value : Id}],
     PresentationVariant : {
-        SortOrder      : [{Property : Name}],
-        Visualizations : ['@UI.LineItem']
+        SortOrder      : [
+            {
+                Property   : NumberOfErrors,
+                Descending : true
+            },
+            {Property : Name}
+        ],
+        Visualizations : ['@UI.LineItem'],
+        RequestAtLeast : [NumberOfErrors]
     },
     HeaderInfo          : {
         TypeName       : 'Designtime Artifact',
@@ -384,6 +427,15 @@ annotate ConfigService.IntegrationDesigntimeArtifacts with @(UI : {
         Description    : {Value : Description}
     },
     LineItem            : [
+        {
+            $Type                 : 'UI.DataFieldForAnnotation',
+            Target                : '@UI.DataPoint#Alerts',
+            ![@HTML5.CssDefaults] : {width : '3rem'},
+            ![@UI.Hidden]         : {$edmJson : {$Eq : [
+                {$Path : 'NumberOfErrors'},
+                0
+            ]}}
+        },
         {
             Value                 : Name,
             ![@HTML5.CssDefaults] : {width : '30rem'}
@@ -394,6 +446,12 @@ annotate ConfigService.IntegrationDesigntimeArtifacts with @(UI : {
             ![@HTML5.CssDefaults] : {width : '30rem'}
         }
     ],
+    DataPoint #Alerts   : {
+        Value                     : NumberOfErrors,
+        Criticality               : Criticality,
+        CriticalityRepresentation : #OnlyIcon,
+        ![@Common.QuickInfo]      : 'One or more error(s) will prevent migration of this item.'
+    },
     Facets              : [
         {
             $Type  : 'UI.CollectionFacet',
@@ -418,10 +476,24 @@ annotate ConfigService.IntegrationDesigntimeArtifacts with @(UI : {
                     Target : 'toResources/@UI.PresentationVariant',
                 }
             ]
+        },
+        {
+            ![@UI.Hidden] : {$edmJson : {$Eq : [
+                {$Path : 'NumberOfErrors'},
+                0
+            ]}},
+            $Type         : 'UI.CollectionFacet',
+            ID            : 'errors',
+            Label         : 'Errors',
+            Facets        : [{
+                $Type  : 'UI.ReferenceFacet',
+                Target : 'toErrors/@UI.PresentationVariant',
+            }, ]
         }
     ],
     FieldGroup #Basic   : {Data : [
         {Value : Name},
+        {Value : Id},
         {Value : Version},
         {Value : Description},
         {Value : ArtifactContent}

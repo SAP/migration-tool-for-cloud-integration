@@ -12,7 +12,7 @@ service ConfigService {
         *,
         count(
             toErrors.ObjectID
-        ) as numberOfErrors : Integer
+        ) as NumberOfErrors : Integer
     } group by ObjectID actions {
         action Tenant_testConnection()        returns Boolean;
 
@@ -71,11 +71,22 @@ service ConfigService {
                 Preset : String)              returns MigrationTasks;
             };
 
-    entity IntegrationPackages             as projection on my.extIntegrationPackages actions {
+    entity IntegrationPackages             as projection on my.extIntegrationPackages {
+        *,
+        count(
+            toErrors.ObjectID
+        ) as NumberOfErrors : Integer,
+    } group by ObjectID actions {
         action Package_analyzeScriptFiles() returns many String;
     };
 
-    entity IntegrationDesigntimeArtifacts  as projection on my.extIntegrationDesigntimeArtifacts;
+    entity IntegrationDesigntimeArtifacts  as projection on my.extIntegrationDesigntimeArtifacts {
+        *,
+        count(
+            toErrors.ObjectID
+        ) as NumberOfErrors : Integer
+    } group by ObjectID;
+
     entity KeyStoreEntries                 as projection on my.extKeyStoreEntries;
     entity Configurations                  as projection on my.extConfigurations;
     entity Resources                       as projection on my.extResources;
