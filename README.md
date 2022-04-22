@@ -31,7 +31,7 @@ If you don't have a SAP Integration Suite license yet, you can use the BTP Free 
 
 ## Download & Installation
 
-This tool is designed to run locally on your own laptop, server or VM. It is developed using the [SAP Cloud Application Programming Model](https://cap.cloud.sap), using Node.js as server language.
+This tool is designed to run locally on your own laptop, server or VM. It is developed using the [SAP Cloud Application Programming Model](https://cap.cloud.sap), using Node.js as server language. It can also be hosted on SAP Business Technology Platform via Docker.
 
 Locally stored data is kept in a local SQLite database file.
 
@@ -96,12 +96,7 @@ More information on changelog: https://cap.cloud.sap/docs/releases
 
 ## Known Issues
 
-The very first time that the tool is started, it might not start correctly.
-If the following line is **not** shown when starting the script you should restart it for it to function correctly:
-
-`[cds] - mocking IntegrationContent.sap.hci.api { at: '/api' }`
-
-See also: [FAQ](/docs/FAQ.md) and [Limitations](/docs/Limitations.md)
+None so far, but please also refer to [FAQ](/docs/FAQ.md) and [Limitations](/docs/Limitations.md)
 
 ## How to Obtain Support
 
