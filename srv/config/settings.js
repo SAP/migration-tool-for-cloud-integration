@@ -102,7 +102,8 @@ module.exports = {
         DeletePackagesFromTargetBeforeOverwriting: true, //Used in migrationJob class. The 'overwrite' POST call might not overwrite all settings, so it's cleaner to first delete existing content. Also, if false, Local Variables can not be migrated. Default is true.
         DownloadConfigurationsAndResources: false, //Used in contentDownloader class. Not really necessary to have this information in 'Explore Tenants' as this really slows down the synchronization, so default false.
         // DownloadTargetIntegrationContentAfterMigrationRun: true //Used in migrationJob class. This will automatically refresh the Integration Content of the Target tenant after a migration job run. Default is true. //Not working
-        ManipulateZipFileProduceOutputFile: false //Used in ziphelper class. For debugging you can generate a physical zip file before uploading it to the tenant. Default is false.
+        ManipulateZipFileProduceOutputFile: false, //Used in ziphelper class. For debugging you can generate a physical zip file before uploading it to the tenant. Default is false.
+        SearchForEnvVarsWhenRefreshingConent: true //Used in contentDownloader class. Specifies whether script files are analyzed when downloading the meta data of the tenant. Gives a more complete picture, but slows down the sync.
     },
     RegEx: {
         scriptFile: /^src\/main\/resources\/script\/(.*)\.(groovy||gsh||js)$/gi,

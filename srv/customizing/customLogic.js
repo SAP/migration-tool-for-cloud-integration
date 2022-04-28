@@ -54,5 +54,15 @@ class CustomLogic {
     onMigrateJMSBroker = async (item) => { };
     // onMigrateValMapSchema= async(item) => { };
     // onMigrateCustomCertificate=async (item) => { };
+
+    onMigrateScript = async (file, artifact, script /* script is read-only */) => {
+        const re = /(system\.getenv\(.*\))/gmi //or any other string you are looking for
+        const matches = script.match(re);
+        if (matches.length > 0) {
+            await this.Logger(3, 'Script lines in ' + artifact + ':');
+            matches.forEach(async (x) => await this.Logger(4, file + ' contains line: ' + x));
+        }
+    };
+
 };
 module.exports = { CustomLogic: CustomLogic };

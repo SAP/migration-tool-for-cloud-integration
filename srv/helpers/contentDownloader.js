@@ -77,8 +77,17 @@ class ContentDownloader {
             await this.getIntegrationDesigntimeArtifacts(each.Id, each.ObjectID).then(n => this.stats.Statistics_numIntegrationDesigntimeArtifacts += n);
             await this.getValueMappingDesigntimeArtifacts(each.Id, each.ObjectID).then(n => this.stats.Statistics_numValueMappingDesigntimeArtifacts += n);
             await this.getCustomTags(each.Id, each.ObjectID).then(n => this.stats.Statistics_numCustomTags += n);
-        }
 
+            // Search for Env Vars for custom packages only:
+            if (Settings.Flags.SearchForEnvVarsWhenRefreshingConent && (each.Vendor != 'SAP' && each.PartnerContent != true)) {
+                const result = await this.downloadPackageAndSearchForEnvVars(null, each);
+                if (result) {
+                    result.filter(x => x.count > 0).forEach(async (x) => await this.createError('Integration Package', 'Info', each, x.file + ' in ' + x.artifact + ' contains ' + x.count + ' occurences of System.getenv()'));
+                } else {
+                    console.log('Could not analyze script files.');
+        }
+            }
+        }
         return items.length;
     };
     checkIntegrationPackages = async (items) => {
@@ -94,7 +103,7 @@ class ContentDownloader {
     getIntegrationDesigntimeArtifacts = async (package_id, parent_id) => {
         console.log('getIntegrationDesigntimeArtifacts ' + package_id + ' with parent ID: ' + parent_id);
         const items = await this.Connector.externalCall(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.path.replace('{PACKAGE_ID}', package_id));
-        await this.checkIntegrationDesigntimeArtifacts(items);
+        await this.checkIntegrationDesigntimeArtifacts(items, package_id);
 
         this.removeInvalidParameters(cds.entities.extIntegrationDesigntimeArtifacts, items);
         for (let each of items) {
@@ -115,11 +124,11 @@ class ContentDownloader {
         }
         return items.length;
     };
-    checkIntegrationDesigntimeArtifacts = async (items) => {
+    checkIntegrationDesigntimeArtifacts = async (items, package_id) => {
         var count = 0;
         for (let each of items) {
             if (each.Version == "Active")
-                count += await this.createError('Integration Flow', 'Error', each, 'Item is in Draft state', Settings.Paths.DeepLinks.PackageArtifacts.replace('{PACKAGE_ID}', each.PackageId));
+                count += await this.createError('Integration Flow', 'Error', each, 'Item is in Draft state (package: ' + package_id + ')', Settings.Paths.DeepLinks.PackageArtifacts.replace('{PACKAGE_ID}', each.PackageId));
         }
         console.log('checkIntegrationDesigntimeArtifacts returned ' + count + ' errors.');
         return count;
@@ -454,13 +463,13 @@ class ContentDownloader {
         await this.Connector.refreshToken();
         const response = await this.Connector.externalAxiosBinary(Settings.Paths.IntegrationPackages.download.replace('{PACKAGE_ID}', item.Id));
         if (response.code >= 400) {
-            req.error('Package "' + item.Name + '": Error (' + response.code + ') ' + response.value.error.message.value);
+            req && req.error('Package "' + item.Name + '": Error (' + response.code + ') ' + response.value.error.message.value);
             return false;
         } else {
             return await this.searchForEnvVarsInPackage(response.value.data);
         }
     };
-    searchForEnvVarsInPackage = async (zipFile) => {
+    searchForEnvVarsInPackage = async (zipFile, CustomizationModule = null) => {
         var result = [];
         const zip = new ZipHelper.ZipHelper();
         const zipContent = await zip.readZip(Buffer.from(zipFile));
@@ -470,13 +479,13 @@ class ContentDownloader {
             for (let resource of resourcesJson.resources) {
                 console.log('File ' + resource.id + ': ' + resource.resourceType);
                 if (resource.resourceType == 'IFlow' || resource.resourceType == 'ScriptCollection') {
-                    result = result.concat(await this.searchForEnvVarsInFile(zipContent, resource));
+                    result = result.concat(await this.searchForEnvVarsInFile(zipContent, resource, CustomizationModule));
                 }
             }
         }
         return result;
     };
-    searchForEnvVarsInFile = async (zipContent, entry) => {
+    searchForEnvVarsInFile = async (zipContent, entry, CustomizationModule) => {
         console.log(" Artifact: " + entry.displayName);
         try {
             const zip = new ZipHelper.ZipHelper();
@@ -487,6 +496,8 @@ class ContentDownloader {
             for (let file of scriptFiles) {
                 const content = Buffer.from(unzipped[file], 'base64').toString('utf-8');
                 console.log("  Script File: " + file + ' (' + content.length + ' bytes)');
+
+                CustomizationModule && await CustomizationModule.onMigrateScript(file.replace('src/main/resources/script/', ''), entry.displayName, content);
 
                 const matches = content.match(Settings.RegEx.scriptLine);
                 console.log('   Matches found: ' + ((matches && matches.length) || 0));

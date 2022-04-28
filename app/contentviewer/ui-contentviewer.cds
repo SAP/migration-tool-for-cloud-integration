@@ -344,7 +344,7 @@ annotate ConfigService.IntegrationPackages with @(UI : {
         Value                     : NumberOfErrors,
         Criticality               : Criticality,
         CriticalityRepresentation : #OnlyIcon,
-        ![@Common.QuickInfo]      : 'One or more error(s) will prevent migration of this item.'
+        ![@Common.QuickInfo]      : 'One or more error(s) could block migration of this item.'
     },
     Facets              : [
         {
@@ -421,8 +421,8 @@ annotate ConfigService.IntegrationDesigntimeArtifacts with @(UI : {
         RequestAtLeast : [NumberOfErrors]
     },
     HeaderInfo          : {
-        TypeName       : 'Designtime Artifact',
-        TypeNamePlural : 'Designtime Artifacts',
+        TypeName       : 'Integration Flow',
+        TypeNamePlural : 'Integration Flows',
         Title          : {Value : Name},
         Description    : {Value : Description}
     },
@@ -450,7 +450,7 @@ annotate ConfigService.IntegrationDesigntimeArtifacts with @(UI : {
         Value                     : NumberOfErrors,
         Criticality               : Criticality,
         CriticalityRepresentation : #OnlyIcon,
-        ![@Common.QuickInfo]      : 'One or more error(s) will prevent migration of this item.'
+        ![@Common.QuickInfo]      : 'One or more error(s) could block migration of this item.'
     },
     Facets              : [
         {

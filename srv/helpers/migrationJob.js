@@ -518,7 +518,7 @@ class MigrationJob {
     };
     analyzePackageScriptFiles = async (item, itemBinary) => {
         const downloader = new DownloadHelper.ContentDownloader()
-        const result = await downloader.searchForEnvVarsInPackage(itemBinary);
+        const result = await downloader.searchForEnvVarsInPackage(itemBinary, this.Customizations);
         if (result) {
             const resultTexts = result.filter(x => x.count > 0).map(x => x.artifact + ': ' + x.file + ' contains ' + x.count + ' occurrences of system.getenv()');
             const resultTextErrors = result.filter(x => x.count == -1).map(x => x.artifact + ': ' + x.file);
