@@ -21,13 +21,14 @@
     "@sap/cds": "~5.8.3",
     "axios": "^0.24",
     "express": "^4.17.1",
+    "qs": "^6.10.3",
     "sqlite3": "https://github.com/mapbox/node-sqlite3/tarball/master",
     "xml2js": "^0.4.23",
     "yauzl": "^2.10.0",
     "yazl": "^2.5.0"
   },
   "devDependencies": {
-    "@sap/ux-specification": "^1.95"
+    "@sap/ux-specification": "^1.99"
   },
   "scripts": {
     "start": "cds run"

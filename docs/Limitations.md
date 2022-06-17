@@ -1,5 +1,5 @@
 # Limitations
-*Last updated: 5 Mar 2022*
+*Last updated: 17 Jun 2022*
 
 This tool has limitations on which content can be migrated and which not. Some limitations are set by the availability of suitable APIs, while other limitations are defined by security constraints.
 
@@ -25,7 +25,7 @@ Generic limitations of SAP Integration Suite on Multi Cloud are also documented 
 |Secure Parameters can not be migrated|No suitable API available|Re-create the item manually
 |Known Hosts can not be migrated|No suitable API available|Re-create the item manually
 |PGP Keyrings can not be migrated|No suitable API available|Re-create the item manually
-|Certificate-to-User Mappings can not be migrated|Not relevant in Multi Cloud tenants|Create a Service Key via the BTP Cockpit
+|~~Certificate-to-User Mappings can not be migrated~~|~~Different concept in CF~~|Delivered in v1.2.0
 
 ## Stores
 

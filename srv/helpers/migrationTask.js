@@ -51,7 +51,8 @@ class MigrationTask {
                 { ref: ['toAccessPolicies'], expand: ['*'] },
                 { ref: ['toCustomTagConfigurations'], expand: ['*'] },
                 { ref: ['toJMSBrokers'], expand: ['*'] },
-                { ref: ['toVariables'], expand: ['*'] }
+                { ref: ['toVariables'], expand: ['*'] },
+                { ref: ['toCertificateUserMappings'], expand: ['*'] }
             ]);
 
         for (let item of SourceTenant.toIntegrationPackages) {
@@ -156,6 +157,15 @@ class MigrationTask {
                 toMigrationTask_ObjectID: this.Task.ObjectID
             });
         };
+        for (let item of SourceTenant.toCertificateUserMappings) {
+            nodes.push({
+                ObjectID: item.ObjectID,
+                Id: item.Id,
+                Name: item.User,
+                Component: Settings.ComponentNames.CertificateUserMappings,
+                toMigrationTask_ObjectID: this.Task.ObjectID
+            });
+        };
         return nodes;
     }
     _updateExistInTenantFlags = async () => {
@@ -176,7 +186,8 @@ class MigrationTask {
                 { ref: ['toAccessPolicies'], expand: ['*'] },
                 { ref: ['toCustomTagConfigurations'], expand: ['*'] },
                 { ref: ['toJMSBrokers'], expand: ['*'] },
-                { ref: ['toVariables'], expand: ['*'] }
+                { ref: ['toVariables'], expand: ['*'] },
+                { ref: ['toCertificateUserMappings'], expand: ['*'] }
             ]);
         const TargetTenant = await SELECT.from(cds.entities.Tenants, { ObjectID: this.Task.TargetTenant_ObjectID })
             .columns(['ObjectID',
@@ -194,7 +205,8 @@ class MigrationTask {
                 { ref: ['toAccessPolicies'], expand: ['*'] },
                 { ref: ['toCustomTagConfigurations'], expand: ['*'] },
                 { ref: ['toJMSBrokers'], expand: ['*'] },
-                { ref: ['toVariables'], expand: ['*'] }
+                { ref: ['toVariables'], expand: ['*'] },
+                { ref: ['toCertificateUserMappings'], expand: ['*'] }
             ]);
 
         for (let node of this.Task.toTaskNodes) {
@@ -234,6 +246,10 @@ class MigrationTask {
                 case Settings.ComponentNames.Variables:
                     node.ExistInSource = SourceTenant.toVariables.findIndex(x => x.VariableName == node.Id) >= 0;
                     node.ExistInTarget = TargetTenant.toVariables.findIndex(x => x.VariableName == node.Id) >= 0;
+                    break;
+                case Settings.ComponentNames.CertificateUserMappings:
+                    node.ExistInSource = SourceTenant.toCertificateUserMappings.findIndex(x => x.Id == node.Id) >= 0;
+                    node.ExistInTarget = TargetTenant.toCertificateUserMappings.findIndex(x => x.Id == node.Id) >= 0;
                     break;
                 default:
                     break;

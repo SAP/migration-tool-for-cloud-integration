@@ -18,7 +18,32 @@ module.exports = async (srv) => {
             each.ErrorsText = 'No errors';
             each.ErrorsCriticality = Settings.CriticalityCodes.Green;
         }
-        each.ReadOnlyText = each.ReadOnly ? 'Read only' : 'Read/Write';
+        each.ReadOnlyText = each.ReadOnly ? 'Read only' : 'Read-Write';
+    });
+    srv.on('SAVE', srv.entities.Tenants, async (req, next) => {
+        const tenant = req.data;
+        try {
+            if (tenant.Environment == 'Cloud Foundry' && tenant.UseForCertificateUserMappings) {
+                const caller = new Connectivity.ExternalConnection(tenant);
+                await caller.refreshPlatformToken();
+                const CFdata = await caller.getCFOrgDataFromServiceInstanceID();
+
+                tenant.CF_organizationID = CFdata.orgData.guid;
+                tenant.CF_organizationName = CFdata.orgData.name;
+                tenant.CF_spaceID = CFdata.spaceData.guid;
+                tenant.CF_spaceName = CFdata.spaceData.name;
+                tenant.CF_servicePlanID = CFdata.servicePlanData.guid;
+            };
+        } catch (error) {
+            tenant.CF_organizationID = null;
+            tenant.CF_organizationName = null;
+            tenant.CF_spaceID = null;
+            tenant.CF_spaceName = null;
+            tenant.CF_servicePlanID = null;
+            req.warn('Your data was saved, but a connection was not successful: Setting the organization and space from the Service instance was not successful.\r\n\r\n' + error);
+        } finally {
+            return next();
+        }
     });
     srv.before('DELETE', srv.entities.Tenants, async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
@@ -38,9 +63,20 @@ module.exports = async (srv) => {
         const tenant = await srv.read(Tenants, tenant_id);
 
         const caller = new Connectivity.ExternalConnection(tenant);
-        await caller.refreshToken();
-        const success = await caller.pingTenant() ? true : false;
-        success ? req.notify(200, 'Connection test successful for ' + tenant.Name) : req.warn(400, 'Unsuccessful.');
+
+        await caller.refreshIntegrationToken();
+        var success = await caller.pingIntegrationTenant() ? true : false;
+        success ? req.notify(200, 'Integration Tenant Connection test successful for ' + tenant.Name) : req.warn(400, 'Integration Tenant Connection test unsuccessful for ' + tenant.Name);
+
+        if (tenant.UseForCertificateUserMappings) {
+            await caller.refreshPlatformToken();
+            success = success && await caller.pingPlatformTenant() ? true : false;
+            success ? req.notify(200, 'Platform Account Connection test successful for ' + tenant.Name) : req.warn(400, 'Platform Account Connection test unsuccessful for ' + tenant.Name);
+
+            success = success && await caller.testPlatformSettings() ? true : false;
+            success ? req.notify(200, 'Validating Platform Settings successful for ' + tenant.Name) : req.warn(400, ' Validating Platform Settings unsuccessful for ' + tenant.Name);
+        }
+
         return success;
     });
     srv.on('Tenant_getIntegrationContent', async (req) => {
@@ -118,8 +154,11 @@ module.exports = async (srv) => {
                 t('Statistics_numCustomTagConfigurations'),
                 t('Statistics_numNumberRanges'),
                 t('Statistics_numOAuth2ClientCredentials'),
-                t('Statistics_numAccessPolicies')
+                t('Statistics_numAccessPolicies'),
+                t('Statistics_numVariables'),
+                t('Statistics_numCertificateUserMappings')
         });
+
         const countItems = Object.keys(TenantStats).reduce((p, c) => p + TenantStats[c], 0);
         countItems == 0 && req.error(400, 'No content downloaded yet. Please click on \'Get Integration Content\' first before creating a Migration Task');
 
@@ -141,7 +180,8 @@ module.exports = async (srv) => {
     });
     srv.on('Tenant_export', async (req) => {
         const TenantList = await srv.read(Tenants);
-        const headers = 'ObjectID;Name;Host;Token_host;Oauth_clientid;Oauth_secret;Role;Environment;ReadOnly';
+        const headers = 'ObjectID;Name;Host;Token_host;Oauth_clientid;Oauth_secret;Role;Environment;ReadOnly;Oauth_servicekeyid;CF_organizationID;CF_organizationName;' +
+            'CF_spaceID;CF_spaceName;CF_servicePlanID;Neo_accountid;Neo_Platform_domain;Neo_Platform_user;Neo_Platform_password;CF_Platform_domain;CF_Platform_user;CF_Platform_password;MigrateUserMappings';
         const content = [headers];
         for (const t of TenantList) {
             content.push([
@@ -153,7 +193,21 @@ module.exports = async (srv) => {
                 t.Oauth_secret,
                 t.Role,
                 t.Environment,
-                t.ReadOnly
+                t.ReadOnly,
+                t.Oauth_servicekeyid,
+                t.CF_organizationID,
+                t.CF_organizationName,
+                t.CF_spaceID,
+                t.CF_spaceName,
+                t.CF_servicePlanID,
+                t.Neo_accountid,
+                t.Neo_Platform_domain,
+                t.Neo_Platform_user,
+                t.Neo_Platform_password,
+                t.CF_Platform_domain,
+                t.CF_Platform_user,
+                t.CF_Platform_password,
+                t.UseForCertificateUserMappings
             ].join(';'));
         }
         fs.writeFileSync('db/data/migrationtool-Tenants.csv', content.join('\r\n'));
@@ -161,6 +215,9 @@ module.exports = async (srv) => {
     });
     srv.after('READ', ['IntegrationPackages', 'IntegrationDesigntimeArtifacts'], each => {
         each.Criticality = each.NumberOfErrors > 0 ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Default;
+    });
+    srv.after('READ', 'CertificateUserMappings', each => {
+        each.ValidUntilCriticality = new Date(each.ValidUntil) < Date.now() ? Settings.CriticalityCodes.Red : Settings.CriticalityCodes.Green;
     });
 
     srv.after('READ', srv.entities.MigrationTasks, async (tasks, req) => {
@@ -182,7 +239,8 @@ module.exports = async (srv) => {
                 x.Component == Settings.ComponentNames.KeyStoreEntry ||
                 x.Component == Settings.ComponentNames.Credentials ||
                 x.Component == Settings.ComponentNames.OAuthCredential ||
-                x.Component == Settings.ComponentNames.AccessPolicy
+                x.Component == Settings.ComponentNames.AccessPolicy ||
+                x.Component == Settings.ComponentNames.CertificateUserMappings
             )).length;
             t.Statistics_numOtherArtifacts = nodes.filter(x => x.Included && (
                 x.Component == Settings.ComponentNames.NumberRange ||
@@ -265,30 +323,43 @@ module.exports = async (srv) => {
     });
     srv.on('Task_startMigration', async (req) => {
         const task_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
-        const Task = await srv.read(MigrationTasks, task_id, t => { t.TargetTenant(n => n('*')) });
+        const Task = await srv.read(MigrationTasks, task_id, t => {
+            t.SourceTenant(n => { n('Name'), n('UseForCertificateUserMappings'), n('Environment') }),
+                t.TargetTenant(n => { n('Name'), n('UseForCertificateUserMappings'), n('Environment') }),
+                t.toTaskNodes(n => { n('ObjectID'), n('Component') }).where({ 'Included': true })
+        });
+        assert(Task.TargetTenant !== null, 'No target tenant has been defined.\r\n\r\nPlease select a target tenant via \'Change Target ...\'.');
+        assert(Task.toTaskNodes.length > 0, 'No items are selected for migration. Can not run empty job.')
 
-        if (Task.TargetTenant === null)
-            req.error('No target tenant has been defined.\r\n\r\nPlease select a target tenant via \'Change Target ...\'.');
-        else {
-            const job_id = generateUUID.v4();
-            await srv.create(MigrationJobs,
-                {
-                    ObjectID: job_id,
-                    MigrationTaskID: task_id,
-                    StartTime: new Date().toISOString(),
-                    Status: 'Pending start',
-                    StatusCriticality: Settings.CriticalityCodes.Orange,
-                    EndTime: null
-                }
-            );
-            const Job = await srv.read(MigrationJobs, job_id);
-            const myJob = new MigrationJobHelper.MigrationJob(Job);
-
-            myJob.execute();
-            req.notify(200, 'Job started ...');
-
-            return Job;
+        const countCertificateUserMappings = Task.toTaskNodes.filter(x => x.Component == Settings.ComponentNames.CertificateUserMappings).length;
+        if (countCertificateUserMappings > 0) {
+            assert(Task.SourceTenant.Environment == 'Neo' && Task.TargetTenant.Environment == 'Cloud Foundry',
+                'You have included at least 1 Certificate-to-User Mapping for this migration. This is only supported for migrations from Neo (source) to Cloud Foundry (target).');
+            assert(Task.SourceTenant.UseForCertificateUserMappings && Task.TargetTenant.UseForCertificateUserMappings,
+                'You have included at least 1 Certificate-to-User Mapping for this migration. Before these can be migrated, both source and target tenants have to be configured for the migration of Certificate-to-User Mappings via the \'Register Tenants\' application:\r\n\r\n' +
+                Task.SourceTenant.Name + ': ' + (Task.SourceTenant.UseForCertificateUserMappings ? 'Ok' : 'Not configured') + '\r\n' +
+                Task.TargetTenant.Name + ': ' + (Task.TargetTenant.UseForCertificateUserMappings ? 'Ok' : 'Not configured'));
         }
+
+        const job_id = generateUUID.v4();
+        await srv.create(MigrationJobs,
+            {
+                ObjectID: job_id,
+                MigrationTaskID: task_id,
+                StartTime: new Date().toISOString(),
+                Status: 'Pending start',
+                StatusCriticality: Settings.CriticalityCodes.Orange,
+                EndTime: null
+            }
+        );
+        const Job = await srv.read(MigrationJobs, job_id);
+        const myJob = new MigrationJobHelper.MigrationJob(Job);
+
+        myJob.execute();
+        req.notify(200, 'Job started ...');
+
+        return Job;
+
     });
     srv.on('Task_resetTaskNodes', async (req) => {
         const task_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];

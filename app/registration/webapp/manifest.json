@@ -140,7 +140,7 @@
                                     "actions": {
                                         "importSettings": {
                                             "press": "registration.custom.CustomActions.setValues",
-                                            "text": "Import JSON",
+                                            "text": "Import oAuth Service Key",
                                             "enabled": "registration.custom.CustomActions.isEditing",
                                             "visible": true
                                         }

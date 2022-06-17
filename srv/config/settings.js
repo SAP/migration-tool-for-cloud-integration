@@ -63,6 +63,20 @@ module.exports = {
             path: '/api/v1/UserCredentials',
             upload: '/api/v1/UserCredentials'
         },
+        CertificateUserMappings: {
+            Neo: {
+                path: '/api/v1/CertificateUserMappings',
+                Roles: '/authorization/v1/accounts/{ACCOUNT_ID}/users/roles/?userId={USER_ID}'
+            },
+            CF: {
+                ServiceInstances: '/v3/service_instances?space_guids={SPACE_ID}&service_plan_guids={SERVICEPLAN_ID}',
+                ServiceInstanceByName: '/v3/service_instances?names={NAME}&space_guids={SPACE_ID}&service_plan_guids={SERVICEPLAN_ID}',
+                CreateServiceInstance: '/v3/service_instances',
+                CreateServiceInstanceBinding: '/v3/service_credential_bindings',
+                ServiceBindings: '/v3/service_credential_bindings?service_instance_guids={SERVICE_INSTANCE_ID}',
+                ServiceBindingsByName: '/v3/service_credential_bindings?names={NAME}&service_instance_guids={SERVICE_INSTANCE_ID}'
+            }
+        },
         OAuth2ClientCredentials: {
             path: '/api/v1/OAuth2ClientCredentials',
             upload: '/api/v1/OAuth2ClientCredentials'
@@ -75,11 +89,32 @@ module.exports = {
             }
         },
         Batch: '/api/v1/$batch',
-        CertificateUserMappings: { path: '/api/v1/CertificateUserMappings' },
         DataStores: { path: '/api/v1/DataStores' },
         Variables: {
             path: '/api/v1/Variables',
             download: '/api/v1/Variables(VariableName=\'{VARIABLE_NAME}\',IntegrationFlow=\'{FLOW_ID}\')/$value'
+        },
+        oAuthToken: {
+            CFPath: '/oauth/token?grant_type=client_credentials',
+            NeoPath: '/oauth2/api/v1/token?grant_type=client_credentials'
+        },
+        CFPlatform: {
+            TokenHost: 'uaa.cf.{HOST}',
+            GetToken: '/oauth/token',
+            Host: 'api.cf.{HOST}',
+            Ping: '/v3/info',
+            TestSettings: '/v3/service_instances/{INSTANCE_ID}',
+            ServiceInstance: '/v3/service_instances/{INSTANCE_ID}',
+            Space: '/v3/spaces/{SPACE_ID}',
+            Organization: '/v3/organizations/{ORGANIZATION_ID}',
+            ServicePlan: '/v3/service_plans?space_guids={SPACE_ID}&names=integration-flow'
+        },
+        NeoPlatform: {
+            TokenHost: 'api.{HOST}',
+            GetToken: '/oauth2/apitoken/v1?grant_type=client_credentials',
+            Host: 'api.{HOST}',
+            Ping: '/',
+            TestSettings: '/authorization/v1/accounts/{ACCOUNT_ID}/groups'
         }
     },
 
@@ -94,7 +129,8 @@ module.exports = {
         AccessPolicy: 'Access Policy',
         CustomTags: 'Custom Tag',
         JMSBrokers: 'JMS Broker',
-        Variables: 'Global Variable'
+        Variables: 'Global Variable',
+        CertificateUserMappings: 'Certificate User Mapping'
     },
 
     DefaultPassword: 'default',
@@ -110,6 +146,7 @@ module.exports = {
         scriptLine: /(system\.getenv\()/gmi,
         dateTimestamp: /^\/Date\((\d*)\)\/$/i, //matches the string /Date(123456)/ to extract the number only
         keyvaluepair: /^([^#].*?)(?<!\\)=(.*)$/gm, //matches a keyvalue pair separated by '=' but ignores '\='
+        newLines: /(\r\n|\n|\r)/gm
     },
     CriticalityCodes: {
         /*
@@ -135,6 +172,13 @@ module.exports = {
             sleepInterval: 2000,
             successStatus: 'STARTED',
             errorStatus: 'ERROR',
+            maxWait: 60000
+        },
+        CertificateUserMappings:{
+            sleepInterval: 1500,
+            actionType: 'create',
+            successStatus: 'succeeded',
+            errorStatus: 'failed',
             maxWait: 60000
         }
     }

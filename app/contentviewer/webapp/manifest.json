@@ -147,6 +147,16 @@
                     "target": "UserCredentialsObjectPage_toUserCredentials"
                 },
                 {
+                    "pattern": "Tenants({key})/toCertificateUserMappings({key2}):?query:",
+                    "name": "CertificateUserMappingsObjectPage_toCertificateUserMappings",
+                    "target": "CertificateUserMappingsObjectPage_toCertificateUserMappings"
+                },
+                {
+                    "pattern": "Tenants({key})/toCertificateUserMappings({key2})/toRoles({key3}):?query:",
+                    "name": "CertificateUserMappingRolesObjectPage",
+                    "target": "CertificateUserMappingRolesObjectPage"
+                },
+                {
                     "pattern": "Tenants({key})/toNumberRanges({key2}):?query:",
                     "name": "NumberRangesObjectPage_toNumberRanges",
                     "target": "NumberRangesObjectPage_toNumberRanges"
@@ -246,6 +256,11 @@
                                     "detail": {
                                         "route": "VariablesObjectPage_toVariables"
                                     }
+                                },
+                                "toCertificateUserMappings": {
+                                    "detail": {
+                                        "route": "CertificateUserMappingsObjectPage_toCertificateUserMappings"
+                                    }
                                 }
                             },
                             "content": {},
@@ -297,6 +312,11 @@
                                     }
                                 },
                                 "toVariables/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                },
+                                "toCertificateUserMappings/@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
                                         "enableFullScreen": true
                                     }
@@ -501,6 +521,36 @@
                     "options": {
                         "settings": {
                             "entitySet": "Variables",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "CertificateUserMappingsObjectPage_toCertificateUserMappings": {
+                    "type": "Component",
+                    "id": "CertificateUserMappingsObjectPage_toCertificateUserMappings",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "CertificateUserMappings",
+                            "navigation": {
+                                "toRoles": {
+                                    "detail": {
+                                        "route": "CertificateUserMappingRolesObjectPage"
+                                    }
+                                }
+                            },
+                            "content": {}
+                        }
+                    }
+                },
+                "CertificateUserMappingRolesObjectPage": {
+                    "type": "Component",
+                    "id": "CertificateUserMappingRolesObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "CertificateUserMappingRoles",
                             "navigation": {},
                             "content": {}
                         }

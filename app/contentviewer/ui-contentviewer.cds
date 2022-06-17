@@ -142,6 +142,15 @@ annotate ConfigService.Tenants with @(UI : {
                 },
                 {
                     $Type  : 'UI.CollectionFacet',
+                    ID     : 'certificateusermappingcontent',
+                    Label  : 'Certificate-to-User Mappings',
+                    Facets : [{
+                        $Type  : 'UI.ReferenceFacet',
+                        Target : 'toCertificateUserMappings/@UI.PresentationVariant'
+                    }]
+                },
+                {
+                    $Type  : 'UI.CollectionFacet',
                     ID     : 'accesspoliciescontent',
                     Label  : 'Access Policies',
                     Facets : [{
@@ -223,7 +232,8 @@ annotate ConfigService.Tenants with @(UI : {
         {Value : Statistics_numAccessPolicyReferences},
         {Value : Statistics_numOAuth2ClientCredentials},
         {Value : Statistics_numJMSBrokers},
-        {Value : Statistics_numVariables}
+        {Value : Statistics_numVariables},
+        {Value : Statistics_numCertificateUserMappings}
     ]},
     FieldGroup #Tasks    : {Data : [{
         $Type  : 'UI.DataFieldForAction',
@@ -258,6 +268,7 @@ annotate ConfigService.Tenants with @(UI : {
         numOAuth2ClientCredentials         @title : 'OAuth2 Client Credentials';
         numJMSBrokers                      @title : 'JMS Brokers';
         numVariables                       @title : 'Variables';
+        numCertificateUserMappings         @title : 'Certificate-to-User Mappings';
     }
 };
 
@@ -876,6 +887,116 @@ annotate ConfigService.OAuth2ClientCredentials with @(UI : {
         DeployedOn       @title : 'Deployed On';
         Status           @title : 'Status';
     }
+};
+
+// Certificate to User Mappings ----------------------------------------------------------------------------
+annotate ConfigService.CertificateUserMappings with @(UI : {
+    PresentationVariant : {
+        SortOrder      : [{Property : User}],
+        Visualizations : ['@UI.LineItem']
+    },
+    HeaderInfo          : {
+        TypeName       : 'Certificate-to-User Mapping',
+        TypeNamePlural : 'Certificate-to-User Mappings',
+        Title          : {Value : User},
+        Description    : {Value : Id}
+    },
+    LineItem            : [
+        {
+            Value                 : User,
+            ![@HTML5.CssDefaults] : {width : '15rem'}
+        },
+        {
+            Value                 : Id,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
+        {Value : NumberOfRoles},
+        {
+            Value                     : ValidUntil,
+            Criticality               : ValidUntilCriticality,
+            CriticalityRepresentation : #WithoutIcon
+        }
+    ],
+    Facets              : [{
+        $Type  : 'UI.CollectionFacet',
+        ID     : 'metadata',
+        Label  : 'Metadata',
+        Facets : [
+            {
+                $Type  : 'UI.ReferenceFacet',
+                Target : '@UI.FieldGroup#Basic',
+                Label  : 'General Information',
+            },
+            {
+                $Type  : 'UI.CollectionFacet',
+                ID     : 'content',
+                Label  : 'Roles',
+                Facets : [{
+                    $Type  : 'UI.ReferenceFacet',
+                    Target : 'toRoles/@UI.PresentationVariant',
+                }]
+            }
+        ]
+    }],
+    FieldGroup #Basic   : {Data : [
+        {Value : User},
+        {Value : Id},
+        {Value : LastModifiedBy},
+        {Value : LastModifiedTime},
+        {
+            Value                     : ValidUntil,
+            Criticality               : ValidUntilCriticality,
+            CriticalityRepresentation : #WithoutIcon
+        }
+    ]}
+}) {
+    User             @title : 'Username';
+    Id               @title : 'ID';
+    LastModifiedBy   @title : 'Last Modified By';
+    LastModifiedTime @title : 'Last Modified';
+    ValidUntil       @title : 'Valid Until';
+    NumberOfRoles    @title : 'Defined Roles';
+};
+
+annotate ConfigService.CertificateUserMappingRoles with @(UI : {
+    PresentationVariant : {
+        SortOrder      : [{Property : name}],
+        Visualizations : ['@UI.LineItem']
+    },
+    HeaderInfo          : {
+        TypeName       : 'Certificate-to-User Mapping Role',
+        TypeNamePlural : 'Certificate-to-User Mapping Roles',
+        Title          : {Value : name},
+        Description    : {Value : applicationName}
+    },
+    LineItem            : [
+        {
+            Value                 : name,
+            ![@HTML5.CssDefaults] : {width : '18rem'}
+        },
+        {
+            Value                 : applicationName
+        },
+        {Value : providerAccount}
+    ],
+    Facets              : [{
+        $Type  : 'UI.CollectionFacet',
+        ID     : 'metadata',
+        Label  : 'Metadata',
+        Facets : [{
+            $Type  : 'UI.ReferenceFacet',
+            Target : '@UI.FieldGroup#Basic'
+        }]
+    }],
+    FieldGroup #Basic   : {Data : [
+        {Value : name},
+        {Value : applicationName},
+        {Value : providerAccount}
+    ]}
+}) {
+    name            @title : 'Name';
+    applicationName @title : 'Application Name';
+    providerAccount @title : 'Provider Account';
 };
 
 // Access Policies ----------------------------------------------------------------------------

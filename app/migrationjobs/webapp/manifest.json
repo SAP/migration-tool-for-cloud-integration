@@ -107,6 +107,13 @@
                             "initialLoad": true,
                             "entitySet": "MigrationJobs",
                             "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "selectAll": true
+                                    }
+                                }
+                            },
                             "navigation": {
                                 "MigrationJobs": {
                                     "detail": {
@@ -125,16 +132,16 @@
                         "settings": {
                             "entitySet": "MigrationJobs",
                             "content": {
-								"body": {
-									"sections": {
-										"logPage": {
-											"type": "XMLFragment",
-											"name": "migrationjobs/custom/logPage",
-											"title": "Log"
-										}
-									}
-								}
-							}
+                                "body": {
+                                    "sections": {
+                                        "logPage": {
+                                            "type": "XMLFragment",
+                                            "name": "migrationjobs/custom/logPage",
+                                            "title": "Log"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

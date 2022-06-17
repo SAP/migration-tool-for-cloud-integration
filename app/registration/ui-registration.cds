@@ -1,29 +1,46 @@
 using RegistrationService from '../../srv/service';
 
 annotate RegistrationService.Tenants with @(UI : {
-    PresentationVariant         : {
+    PresentationVariant           : {
         $Type          : 'UI.PresentationVariantType',
         SortOrder      : [{Property : Name}],
         Visualizations : ['@UI.LineItem'],
         RequestAtLeast : [ReadOnly]
     },
-    Identification              : [{Value : ObjectID}],
-    HeaderInfo                  : {
+    Identification                : [
+        {Value : ObjectID},
+        {
+            $Type       : 'UI.DataFieldForAction',
+            Label       : 'Test Connection',
+            Action      : 'RegistrationService.Tenant_testConnection',
+            Criticality : 3
+        }
+    ],
+    HeaderInfo                    : {
         TypeName       : 'Tenant',
         TypeNamePlural : 'Tenants',
         Title          : {Value : Name},
         Description    : {Value : ObjectID},
         TypeImageUrl   : 'sap-icon://connected'
     },
-    SelectionFields             : [
+    SelectionFields               : [
         Name,
         Role,
         Environment
     ],
-    LineItem                    : [
+    LineItem                      : [
         {
             Value                 : Name,
-            ![@HTML5.CssDefaults] : {width : '15rem'},
+            ![@HTML5.CssDefaults] : {width : '14rem'},
+            ![@UI.Importance]     : #High
+        },
+        {
+            Value                 : Role,
+            ![@HTML5.CssDefaults] : {width : '8rem'}
+        },
+        {
+            Value                 : ReadOnlyText,
+            ![@HTML5.CssDefaults] : {width : '7rem'},
             ![@UI.Importance]     : #High
         },
         {
@@ -32,29 +49,20 @@ annotate RegistrationService.Tenants with @(UI : {
             ![@UI.Importance]     : #High
         },
         {
-            Value                 : ReadOnlyText,
-            ![@HTML5.CssDefaults] : {width : '8rem'},
-            ![@UI.Importance]     : #High
+            $Type                 : 'UI.DataFieldForAnnotation',
+            Target                : '@UI.FieldGroup#PlatformAccount',
+            Label                 : 'Platform Account',
+            ![@HTML5.CssDefaults] : {width : '11rem'}
+        },
+        {
+            $Type                 : 'UI.DataFieldForAnnotation',
+            Target                : '@UI.FieldGroup#PlatformDomain',
+            Label                 : 'Platform Domain',
+            ![@HTML5.CssDefaults] : {width : '13rem'}
         },
         {
             Value                 : Host,
-            ![@HTML5.CssDefaults] : {width : '17rem'},
-            ![@UI.Importance]     : #High
-        },
-        {
-            Value                 : Token_host,
-            ![@HTML5.CssDefaults] : {width : '17rem'},
-            ![@UI.Importance]     : #Low
-        },
-        {
-            Value                 : Oauth_clientid,
-            ![@HTML5.CssDefaults] : {width : '17rem'},
-            ![@UI.Importance]     : #Low
-        },
-        {
-            Value                 : Role,
-            ![@HTML5.CssDefaults] : {width : '9rem'},
-            ![@UI.Importance]     : #Medium
+            ![@HTML5.CssDefaults] : {width : '30rem'}
         },
         {
             $Type       : 'UI.DataFieldForAction',
@@ -68,65 +76,203 @@ annotate RegistrationService.Tenants with @(UI : {
             Action : 'RegistrationService.Tenant_export'
         }
     ],
-    HeaderFacets                : [{
+    HeaderFacets                  : [{
         $Type  : 'UI.ReferenceFacet',
         Target : '@UI.FieldGroup#Header'
     }],
-    Facets                      : [{
-        $Type  : 'UI.CollectionFacet',
-        ID     : 'config',
-        Label  : 'Configuration',
-        Facets : [
-            {
-                $Type  : 'UI.ReferenceFacet',
-                Label  : 'Designation',
-                Target : '@UI.FieldGroup#Basic'
-            },
-            {
-                $Type  : 'UI.ReferenceFacet',
-                Label  : 'Integration Tenant',
-                Target : '@UI.FieldGroup#Connection_gen'
-            },
-            {
-                $Type  : 'UI.ReferenceFacet',
-                Label  : 'Authentication',
-                Target : '@UI.FieldGroup#Connection_auth'
-            }
-        ]
-    }],
-    FieldGroup #Header          : {Data : [
+    Facets                        : [
+        {
+            $Type  : 'UI.CollectionFacet',
+            ID     : 'generalinfo',
+            Label  : 'General Information',
+            Facets : [
+                {
+                    $Type  : 'UI.ReferenceFacet',
+                    Label  : 'General Data',
+                    Target : '@UI.FieldGroup#Basic_type'
+                },
+                {
+                    $Type  : 'UI.ReferenceFacet',
+                    Label  : 'Landscape',
+                    Target : '@UI.FieldGroup#Basic_role'
+                }
+            ]
+        },
+        {
+            $Type  : 'UI.CollectionFacet',
+            ID     : 'platformtenant',
+            Label  : 'BTP Subaccount Access',
+            Facets : [
+                {
+                    $Type  : 'UI.ReferenceFacet',
+                    Label  : 'Enabled',
+                    Target : '@UI.FieldGroup#useForUserMapping'
+                },
+                {
+                    $Type         : 'UI.ReferenceFacet',
+                    Label         : 'Cloud Foundry Setup',
+                    Target        : '@UI.FieldGroup#CF_data',
+                    ![@UI.Hidden] : {$edmJson : {$Not : {$And : [
+                        {$Eq : [
+                            {$Path : 'Environment'},
+                            'Cloud Foundry'
+                        ]},
+                        {$Path : 'UseForCertificateUserMappings'}
+                    ]}}}
+                },
+                {
+                    $Type         : 'UI.ReferenceFacet',
+                    Label         : 'Neo Subaccount',
+                    Target        : '@UI.FieldGroup#Neo_data',
+                    ![@UI.Hidden] : {$edmJson : {$Not : {$And : [
+                        {$Eq : [
+                            {$Path : 'Environment'},
+                            'Neo'
+                        ]},
+                        {$Path : 'UseForCertificateUserMappings'}
+                    ]}}}
+                },
+                {
+                    $Type         : 'UI.ReferenceFacet',
+                    Label         : 'Technical User',
+                    Target        : '@UI.FieldGroup#CF_Platform_user',
+                    ![@UI.Hidden] : {$edmJson : {$Not : {$And : [
+                        {$Eq : [
+                            {$Path : 'Environment'},
+                            'Cloud Foundry'
+                        ]},
+                        {$Path : 'UseForCertificateUserMappings'}
+                    ]}}}
+                },
+                {
+                    $Type         : 'UI.ReferenceFacet',
+                    Label         : 'Platform oAuth Client',
+                    Target        : '@UI.FieldGroup#Neo_Platform_user',
+                    ![@UI.Hidden] : {$edmJson : {$Not : {$And : [
+                        {$Eq : [
+                            {$Path : 'Environment'},
+                            'Neo'
+                        ]},
+                        {$Path : 'UseForCertificateUserMappings'}
+                    ]}}}
+                }
+            ]
+        },
+        {
+            $Type  : 'UI.CollectionFacet',
+            ID     : 'integrationtenant',
+            Label  : 'Integration Tenant Access',
+            Facets : [
+                {
+                    $Type  : 'UI.ReferenceFacet',
+                    Label  : 'Integration Tenant',
+                    Target : '@UI.FieldGroup#Connection_gen'
+                },
+                {
+                    $Type  : 'UI.ReferenceFacet',
+                    Label  : 'oAuth Service Key',
+                    Target : '@UI.FieldGroup#Connection_auth'
+                }
+            ]
+        }
+    ],
+    FieldGroup #Header            : {Data : [
         {Value : Name},
         {Value : modifiedAt},
         {Value : ObjectID}
     ]},
-    FieldGroup #Basic           : {Data : [
+    FieldGroup #useForUserMapping : {Data : [{Value : UseForCertificateUserMappings}]},
+    FieldGroup #PlatformDomain    : {Data : [
         {
-            $Type  : 'UI.DataFieldForAction',
-            Label  : 'Test Connection',
-            Action : 'RegistrationService.Tenant_testConnection',
+            Value         : CF_Platform_domain,
+            ![@UI.Hidden] : {$edmJson : {$Eq : [
+                {$Path : 'Environment'},
+                'Neo'
+            ]}}
         },
+        {
+            Value         : Neo_Platform_domain,
+            ![@UI.Hidden] : {$edmJson : {$Eq : [
+                {$Path : 'Environment'},
+                'Cloud Foundry'
+            ]}}
+        }
+    ]},
+    FieldGroup #PlatformAccount   : {Data : [
+        {
+            Value         : CF_organizationName,
+            ![@UI.Hidden] : {$edmJson : {$Eq : [
+                {$Path : 'Environment'},
+                'Neo'
+            ]}}
+        },
+        {
+            Value         : CF_spaceName,
+            ![@UI.Hidden] : {$edmJson : {$Eq : [
+                {$Path : 'Environment'},
+                'Neo'
+            ]}}
+        },
+        {
+            Value         : Neo_accountid,
+            ![@UI.Hidden] : {$edmJson : {$Eq : [
+                {$Path : 'Environment'},
+                'Cloud Foundry'
+            ]}}
+        }
+    ]},
+    FieldGroup #Basic_type        : {Data : [
         {Value : Name},
-        {Value : Role},
         {Value : Environment},
+    ]},
+    FieldGroup #Basic_role        : {Data : [
+        {Value : Role},
         {Value : ReadOnly}
     ]},
-    FieldGroup #Connection_gen  : {Data : [{Value : Host}]},
-    FieldGroup #Connection_auth : {Data : [
+    FieldGroup #Connection_gen    : {Data : [{Value : Host}]},
+    FieldGroup #Connection_auth   : {Data : [
         {Value : Token_host},
         {Value : Oauth_clientid},
         {Value : Oauth_secret}
+    ]},
+    FieldGroup #CF_data           : {Data : [
+        {Value : CF_organizationName},
+        {Value : CF_spaceName},
+        {Value : Oauth_servicekeyid}
+    ]},
+    FieldGroup #Neo_data          : {Data : [{Value : Neo_accountid}]},
+    FieldGroup #CF_Platform_user  : {Data : [
+        {Value : CF_Platform_domain},
+        {Value : CF_Platform_user},
+        {Value : CF_Platform_password}
+    ]},
+    FieldGroup #Neo_Platform_user : {Data : [
+        {Value : Neo_Platform_domain},
+        {Value : Neo_Platform_user},
+        {Value : Neo_Platform_password}
     ]}
 }) {
-    ObjectID       @title : 'View Content'  @Common.SemanticObject : 'tenants';
-    Name           @title : 'Name'  @mandatory  @UI.Placeholder            : 'Please provide a name';
-    Host           @title : 'Tenant Host'  @mandatory  @UI.Placeholder     : '{subdomain}.{environment}.cfapps.eu10-001.hana.ondemand.com';
-    Token_host     @title : 'Token Host'  @mandatory  @UI.Placeholder      : '{subdomain}.authentication.eu10.hana.ondemand.com';
-    Oauth_clientid @title : 'oAuth Client ID'  @mandatory  @UI.Placeholder : 'See OAuth Client credentials';
-    Oauth_secret   @title : 'oAuth Secret'  @mandatory  @UI.Placeholder    : 'See OAuth Client credentials'  @Common.MaskedAlways : true;
-    Role           @title : 'System Role'  @mandatory  @UI.Placeholder     : 'Select role';
-    Environment    @title : 'Environment'  @mandatory  @UI.Placeholder     : 'Select environment';
-    ReadOnly       @title : 'Source-only system';
-    ReadOnlyText   @title : 'Mode';
+    ObjectID                      @title : 'View Content'  @Common.SemanticObject       : 'tenants';
+    Name                          @title : 'Name'  @UI.Placeholder                      : 'Please provide a name'  @mandatory;
+    Host                          @title : 'Integration Host'  @UI.Placeholder          : '{subdomain}.{environment}.cfapps.eu10-001.hana.ondemand.com'  @mandatory;
+    Token_host                    @title : 'Token Host'  @UI.Placeholder                : '{subdomain}.authentication.eu10.hana.ondemand.com'  @mandatory;
+    Oauth_clientid                @title : 'oAuth Client ID'  @UI.Placeholder           : 'See OAuth Client credentials'  @mandatory;
+    Oauth_secret                  @title : 'oAuth Secret'  @UI.Placeholder              : 'See OAuth Client credentials'  @mandatory  @Common.MaskedAlways : true;
+    Oauth_servicekeyid            @title : 'oAuth Service Instance ID'  @UI.Placeholder : 'ID of the service instance';
+    Role                          @title : 'System Role'  @UI.Placeholder               : 'Select role'  @mandatory;
+    Environment                   @title : 'Environment'  @UI.Placeholder               : 'Select environment'  @mandatory;
+    ReadOnly                      @title : 'Source-only system';
+    ReadOnlyText                  @title : 'Mode';
+    CF_organizationName           @title : 'CF Organization'  @readonly;
+    CF_spaceName                  @title : 'CF Space'  @readonly;
+    Neo_accountid                 @title : 'Subaccount Technical Name'  @UI.Placeholder : 'Cockpit > Overview > Technical Name';
+    CF_Platform_domain            @title : 'Platform Host'  @UI.Placeholder             : 'eu10.hana.ondemand.com';
+    CF_Platform_user              @title : 'Email'  @UI.Placeholder                     : 'platform.user@domain.com';
+    CF_Platform_password          @title : 'Password'  @UI.Placeholder                  : 'Password'  @Common.MaskedAlways                     : true;
+    Neo_Platform_domain           @title : 'Platform Host'  @UI.Placeholder             : 'hana.ondemand.com';
+    Neo_Platform_user             @title : 'oAuth Client ID'  @UI.Placeholder           : 'See OAuth Client credentials';
+    Neo_Platform_password         @title : 'oAuth Secret'  @UI.Placeholder              : 'See OAuth Client credentials'  @Common.MaskedAlways : true;
+    UseForCertificateUserMappings @title : 'Enable migration of Certificate to User Mappings (source or target)';
 };
 
 annotate RegistrationService.Tenants with {

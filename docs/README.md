@@ -36,6 +36,17 @@ Once a tenant is created / saved, you can use **Test Connection** to validate th
 
     If you are not familiar with the process, please follow the steps here: [see Neo documentation](https://help.sap.com/viewer/368c481cd6954bdfa5d0435479fd4eaf/Cloud/en-US/040d8110293d44b1bfaa75674530d395.html), go to 'OAuth with Client Credentials Grant' and follow steps 1 and 2.
 
+    **Additional Steps required for 'Certificate to User Mapping' migrations (as a source system):**
+
+    To enable migrations of certificates bound to users, also complete the following steps:
+
+    5. Navigate to your SAP BTP cockpit of the Neo subaccount, go to 'Overview', and copy the 'Technical Name'.
+    6. Navigate to your SAP BTP cockpit of the Neo subaccount, go to 'Security' > 'OAuth' and open the 'Platform API' tab.
+    7. Create a new API Client, and assign the following scopes:
+        - Authorization Management: Read Authorization
+    8. Copy the Client ID and Client Secret to use in the migration application.
+
+
 - On the **Cloud Foundry (target)** tenant:
   1. Navigate to your SAP BTP cockpit of the Cloud Foundry subaccount, go to 'Services', then 'Service Marketplace' and select 'Process Integration'
   2. Create a new instance with service plan 'api' and with the following configuration:
@@ -47,6 +58,17 @@ Once a tenant is created / saved, you can use **Test Connection** to validate th
   3. Create a Service Key and copy the entire JSON text to your clipboard to use in the migration application (use the 'Import JSON' button).
 
     If you are not familiar with the process, please follow the steps here: [see CF documentation](https://help.sap.com/viewer/368c481cd6954bdfa5d0435479fd4eaf/Cloud/en-US/20e26a837a8449c4b8b934b07f71cb76.html) and follow the steps in 'Define a Service Instance and Service Key for the API Client'.
+
+
+    **Additional Steps required for 'Certificate to User Mapping' migrations (as a target system):**
+
+    To enable receiving certificates bound to users, also complete the following steps:
+    
+    4. Navigate to your SAP BTP cockpit of the Cloud Foundry subaccount, go to 'Services', then 'Instances and Subscriptions'.
+    5. In the list of Instances, locate the item created in step 2, and open its details
+    6. Copy the 'Instance ID' mentioned at the top of the details pane.
+    7. Also provide an email address and password of a user that has access to the BTP subaccount, with authorizations to create service instances and service keys.
+
 
 ### Exploring Tenants
 

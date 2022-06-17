@@ -5,6 +5,7 @@ const DownloadHelper = require('../helpers/contentDownloader');
 const ZipHelper = require('./zip');
 const fs = require('fs');
 const xml2js = require('xml2js');
+const assert = require('assert');
 
 class MigrationJob {
     constructor(j) {
@@ -44,14 +45,14 @@ class MigrationJob {
             this.Task.SourceTenant === null && await this.generateError('Internal', 'Task Configuration', 'No source tenant specified.');
             if (this.Task.SourceTenant) {
                 this.ConnectorSource = new Connectivity.ExternalConnection(this.Task.SourceTenant);
-                await this.ConnectorSource.refreshToken();
+                await this.ConnectorSource.refreshIntegrationToken();
                 await this.addLogEntry(0, 'Source: ' + this.Task.SourceTenant.Name);
             }
 
             this.Task.TargetTenant === null && await this.generateError('Internal', 'Task Configuration', 'No target tenant specified.');
             if (this.Task.TargetTenant) {
                 this.ConnectorTarget = new Connectivity.ExternalConnection(this.Task.TargetTenant);
-                await this.ConnectorTarget.refreshToken();
+                await this.ConnectorTarget.refreshIntegrationToken();
                 await this.addLogEntry(0, 'Target: ' + this.Task.TargetTenant.Name);
             }
 
@@ -100,17 +101,22 @@ class MigrationJob {
             this.MigrationContent.AccessPolicies = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.AccessPolicy && x.Included)).map(x => x.Id);
             this.MigrationContent.JMSBrokers = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.JMSBrokers && x.Included)).map(x => x.Id);
             this.MigrationContent.GlobalVariables = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Variables && x.Included)).map(x => x.Id);
+            this.MigrationContent.CertificateUserMappings = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.CertificateUserMappings && x.Included)).map(x => x.Id);
 
             await this.getListOfVariables();
             await this.migrateGlobalVariables();
 
             await this.migrateIntegrationPackages();
             await this.migrateCustomCertificates();
+
             await this.migrateNumberRanges();
             await this.migrateCustomTagConfigurations();
             await this.migrateUserCredentials();
             await this.migrateOAuth2ClientCredentials();
             await this.migrateAccessPolicies();
+
+            await this.migrateCertificateUserMappings();
+
             await this.migrateJMSBrokers();
 
             return true;
@@ -959,6 +965,210 @@ class MigrationJob {
                 await this.generateWarning('JMS Brokers', item.Key, 'Enterprise Messaging is activated on source tenant, but not used, but is not activated on target tenant.');
                 return true;
             }
+        }
+    };
+
+
+    migrateCertificateUserMappings = async () => {
+        await this.addLogEntry(1, 'CERTIFICATE TO USER MAPPINGS:');
+
+        var successCount = 0;
+        const items = await this.ConnectorSource.externalCall(Settings.Paths.CertificateUserMappings.Neo.path);
+        const itemsInScope = items.filter(x => this.MigrationContent.CertificateUserMappings.includes(x.Id));
+
+        const itemsNotFound = this.MigrationContent.CertificateUserMappings.filter(x => !itemsInScope.find(e => e.Id == x));
+        itemsNotFound && await this.addMissingContentErrors(itemsNotFound);
+
+        for (let item of itemsInScope) {
+            const instance = await this.migrateCertificateUserMapping(item);
+            if (instance.found && instance.status == Settings.Defaults.CertificateUserMappings.successStatus) {
+                const binding = await this.migrateCertificateUserMappingCertificate(item, instance);
+                binding.found && binding.status == Settings.Defaults.CertificateUserMappings.successStatus && successCount++;
+            }
+        }
+        if (itemsInScope.length > 0) {
+            await this.addLogEntry(2, successCount + '/' + itemsInScope.length + ' successful.');
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.');
+        }
+    };
+    migrateCertificateUserMapping = async (mapping) => {
+        await this.addLogEntry(2, 'User mapping ' + mapping.User);
+
+        const items = await this.ConnectorSource.externalPlatformCall(Settings.Paths.CertificateUserMappings.Neo.Roles
+            .replace('{ACCOUNT_ID}', this.Task.SourceTenant.Neo_accountid)
+            .replace('{USER_ID}', mapping.User)
+        );
+        assert(items !== null, 'Could not retrieve roles for Neo account ' + this.Task.SourceTenant.Neo_accountid + '. Verify connection settings.');
+
+        var deployStatus = await this.GetServiceInstanceDeploymentStatus(mapping.User);
+        if (deployStatus.found) {
+            if (deployStatus.status == Settings.Defaults.CertificateUserMappings.successStatus) {
+                await this.addLogEntry(3, 'Warning: Service Instance by the name of ' + mapping.User + ' already exists. It will be re-used. If any new roles were assigned to this user, these will NOT be updated.');
+                await this.generateWarning('Certificate User Mapping', mapping.User, 'Service Instance already existed and was not updated.');
+            } else {
+                await this.addLogEntry(3, 'Error: Service Instance by the name of ' + mapping.User + ' already exists and is in error state. Please delete manually and re-run migration job.');
+                await this.generateError('Certificate User Mapping', mapping.User, 'Service Instance already exists and is in error state. Please delete manually and re-run migration job.');
+            }
+        } else {
+            const roles = items.roles.filter(x => x.applicationName.includes('iflmap')).map(x => x.name);
+            await this.createCFServiceInstance(mapping, roles);
+
+            await this.addLogEntry(3, 'Waiting for service instance to be created ...');
+            const startTime = Date.now();
+            var waitAndFetchAgain = true;
+            while (waitAndFetchAgain) {
+                await this.sleep(Settings.Defaults.CertificateUserMappings.sleepInterval);
+                deployStatus = await this.GetServiceInstanceDeploymentStatus(mapping.User);
+
+                await this.addLogEntry(4, '... ' + deployStatus.status);
+                waitAndFetchAgain = deployStatus.status !== Settings.Defaults.CertificateUserMappings.successStatus
+                    && deployStatus.status !== Settings.Defaults.CertificateUserMappings.errorStatus
+                    && deployStatus.found == true
+                    && (Date.now() - startTime < Settings.Defaults.CertificateUserMappings.maxWait);
+            }
+            if (deployStatus.status == Settings.Defaults.CertificateUserMappings.successStatus) {
+                await this.addLogEntry(3, 'Service instance created');
+            } else {
+                await this.addLogEntry(3, 'Service instance not created');
+                await this.generateError('Certificate User Mapping', mapping.User, 'Service Instance could not be created.');
+            }
+        }
+        return deployStatus;
+    };
+    createCFServiceInstance = async (mapping, roles) => {
+        await this.addLogEntry(3, 'Creating service instance for roles: ' + roles.join(', '));
+        const body = {
+            'type': 'managed',
+            'name': mapping.User,
+            'parameters': {
+                'grant-types': [
+                    'client_credentials'
+                ],
+                'redirect-uris': [],
+                'roles': roles
+            },
+            'tags': [],
+            'metadata': {
+                'labels': {},
+                'annotations': {}
+            },
+            'relationships': {
+                'space': {
+                    'data': {
+                        'guid': this.Task.TargetTenant.CF_spaceID
+                    }
+                },
+                'service_plan': {
+                    'data': {
+                        'guid': this.Task.TargetTenant.CF_servicePlanID
+                    }
+                }
+            }
+        };
+        await this.ConnectorTarget.externalPlatformPostCall(Settings.Paths.CertificateUserMappings.CF.CreateServiceInstance, body);
+    };
+    GetServiceInstanceDeploymentStatus = async (user) => {
+        const response = await this.ConnectorTarget.externalPlatformCall(Settings.Paths.CertificateUserMappings.CF.ServiceInstanceByName
+            .replace('{NAME}', user)
+            .replace('{SPACE_ID}', this.Task.TargetTenant.CF_spaceID)
+            .replace('{SERVICEPLAN_ID}', this.Task.TargetTenant.CF_servicePlanID));
+
+        if (response.resources.length == 1) {
+            return {
+                found: true,
+                guid: response.resources[0].guid,
+                type: response.resources[0].last_operation.type,
+                status: response.resources[0].last_operation.state
+            };
+        } else {
+            return {
+                found: false,
+                guid: '',
+                type: '',
+                status: 'error'
+            };
+        }
+    };
+
+    migrateCertificateUserMappingCertificate = async (mapping, instance) => {
+        await this.addLogEntry(3, 'Generating Binding ' + mapping.Id);
+
+        var deployStatus = await this.GetServiceInstanceBindingDeploymentStatus(mapping.Id, instance.guid);
+        if (deployStatus.found) {
+            if (deployStatus.status == Settings.Defaults.CertificateUserMappings.successStatus) {
+                await this.addLogEntry(4, 'Warning: Service Instance Binding by the name of ' + mapping.Id + ' already exists. Certificate was not renewed.');
+                await this.generateWarning('Certificate User Mapping', mapping.User, 'Service Instance Binding '+mapping.Id+' already existed and was not updated.');
+            } else {
+                await this.addLogEntry(4, 'Error: Service Instance Binding by the name of ' + mapping.Id + ' already exists and is in error state. Please delete manually and re-run migration job.');
+                await this.generateError('Certificate User Mapping', mapping.User, 'Service Instance Binding '+mapping.Id+' already exists and is in error state. Please delete manually and re-run migration job.');
+            }
+        } else {
+            await this.createCFServiceInstanceBinding(mapping, instance);
+
+            await this.addLogEntry(4, 'Waiting for service instance binding to be created ...');
+            const startTime = Date.now();
+            var waitAndFetchAgain = true;
+            while (waitAndFetchAgain) {
+                await this.sleep(Settings.Defaults.CertificateUserMappings.sleepInterval);
+                deployStatus = await this.GetServiceInstanceBindingDeploymentStatus(mapping.Id, instance.guid);
+
+                await this.addLogEntry(5, '... ' + deployStatus.status);
+                waitAndFetchAgain = deployStatus.status !== Settings.Defaults.CertificateUserMappings.successStatus
+                    && deployStatus.status !== Settings.Defaults.CertificateUserMappings.errorStatus
+                    && deployStatus.found == true
+                    && (Date.now() - startTime < Settings.Defaults.CertificateUserMappings.maxWait);
+            }
+            if (deployStatus.status == Settings.Defaults.CertificateUserMappings.successStatus) {
+                await this.addLogEntry(4, 'Service instance binding created');
+            } else {
+                await this.addLogEntry(4, 'Service instance binding not created');
+                await this.generateError('Certificate User Mapping', mapping.User, 'Service Instance Binding '+mapping.Id+' could not be created.');
+            }
+        }
+        return deployStatus;
+    };
+    createCFServiceInstanceBinding = async (mapping, instance) => {
+        await this.addLogEntry(4, 'Creating service instance binding for ' + mapping.Id);
+
+        const x509 = Buffer.from(mapping.Certificate, 'base64').toString('binary').replace(Settings.RegEx.newLines, "");
+        const body = {
+            'type': 'key',
+            'name': mapping.Id,
+            'relationships': {
+                'service_instance': {
+                    'data': {
+                        'guid': instance.guid
+                    }
+                }
+            },
+            'parameters': {
+                'X.509': x509
+            },
+            'metadata': {
+            }
+        };
+        await this.ConnectorTarget.externalPlatformPostCall(Settings.Paths.CertificateUserMappings.CF.CreateServiceInstanceBinding, body);
+    };
+    GetServiceInstanceBindingDeploymentStatus = async (id, guid) => {
+        const response = await this.ConnectorTarget.externalPlatformCall(Settings.Paths.CertificateUserMappings.CF.ServiceBindingsByName
+            .replace('{NAME}', id)
+            .replace('{SERVICE_INSTANCE_ID}', guid));
+
+        if (response.resources.length == 1) {
+            return {
+                found: true,
+                guid: response.resources[0].guid,
+                type: response.resources[0].last_operation.type,
+                status: response.resources[0].last_operation.state
+            };
+        } else {
+            return {
+                found: false,
+                guid: '',
+                type: '',
+                status: 'error'
+            };
         }
     };
 

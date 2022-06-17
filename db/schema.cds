@@ -33,43 +33,59 @@ entity Errors {
 
 // Tenants ---------------------------------------------------------------
 entity Tenants : managed {
-    key ObjectID                  : UUID    @Core.Computed  @Common.Text : Name;
-        Name                      : String;
-        Host                      : String;
-        Token_host                : String;
-        Oauth_clientid            : String;
-        Oauth_secret              : String  @Common.MaskedAlways :         true;
-        Role                      : String;
-        Environment               : String;
-        Statistics                : TenantStatisticsType;
-        RefreshedDate             : DateTime;
-        ReadOnly                  : Boolean default false;
-        virtual ReadOnlyText      : String;
-        virtual ErrorsText        : String  @Core.Computed;
-        virtual ErrorsCriticality : CriticalityType;
-        virtual NumberOfErrors    : Integer @Core.Computed;
-        toMigrationTasks          : Association to many MigrationTasks
-                                        on toMigrationTasks.SourceTenant = $self;
-        toErrors                  : Composition of many Errors
-                                        on toErrors.toParent = ObjectID;
-        toIntegrationPackages     : Composition of many extIntegrationPackages
-                                        on toIntegrationPackages.toParent = $self;
-        toKeyStoreEntries         : Composition of many extKeyStoreEntries
-                                        on toKeyStoreEntries.toParent = $self;
-        toUserCredentials         : Composition of many extUserCredentials
-                                        on toUserCredentials.toParent = $self;
-        toCustomTagConfigurations : Composition of many extCustomTagConfigurations
-                                        on toCustomTagConfigurations.toParent = $self;
-        toNumberRanges            : Composition of many extNumberRanges
-                                        on toNumberRanges.toParent = $self;
-        toOAuth2ClientCredentials : Composition of many extOAuth2ClientCredentials
-                                        on toOAuth2ClientCredentials.toParent = $self;
-        toAccessPolicies          : Composition of many extAccessPolicies
-                                        on toAccessPolicies.toParent = $self;
-        toJMSBrokers              : Composition of many extJMSBrokers
-                                        on toJMSBrokers.toParent = $self;
-        toVariables               : Composition of many extVariables
-                                        on toVariables.toParent = $self;
+    key ObjectID                      : UUID    @Core.Computed  @Common.Text : Name;
+        Name                          : String;
+        Host                          : String;
+        Token_host                    : String;
+        Oauth_clientid                : String;
+        Oauth_secret                  : String  @Common.MaskedAlways :         true;
+        Oauth_servicekeyid            : String;
+        CF_organizationID             : String;
+        CF_organizationName           : String;
+        CF_spaceID                    : String;
+        CF_spaceName                  : String;
+        CF_servicePlanID              : String;
+        Neo_accountid                 : String;
+        Neo_Platform_domain           : String;
+        Neo_Platform_user             : String;
+        Neo_Platform_password         : String;
+        CF_Platform_domain            : String;
+        CF_Platform_user              : String;
+        CF_Platform_password          : String;
+        UseForCertificateUserMappings : Boolean;
+        Role                          : String;
+        Environment                   : String;
+        Statistics                    : TenantStatisticsType;
+        RefreshedDate                 : DateTime;
+        ReadOnly                      : Boolean default false;
+        virtual ReadOnlyText          : String;
+        virtual ErrorsText            : String  @Core.Computed;
+        virtual ErrorsCriticality     : CriticalityType;
+        virtual NumberOfErrors        : Integer @Core.Computed;
+        toMigrationTasks              : Association to many MigrationTasks
+                                            on toMigrationTasks.SourceTenant = $self;
+        toErrors                      : Composition of many Errors
+                                            on toErrors.toParent = ObjectID;
+        toIntegrationPackages         : Composition of many extIntegrationPackages
+                                            on toIntegrationPackages.toParent = $self;
+        toKeyStoreEntries             : Composition of many extKeyStoreEntries
+                                            on toKeyStoreEntries.toParent = $self;
+        toUserCredentials             : Composition of many extUserCredentials
+                                            on toUserCredentials.toParent = $self;
+        toCustomTagConfigurations     : Composition of many extCustomTagConfigurations
+                                            on toCustomTagConfigurations.toParent = $self;
+        toNumberRanges                : Composition of many extNumberRanges
+                                            on toNumberRanges.toParent = $self;
+        toOAuth2ClientCredentials     : Composition of many extOAuth2ClientCredentials
+                                            on toOAuth2ClientCredentials.toParent = $self;
+        toAccessPolicies              : Composition of many extAccessPolicies
+                                            on toAccessPolicies.toParent = $self;
+        toJMSBrokers                  : Composition of many extJMSBrokers
+                                            on toJMSBrokers.toParent = $self;
+        toVariables                   : Composition of many extVariables
+                                            on toVariables.toParent = $self;
+        toCertificateUserMappings     : Composition of many extCertificateUserMappings
+                                            on toCertificateUserMappings.toParent = $self;
 };
 
 type TenantStatisticsType {
@@ -89,6 +105,7 @@ type TenantStatisticsType {
     numAccessPolicyReferences          : Integer default 0;
     numJMSBrokers                      : Integer default 0;
     numVariables                       : Integer default 0;
+    numCertificateUserMappings         : Integer default 0;
 };
 
 
@@ -308,6 +325,29 @@ entity extArtifactReferences {
         ConditionAttribute : String;
         ConditionValue     : String;
         ConditionType      : String;
+};
+
+// Certificate User Mappings ---------------------------------------------------------------------------------
+entity extCertificateUserMappings {
+    key ObjectID              : UUID    @Core.Computed;
+        toParent              : Association to one Tenants;
+        Id                    : String;
+    key User                  : String;
+        LastModifiedBy        : String;
+        LastModifiedTime      : DateTime;
+        ValidUntil            : DateTime;
+        ValidUntilCriticality : Integer @Core.Computed;
+        NumberOfRoles         : Integer @Core.Computed;
+        toRoles               : Composition of many extCertificateUserMappingRoles
+                                    on toRoles.toParent = $self;
+};
+
+entity extCertificateUserMappingRoles {
+    key ObjectID        : UUID @Core.Computed;
+        toParent        : Association to one extCertificateUserMappings;
+    key name            : String;
+        applicationName : String;
+        providerAccount : String;
 };
 
 // Global Variables ------------------------------------------------------------------------------------

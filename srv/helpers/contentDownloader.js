@@ -1,6 +1,7 @@
 const Connectivity = require('./externalConnection');
 const Settings = require('../config/settings');
 const ZipHelper = require('./zip');
+const assert = require('assert');
 
 class ContentDownloader {
     constructor(t) {
@@ -21,16 +22,40 @@ class ContentDownloader {
             Statistics_numAccessPolicyReferences: 0,
             Statistics_numOAuth2ClientCredentials: 0,
             Statistics_numJMSBrokers: 0,
-            Statistics_numVariables: 0
+            Statistics_numVariables: 0,
+            Statistics_numCertificateUserMappings: 0
         };
         this.Connector = this.Tenant && new Connectivity.ExternalConnection(this.Tenant);
         this.OAuth2ClientCredentialsList = [];
     }
 
+    validatePreconditions = () => {
+        const configurationOK = this.Tenant.Environment == 'Neo' ?
+            this.Tenant.Neo_accountid &&
+            this.Tenant.Neo_Platform_domain &&
+            this.Tenant.Neo_Platform_user &&
+            this.Tenant.Neo_Platform_password
+            :
+            this.Tenant.CF_organizationID &&
+            this.Tenant.CF_organizationName &&
+            this.Tenant.CF_spaceID &&
+            this.Tenant.CF_spaceName &&
+            this.Tenant.CF_servicePlanID &&
+            this.Tenant.CF_Platform_domain &&
+            this.Tenant.CF_Platform_user &&
+            this.Tenant.CF_Platform_password;
+
+        if (this.Tenant.UseForCertificateUserMappings) {
+            assert(configurationOK, 'Tenant is not yet fully configured. Please complete the configuration in the \'Register Tenants\' application.');
+        }
+    };
+
     getIntegrationContent = async () => {
         console.log('getIntegrationContent ' + this.Tenant.ObjectID);
 
-        await this.Connector.refreshToken();
+        this.validatePreconditions();
+
+        await this.Connector.refreshIntegrationToken();
         await DELETE.from('Errors').where({ 'toParent': this.Tenant.ObjectID });
 
         await this.getIntegrationPackages().then(n => this.stats.Statistics_numIntegrationPackages += n);
@@ -43,6 +68,17 @@ class ContentDownloader {
         await this.getOAuth2ClientCredentials().then(n => this.stats.Statistics_numOAuth2ClientCredentials += n);
         await this.getUserCredentials().then(n => this.stats.Statistics_numUserCredentials += n);
         await this.getVariables().then(n => this.stats.Statistics_numVariables += n);
+
+        if (this.Tenant.UseForCertificateUserMappings) {
+            if (this.Tenant.Environment == 'Neo') {
+                await this.getNeoCertificateUserMappings().then(n => this.stats.Statistics_numCertificateUserMappings += n);
+            } else {
+                await this.getCFCertificateUserMappings().then(n => this.stats.Statistics_numCertificateUserMappings += n);
+            }
+        } else {
+            await DELETE.from('extCertificateUserMappingRoles').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+            await DELETE.from('extCertificateUserMappings').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        }
 
         await this.getJMSBrokers().then(n => this.stats.Statistics_numJMSBrokers += n);
 
@@ -85,7 +121,7 @@ class ContentDownloader {
                     result.filter(x => x.count > 0).forEach(async (x) => await this.createError('Integration Package', 'Info', each, x.file + ' in ' + x.artifact + ' contains ' + x.count + ' occurences of System.getenv()'));
                 } else {
                     console.log('Could not analyze script files.');
-        }
+                }
             }
         }
         return items.length;
@@ -341,6 +377,98 @@ class ContentDownloader {
         return count;
     };
 
+    getNeoCertificateUserMappings = async () => {
+        console.log('getNeoCertificateUserMappings ' + this.Tenant.ObjectID);
+        const items = await this.Connector.externalCall(Settings.Paths.CertificateUserMappings.Neo.path);
+
+        this.removeInvalidParameters(cds.entities.extCertificateUserMappings, items);
+        for (let each of items) {
+            each.toParent_ObjectID = this.Tenant.ObjectID;
+
+            each.LastModifiedTime = new Date(parseInt(each.LastModifiedTime.match(Settings.RegEx.dateTimestamp)[1]));
+            each.ValidUntil = new Date(parseInt(each.ValidUntil));
+        };
+        await DELETE.from('extCertificateUserMappings').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        items.length > 0 && await INSERT(items).into('extCertificateUserMappings');
+
+        for (let each of items) {
+            await this.getNeoRolesForUser(each);
+        }
+
+        return items.length;
+    };
+    getNeoRolesForUser = async (certificateUserMapping) => {
+        console.log('getNeoRolesForUser ' + certificateUserMapping.User);
+        const items = await this.Connector.externalPlatformCall(Settings.Paths.CertificateUserMappings.Neo.Roles
+            .replace('{ACCOUNT_ID}', this.Tenant.Neo_accountid)
+            .replace('{USER_ID}', certificateUserMapping.User)
+        );
+        assert(items !== null, 'Could not retrieve roles for Neo account ' + this.Tenant.Neo_accountid + '. Verify connection settings.');
+
+        const roles = items.roles || [];
+        this.removeInvalidParameters(cds.entities.extCertificateUserMappingRoles, roles);
+
+        for (let each of roles) {
+            each.toParent_ObjectID = certificateUserMapping.ObjectID;
+            each.toParent_User = certificateUserMapping.User;
+        };
+        await DELETE.from('extCertificateUserMappingRoles').where({ 'toParent_ObjectID': certificateUserMapping.ObjectID });
+        roles.length > 0 && await INSERT(roles).into('extCertificateUserMappingRoles');
+
+        return roles.length;
+    };
+
+    getCFCertificateUserMappings = async () => {
+        console.log('getCFCertificateUserMappings ' + this.Tenant.ObjectID);
+        const items = await this.Connector.externalPlatformCall(Settings.Paths.CertificateUserMappings.CF.ServiceInstances
+            .replace('{SPACE_ID}', this.Tenant.CF_spaceID)
+            .replace('{SERVICEPLAN_ID}', this.Tenant.CF_servicePlanID)
+        );
+        assert(items !== null, 'Could not retrieve service instances for CF space ' + this.Tenant.CF_spaceID + '. Verify connection settings.');
+
+        const instances = items.resources || [];
+        const userMappings = instances.filter(x => x.last_operation.state == 'succeeded').map(x => {
+            return {
+                toParent_ObjectID: this.Tenant.ObjectID,
+                Id: x.guid,
+                User: x.name,
+                LastModifiedBy: null,
+                LastModifiedTime: x.updated_at,
+                ValidUntil: null
+            }
+        });
+        await DELETE.from('extCertificateUserMappings').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        userMappings.length > 0 && await INSERT(userMappings).into('extCertificateUserMappings');
+
+        for (let each of userMappings) {
+            await this.getCFCertificateUserMappingBindings(each);
+        }
+
+        return userMappings.length;
+    };
+    getCFCertificateUserMappingBindings = async (instance) => {
+        console.log('getCFCertificateUserMappingBindings ' + instance.User);
+        const items = await this.Connector.externalPlatformCall(Settings.Paths.CertificateUserMappings.CF.ServiceBindings.replace('{SERVICE_INSTANCE_ID}', instance.Id));
+        assert(items !== null, 'Could not retrieve service bindings for CF space ' + this.Tenant.CF_spaceID + '. Verify connection settings.');
+        const bindings = items.resources || [];
+
+        console.log(bindings);
+
+        const credentials = bindings.filter(x => x.last_operation.state == 'succeeded').map(x => {
+            return {
+                toParent_ObjectID: instance.ObjectID,
+                toParent_User: instance.User,
+                name: x.name,
+                applicationName: null,
+                providerAccount: null
+            }
+        });
+        await DELETE.from('extCertificateUserMappingRoles').where({ 'toParent_ObjectID': instance.ObjectID });
+        credentials.length > 0 && await INSERT(credentials).into('extCertificateUserMappingRoles');
+
+        return credentials.length;
+    };
+
     getJMSBrokers = async () => {
         console.log('getJMSBrokers ' + this.Tenant.ObjectID);
         console.log('The next call might result in an error. This just means that JMS is not activated. The error will be ignored.');
@@ -411,11 +539,11 @@ class ContentDownloader {
     generateLimitationNotices = async () => {
         console.log('generateLimitationNotices ' + this.Tenant.ObjectID);
 
-        if (this.Tenant.Environment == 'Neo') {
-            const certificateUserMappings = (await this.Connector.externalCall(Settings.Paths.CertificateUserMappings.path)).map(x => x.User);
-            certificateUserMappings.length > 0 && await this.createError('Certificate User Mapping', 'Limitation', { Name: 'See documentation' },
-                'This tenant contains ' + certificateUserMappings.length + ' certificate user mapping(s) which are not supported for migration: ' + certificateUserMappings.join(', '), Settings.Paths.DeepLinks.LimitationsDocument);
-        }
+        // if (this.Tenant.Environment == 'Neo') {
+        //     const certificateUserMappings = (await this.Connector.externalCall(Settings.Paths.CertificateUserMappings.Neo.path)).map(x => x.User);
+        //     certificateUserMappings.length > 0 && await this.createError('Certificate User Mapping', 'Limitation', { Name: 'See documentation' },
+        //         'This tenant contains ' + certificateUserMappings.length + ' certificate user mapping(s) which are not supported for migration: ' + certificateUserMappings.join(', '), Settings.Paths.DeepLinks.LimitationsDocument);
+        // }
 
         const dataStores = (await this.Connector.externalCall(Settings.Paths.DataStores.path)).map(x => x.DataStoreName);
         dataStores.length > 0 && await this.createError('Data Store', 'Limitation', { Name: 'See documentation' },
@@ -460,7 +588,7 @@ class ContentDownloader {
     downloadPackageAndSearchForEnvVars = async (req, item) => {
         console.log('checkScripts ' + item.Name);
 
-        await this.Connector.refreshToken();
+        await this.Connector.refreshIntegrationToken();
         const response = await this.Connector.externalAxiosBinary(Settings.Paths.IntegrationPackages.download.replace('{PACKAGE_ID}', item.Id));
         if (response.code >= 400) {
             req && req.error('Package "' + item.Name + '": Error (' + response.code + ') ' + response.value.error.message.value);

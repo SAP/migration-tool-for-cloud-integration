@@ -24,8 +24,8 @@ sap.ui.define([
                 } catch (e) { isValid = false }
                 return isValid;
             };
-            
-            const environmentField = '#registration\\:\\:TenantsObjectPage--fe\\:\\:FormContainer\\:\\:FieldGroup\\:\\:Basic\\:\\:FormElement\\:\\:DataField\\:\\:Environment\\:\\:Field-edit-inner-inner';
+
+            const environmentField = '#registration\\:\\:TenantsObjectPage--fe\\:\\:FormContainer\\:\\:FieldGroup\\:\\:Basic_type\\:\\:FormElement\\:\\:DataField\\:\\:Environment\\:\\:Field-edit-inner-inner';
             if (document.querySelector(environmentField).value == 'Neo') {
                 MessageBox.warning('Importing JSON configuration is only possible for Cloud Foundry tenants. Please set Environment to \'Cloud Foundry\' first');
             } else {
@@ -79,7 +79,7 @@ sap.ui.define([
                                     value: imported.oauth.clientsecret
                                 },
                                 {
-                                    field: '#registration\\:\\:TenantsObjectPage--fe\\:\\:FormContainer\\:\\:FieldGroup\\:\\:Basic\\:\\:FormElement\\:\\:DataField\\:\\:Environment\\:\\:Field-edit-inner-inner',
+                                    field: '#registration\\:\\:TenantsObjectPage--fe\\:\\:FormContainer\\:\\:FieldGroup\\:\\:Basic_type\\:\\:FormElement\\:\\:DataField\\:\\:Environment\\:\\:Field-edit-inner-inner',
                                     value: 'Cloud Foundry'
                                 }
                             ];

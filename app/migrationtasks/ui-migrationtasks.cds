@@ -263,6 +263,12 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
                     Sign   : #I,
                     Option : #EQ,
                     Low    : 'Access Policy'
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Certificate User Mapping'
                 }
             ]
         }]
