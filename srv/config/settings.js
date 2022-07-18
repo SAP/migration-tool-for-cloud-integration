@@ -139,9 +139,10 @@ module.exports = {
         DownloadConfigurationsAndResources: false, //Used in contentDownloader class. Not really necessary to have this information in 'Explore Tenants' as this really slows down the synchronization, so default false.
         // DownloadTargetIntegrationContentAfterMigrationRun: true //Used in migrationJob class. This will automatically refresh the Integration Content of the Target tenant after a migration job run. Default is true. //Not working
         ManipulateZipFileProduceOutputFile: false, //Used in ziphelper class. For debugging you can generate a physical zip file before uploading it to the tenant. Default is false.
-        SearchForEnvVarsWhenRefreshingConent: true //Used in contentDownloader class. Specifies whether script files are analyzed when downloading the meta data of the tenant. Gives a more complete picture, but slows down the sync.
+        AnalyzePackageContentWhenRefreshingConent: true //Used in contentDownloader class. Specifies whether script files + embedded certificates are analyzed when downloading the meta data of the tenant. Gives a more complete picture, but slows down the sync.
     },
     RegEx: {
+        iflowFile: /^src\/main\/resources\/scenarioflows\/integrationflow\/(.*)\.iflw$/gi,
         scriptFile: /^src\/main\/resources\/script\/(.*)\.(groovy||gsh||js)$/gi,
         scriptLine: /(system\.getenv\()/gmi,
         dateTimestamp: /^\/Date\((\d*)\)\/$/i, //matches the string /Date(123456)/ to extract the number only

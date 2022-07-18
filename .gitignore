@@ -30,3 +30,4 @@ mta_archives/
 *.code-workspace
 .idea
 db/data/migrationtool-Tenants.*
+temp/

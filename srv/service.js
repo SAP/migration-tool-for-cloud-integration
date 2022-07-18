@@ -121,7 +121,8 @@ module.exports = async (srv) => {
         const Package = await srv.read(extIntegrationPackages, package_id);
 
         const downloader = new DownloadHelper.ContentDownloader(Tenant);
-        const result = await downloader.downloadPackageAndSearchForEnvVars(req, Package);
+        const packageContent = await downloader.downloadPackage(req, Package);
+        const result = packageContent && await downloader.searchForEnvVarsInPackage(packageContent);
         if (result) {
             resultTextFound = result.filter(x => x.count > 0).map(x => '- ' + x.artifact + ': ' + x.file + ' = ' + x.count + ' occurrences').join('\r\n') || '(none)';
             resultTextNotFound = result.filter(x => x.count == 0).map(x => '- ' + x.artifact + ': ' + x.file).join('\r\n') || '(none)';

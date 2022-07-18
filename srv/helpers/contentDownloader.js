@@ -1,6 +1,7 @@
 const Connectivity = require('./externalConnection');
 const Settings = require('../config/settings');
 const ZipHelper = require('./zip');
+const xml2js = require('xml2js');
 const assert = require('assert');
 
 class ContentDownloader {
@@ -114,13 +115,21 @@ class ContentDownloader {
             await this.getValueMappingDesigntimeArtifacts(each.Id, each.ObjectID).then(n => this.stats.Statistics_numValueMappingDesigntimeArtifacts += n);
             await this.getCustomTags(each.Id, each.ObjectID).then(n => this.stats.Statistics_numCustomTags += n);
 
-            // Search for Env Vars for custom packages only:
-            if (Settings.Flags.SearchForEnvVarsWhenRefreshingConent && (each.Vendor != 'SAP' && each.PartnerContent != true)) {
-                const result = await this.downloadPackageAndSearchForEnvVars(null, each);
-                if (result) {
-                    result.filter(x => x.count > 0).forEach(async (x) => await this.createError('Integration Package', 'Info', each, x.file + ' in ' + x.artifact + ' contains ' + x.count + ' occurences of System.getenv()'));
+            // Search for Env Vars + Embedded Certificates for custom packages only:
+            if (Settings.Flags.AnalyzePackageContentWhenRefreshingConent && (each.Vendor != 'SAP' && each.PartnerContent != true)) {
+                const packageContent = await this.downloadPackage(null, each);
+                const envVarsResult = packageContent && await this.searchForEnvVarsInPackage(packageContent);
+                if (envVarsResult) {
+                    envVarsResult.filter(x => x.count > 0).forEach(async (x) => await this.createError('Integration Package', 'Info', each, x.file + ' in ' + x.artifact + ' contains ' + x.count + ' occurences of System.getenv()'));
                 } else {
                     console.log('Could not analyze script files.');
+                }
+
+                const embeddedCertificatesResult = packageContent && await this.searchForEmbeddedCertificateInPackage(packageContent);
+                if (embeddedCertificatesResult) {
+                    embeddedCertificatesResult.filter(x => x.count > 0).forEach(async (x) => await this.createError('Integration Package', 'Warning', each, 'Integration flow ' + x.artifact + ' contains ' + x.count + ' sender(s) which is configured for Client Certificate Authorization. This might no longer work after migration. Please convert to User Role Authorization first.'));
+                } else {
+                    console.log('Could not analyze embedded certificates.');
                 }
             }
         }
@@ -452,7 +461,7 @@ class ContentDownloader {
         assert(items !== null, 'Could not retrieve service bindings for CF space ' + this.Tenant.CF_spaceID + '. Verify connection settings.');
         const bindings = items.resources || [];
 
-        console.log(bindings);
+        // console.log(bindings);
 
         const credentials = bindings.filter(x => x.last_operation.state == 'succeeded').map(x => {
             return {
@@ -585,8 +594,8 @@ class ContentDownloader {
     // script file containing 'system.getenv()'. These environment variables will need to be updated when migrating
     // to cloud foundry so we have to alert the user about their usage in scripts.
     /************************* */
-    downloadPackageAndSearchForEnvVars = async (req, item) => {
-        console.log('checkScripts ' + item.Name);
+    downloadPackage = async (req, item) => {
+        console.log('downloading Package ' + item.Name);
 
         await this.Connector.refreshIntegrationToken();
         const response = await this.Connector.externalAxiosBinary(Settings.Paths.IntegrationPackages.download.replace('{PACKAGE_ID}', item.Id));
@@ -594,9 +603,21 @@ class ContentDownloader {
             req && req.error('Package "' + item.Name + '": Error (' + response.code + ') ' + response.value.error.message.value);
             return false;
         } else {
-            return await this.searchForEnvVarsInPackage(response.value.data);
+            return response.value.data;
         }
     };
+    // downloadPackageAndSearchForEnvVars = async (req, item) => {
+    //     console.log('checkScripts ' + item.Name);
+
+    //     await this.Connector.refreshIntegrationToken();
+    //     const response = await this.Connector.externalAxiosBinary(Settings.Paths.IntegrationPackages.download.replace('{PACKAGE_ID}', item.Id));
+    //     if (response.code >= 400) {
+    //         req && req.error('Package "' + item.Name + '": Error (' + response.code + ') ' + response.value.error.message.value);
+    //         return false;
+    //     } else {
+    //         return await this.searchForEnvVarsInPackage(response.value.data);
+    //     }
+    // };
     searchForEnvVarsInPackage = async (zipFile, CustomizationModule = null) => {
         var result = [];
         const zip = new ZipHelper.ZipHelper();
@@ -641,6 +662,72 @@ class ContentDownloader {
             return [{
                 'artifact': entry.displayName,
                 'file': 'Could not analyze usage of system.getenv(): ' + (e.message || e),
+                'count': -1
+            }];
+        }
+    };
+    searchForEmbeddedCertificateInPackage = async (zipFile, CustomizationModule = null) => {
+        var result = [];
+        const zip = new ZipHelper.ZipHelper();
+        const zipContent = await zip.readZip(Buffer.from(zipFile));
+        if (zipContent && zipContent['resources.cnt']) {
+            const resourcesBase64 = Buffer.from(zipContent['resources.cnt']).toString('utf-8');
+            const resourcesJson = JSON.parse(Buffer.from(resourcesBase64, 'base64').toString('utf-8'));
+            for (let resource of resourcesJson.resources) {
+                console.log('File ' + resource.id + ': ' + resource.resourceType);
+                if (resource.resourceType == 'IFlow') {
+                    result = result.concat(await this.searchForEmbeddedCertificateInFile(zipContent, resource, CustomizationModule));
+                }
+            }
+        }
+        return result;
+    };
+    searchForEmbeddedCertificateInFile = async (zipContent, entry, CustomizationModule) => {
+        console.log(" Artifact: " + entry.displayName);
+        try {
+            const zip = new ZipHelper.ZipHelper();
+            const unzipped = await zip.readZip(zipContent[entry.id + '_content']);
+            const iflowFiles = Object.keys(unzipped).filter(x => x.match(Settings.RegEx.iflowFile));
+
+            var result = [];
+            for (let file of iflowFiles) {
+                const content = Buffer.from(unzipped[file], 'base64').toString('utf-8');
+                console.log("  iFlow File: " + file + ' (' + content.length + ' bytes)');
+
+                var count = 0;
+                const json = await new Promise((resolve, reject) => {
+                    xml2js.parseString(content, (err, result) => {
+                        if (err) return reject(err);
+                        resolve(result);
+                    });
+                });
+
+                const jsonElements = json['bpmn2:definitions']['bpmn2:collaboration'][0];
+                const participantIDs = jsonElements['bpmn2:participant'] && jsonElements['bpmn2:participant'].filter(x => x['$']['ifl:type'] == 'EndpointSender').map(x => x['$']['id']);
+
+                participantIDs.forEach(p => {
+                    const participantSettings = jsonElements['bpmn2:messageFlow'] && jsonElements['bpmn2:messageFlow'].find(x => x['$']['sourceRef'] == p);
+                    const properties = participantSettings && participantSettings['bpmn2:extensionElements'][0]['ifl:property'];
+                    const senderAuthTypeProperty = properties && properties.find(x => x.key[0] == 'senderAuthType');
+                    const senderAuthType = senderAuthTypeProperty && senderAuthTypeProperty.value[0];
+                    console.log('    Participant ' + p + ' is a ' + participantSettings['$']['name'] + ' sender with authentication type set to ' + senderAuthType);
+
+                    if (senderAuthType == 'ClientCertificate') count++;
+                });
+
+                console.log('   Certificates found: ' + count);
+                result.push({
+                    'artifact': entry.displayName,
+                    'file': file.replace('src/main/resources/scenarioflows/integrationflow/', ''),
+                    'count': count
+                });
+            };
+            return result;
+        } catch (e) {
+            console.log('Error: Skipping file: ' + (e.message || e));
+            return [{
+                'artifact': entry.displayName,
+                'file': 'Could not analyze usage of embedded certificates: ' + (e.message || e),
                 'count': -1
             }];
         }
