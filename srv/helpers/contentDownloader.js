@@ -702,16 +702,18 @@ class ContentDownloader {
                     });
                 });
 
-                const jsonElements = json['bpmn2:definitions']['bpmn2:collaboration'][0];
-                const participantIDs = jsonElements['bpmn2:participant'] && jsonElements['bpmn2:participant'].filter(x => x['$']['ifl:type'] == 'EndpointSender').map(x => x['$']['id']);
-
+                const jsonDefinitions = json['bpmn2:definitions'] || false;
+                const jsonCollaboration = jsonDefinitions && jsonDefinitions['bpmn2:collaboration'] || false;
+                const jsonElements = jsonCollaboration[0] || {};
+                const participantIDs = jsonElements['bpmn2:participant'] && jsonElements['bpmn2:participant'].filter(x => x['$']['ifl:type'] == 'EndpointSender').map(x => x['$']['id']) || [];
+            
                 participantIDs.forEach(p => {
-                    const participantSettings = jsonElements['bpmn2:messageFlow'] && jsonElements['bpmn2:messageFlow'].find(x => x['$']['sourceRef'] == p);
-                    const properties = participantSettings && participantSettings['bpmn2:extensionElements'][0]['ifl:property'];
-                    const senderAuthTypeProperty = properties && properties.find(x => x.key[0] == 'senderAuthType');
+                    const participantSettings = jsonElements['bpmn2:messageFlow'] && jsonElements['bpmn2:messageFlow'].find(x => x['$']['sourceRef'] == p) || false;
+                    const properties = participantSettings && participantSettings['bpmn2:extensionElements'][0]['ifl:property'] || false;
+                    const senderAuthTypeProperty = properties && properties.find(x => x.key[0] == 'senderAuthType') || false;
                     const senderAuthType = senderAuthTypeProperty && senderAuthTypeProperty.value[0];
-                    console.log('    Participant ' + p + ' is a ' + participantSettings['$']['name'] + ' sender with authentication type set to ' + senderAuthType);
-
+            
+                    if (senderAuthTypeProperty) console.log('    Participant ' + p + ' is a ' + participantSettings['$']['name'] + ' sender with authentication type set to ' + senderAuthType);
                     if (senderAuthType == 'ClientCertificate') count++;
                 });
 
