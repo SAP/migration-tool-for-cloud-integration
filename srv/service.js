@@ -182,7 +182,7 @@ module.exports = async (srv) => {
     srv.on('Tenant_export', async (req) => {
         const TenantList = await srv.read(Tenants);
         const headers = 'ObjectID;Name;Host;Token_host;Oauth_clientid;Oauth_secret;Role;Environment;ReadOnly;Oauth_servicekeyid;CF_organizationID;CF_organizationName;' +
-            'CF_spaceID;CF_spaceName;CF_servicePlanID;Neo_accountid;Neo_Platform_domain;Neo_Platform_user;Neo_Platform_password;CF_Platform_domain;CF_Platform_user;CF_Platform_password;MigrateUserMappings';
+            'CF_spaceID;CF_spaceName;CF_servicePlanID;Neo_accountid;Neo_Platform_domain;Neo_Platform_user;Neo_Platform_password;CF_Platform_domain;CF_Platform_user;CF_Platform_password;UseForCertificateUserMappings';
         const content = [headers];
         for (const t of TenantList) {
             content.push([
