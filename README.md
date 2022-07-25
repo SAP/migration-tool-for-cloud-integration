@@ -44,7 +44,7 @@ In Terminal or Command Prompt, run:
 1. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git`
 2. Build this tool: `docker build -t migrationtool ./migration-tool-for-cloud-integration`
 
-Now the tool is build and can be started:
+Now the tool is built and can be started:
 
 1. Start the tool: `docker run -p 4004:4004 migrationtool`
 2. Open your local browser to: `http://localhost:4004/home.html`
