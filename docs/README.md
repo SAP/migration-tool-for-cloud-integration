@@ -23,7 +23,7 @@ The flag 'Source-only system' indicates if this tenant will be available as a mi
 
 Once a tenant is created / saved, you can use **Test Connection** to validate the settings. This will reach out to the Authentication Server to generate a token, and use this token on the Integration Tenant for a generic call to test the access.
 
-### Creating oAuth Clients on Source and Target systems
+### Creating oAuth Clients on Source and Target systems (video walkthrough)
 
 - On the **Neo (source)** tenant:
     1. Navigate to your SAP BTP cockpit of the Neo subaccount, go to 'Security' > 'OAuth' and open the 'Clients' tab.
@@ -34,7 +34,7 @@ Once a tenant is created / saved, you can use **Test Connection** to validate th
         - AuthGroup.BusinessExpert (required for Variables)
     4. Copy the Token Endpoint (see branding tab), Client ID, and Client Secret to use in the migration application.
 
-    If you are not familiar with the process, please follow the steps here: [see Neo documentation](https://help.sap.com/viewer/368c481cd6954bdfa5d0435479fd4eaf/Cloud/en-US/040d8110293d44b1bfaa75674530d395.html), go to 'OAuth with Client Credentials Grant' and follow steps 1 and 2.
+    If you are not familiar with the process, please follow the steps here: [see Neo documentation](https://help.sap.com/viewer/368c481cd6954bdfa5d0435479fd4eaf/Cloud/en-US/040d8110293d44b1bfaa75674530d395.html), go to 'OAuth with Client Credentials Grant' and follow steps 1 and 2. Or watch the video below.
 
     **Additional Steps required for 'Certificate to User Mapping' migrations (as a source system):**
 
@@ -59,7 +59,7 @@ Once a tenant is created / saved, you can use **Test Connection** to validate th
          - AuthGroup_BusinessExpert (required for Variables, used only if this tenant is used as a Source system for migration)
   3. Create a Service Key and copy the entire JSON text to your clipboard to use in the migration application (use the 'Import JSON' button).
 
-    If you are not familiar with the process, please follow the steps here: [see CF documentation](https://help.sap.com/viewer/368c481cd6954bdfa5d0435479fd4eaf/Cloud/en-US/20e26a837a8449c4b8b934b07f71cb76.html) and follow the steps in 'Define a Service Instance and Service Key for the API Client'.
+    If you are not familiar with the process, please follow the steps here: [see CF documentation](https://help.sap.com/viewer/368c481cd6954bdfa5d0435479fd4eaf/Cloud/en-US/20e26a837a8449c4b8b934b07f71cb76.html) and follow the steps in 'Define a Service Instance and Service Key for the API Client'. Or watch the video below.
 
 
     **Additional Steps required for 'Certificate to User Mapping' migrations (as a target system):**
