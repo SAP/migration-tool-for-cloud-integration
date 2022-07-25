@@ -46,8 +46,8 @@ Once a tenant is created / saved, you can use **Test Connection** to validate th
         - Authorization Management: Read Authorization
     8. Copy the Client ID and Client Secret to use in the migration application.
 
-    ![Step-by-Step Walkthrough for Neo tenant registration](./Walkthrough_Neo_registration.mp4)
-
+    https://user-images.githubusercontent.com/19388646/180816971-ea24152d-51ae-43e3-a05b-9b70a7aa7805.mp4
+    
 
 - On the **Cloud Foundry (target)** tenant:
   1. Navigate to your SAP BTP cockpit of the Cloud Foundry subaccount, go to 'Services', then 'Service Marketplace' and select 'Process Integration'
@@ -71,7 +71,7 @@ Once a tenant is created / saved, you can use **Test Connection** to validate th
     6. Copy the 'Instance ID' mentioned at the top of the details pane.
     7. Also provide an email address and password of a user that has access to the BTP subaccount, with authorizations to create service instances and service keys.
 
-    ![Step-by-Step Walkthrough for CF tenant registration](./Walkthrough_CF_registration.mp4)
+    https://user-images.githubusercontent.com/19388646/180817264-7782949d-92ce-4f89-b373-bf56f4c7dad0.mp4
 
 
 ### Exploring Tenants
