@@ -80,11 +80,17 @@ Use the **Explore Tenants** app for each of the tenants to download all the inte
 
 All downloaded content is then populated in the different sections: Integration Packages, Security Artifacts and Other Artifacts. All this information is read-only and for informational purposes only. This data is **not** used to perform the actual migration.
 
+https://user-images.githubusercontent.com/19388646/181009401-381a07df-8097-4db6-8f04-959140b6907e.mp4
+
+
 ### Creating Migration Tasks
 
 Use the **Explore Tenants** app to open the Source Tenant of your migration project. Go to Migration Tasks and click on Create  Migration Task. You will have to select a Target migration tenant, but this can be changed later.
 
 After the creation of the task, click on the task name in the list to navigate to the details of the task in order to configure it for use (see next section). The same task details can be accessed via the **Migration Tasks** app.
+
+https://user-images.githubusercontent.com/19388646/181009545-a5a29681-18ba-401a-bad5-c7d6a5ac5820.mp4
+
 
 ### Configuring Migration Tasks
 
