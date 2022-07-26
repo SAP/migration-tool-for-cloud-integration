@@ -5,6 +5,10 @@ module.exports = {
             PackageOverview: '/itspaces/shell/design/contentpackage/{PACKAGE_ID}',
             PackageArtifacts: '/itspaces/shell/design/contentpackage/{PACKAGE_ID}?section=ARTIFACTS',
             SecurityMaterial: '/itspaces/shell/monitoring/SecurityMaterials',
+            NumberRanges: '/itspaces/shell/monitoring/NumberRangeObject',
+            AccessPolicies: '/itspaces/shell/monitoring/AccessPolicies',
+            Keystore: '/itspaces/shell/monitoring/Keystore',
+            CustomTags: '/itspaces/shell/tenantsettings',
             LimitationsDocument: 'https://github.com/SAP/migration-tool-for-cloud-integration/blob/main/docs/Limitations.md'
         },
         IntegrationPackages: {
@@ -175,7 +179,7 @@ module.exports = {
             errorStatus: 'ERROR',
             maxWait: 60000
         },
-        CertificateUserMappings:{
+        CertificateUserMappings: {
             sleepInterval: 1500,
             actionType: 'create',
             successStatus: 'succeeded',

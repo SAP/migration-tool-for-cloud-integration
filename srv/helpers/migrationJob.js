@@ -720,10 +720,10 @@ class MigrationJob {
         const certificate = await this.ConnectorSource.externalCallCertificate(Settings.Paths.KeyStoreEntries.Certificate.download.replace('{HEXALIAS_ID}', entry.Hexalias));
         if (certificate) {
             const response = await this.ConnectorTarget.externalPutCertificate(Settings.Paths.KeyStoreEntries.Certificate.upload.replace('{HEXALIAS_ID}', entry.Hexalias), certificate);
-            return await this.validateResponse('Certificate', entry.Alias, response, 3, [400]);
+            return await this.validateResponse('Certificate', entry.Alias, response, 3, [400], [], true, this.Task.TargetTenant.Host + Settings.Paths.DeepLinks.Keystore);
         } else {
             await this.addLogEntry(3, 'Error: Could not download certificate');
-            await this.generateError('Certificate', entry.Alias, 'Error: Could not download certificate ' + entry.Alias, this.Task.SourceTenant.Host + Settings.Paths.DeepLinks.SecurityMaterial);
+            await this.generateError('Certificate', entry.Alias, 'Error: Could not download certificate ' + entry.Alias, this.Task.SourceTenant.Host + Settings.Paths.DeepLinks.Keystore);
             return false;
         }
     };
@@ -756,7 +756,7 @@ class MigrationJob {
         delete range.DeployedBy;
         delete range.DeployedOn;
         const response = await this.ConnectorTarget.externalPost(Settings.Paths.NumberRanges.upload, range);
-        return await this.validateResponse('Number Range', range.Name, response, 3, [409]);
+        return await this.validateResponse('Number Range', range.Name, response, 3, [409], [], true, this.Task.TargetTenant.Host + Settings.Paths.DeepLinks.NumberRanges);
     };
 
 
@@ -794,7 +794,7 @@ class MigrationJob {
         const payload = { CustomTagsConfigurationContent: contentEncoded };
 
         const response = await this.ConnectorTarget.externalPost(Settings.Paths.CustomTagConfigurations.upload, payload);
-        await this.validateResponse('Custom Tag', 'Generic', response, 3, [409]);
+        await this.validateResponse('Custom Tag', 'Generic', response, 3, [409], [], true, this.Task.TargetTenant.Host + Settings.Paths.DeepLinks.CustomTags);
     };
 
 
@@ -831,7 +831,11 @@ class MigrationJob {
             CompanyId: item.CompanyId
         };
         const response = await this.ConnectorTarget.externalPost(Settings.Paths.UserCredentials.upload, payload);
-        return await this.validateResponse('User Credential', item.Name, response, 3, [409]);
+        const success = await this.validateResponse('User Credential', item.Name, response, 3, [409], [], true, this.Task.TargetTenant.Host + Settings.Paths.DeepLinks.SecurityMaterial);
+        if (success && response.code < 400) {
+            await this.generateInfo('User Credential', item.Name, 'Item created with blank password/secret. Please update manually in target tenant', this.Task.TargetTenant.Host + Settings.Paths.DeepLinks.SecurityMaterial);
+        }
+        return success;
     };
 
 
@@ -870,7 +874,11 @@ class MigrationJob {
             ClientAuthentication: item.ClientAuthentication
         };
         const response = await this.ConnectorTarget.externalPost(Settings.Paths.OAuth2ClientCredentials.upload, payload);
-        return await this.validateResponse('OAuth Credential', item.Name, response, 3, [409]);
+        const success = await this.validateResponse('OAuth Credential', item.Name, response, 3, [409], [], true, this.Task.TargetTenant.Host + Settings.Paths.DeepLinks.SecurityMaterial);
+        if (success && response.code < 400) {
+            await this.generateInfo('OAuth Credential', item.Name, 'Item created with blank password/secret. Please update manually in target tenant', this.Task.TargetTenant.Host + Settings.Paths.DeepLinks.SecurityMaterial);
+        }
+        return success;
     };
 
 
@@ -919,7 +927,7 @@ class MigrationJob {
             ArtifactReferences: referencesPayload
         };
         const response = await this.ConnectorTarget.externalPost(Settings.Paths.AccessPolicies.upload, accessPoliciesPayload);
-        return await this.validateResponse('Access Policy', item.RoleName, response, 3, [409]);
+        return await this.validateResponse('Access Policy', item.RoleName, response, 3, [409], [], true, this.Task.TargetTenant.Host + Settings.Paths.DeepLinks.AccessPolicies);
     };
 
     migrateJMSBrokers = async () => {
@@ -1098,10 +1106,10 @@ class MigrationJob {
         if (deployStatus.found) {
             if (deployStatus.status == Settings.Defaults.CertificateUserMappings.successStatus) {
                 await this.addLogEntry(4, 'Warning: Service Instance Binding by the name of ' + mapping.Id + ' already exists. Certificate was not renewed.');
-                await this.generateWarning('Certificate User Mapping', mapping.User, 'Service Instance Binding '+mapping.Id+' already existed and was not updated.');
+                await this.generateWarning('Certificate User Mapping', mapping.User, 'Service Instance Binding ' + mapping.Id + ' already existed and was not updated.');
             } else {
                 await this.addLogEntry(4, 'Error: Service Instance Binding by the name of ' + mapping.Id + ' already exists and is in error state. Please delete manually and re-run migration job.');
-                await this.generateError('Certificate User Mapping', mapping.User, 'Service Instance Binding '+mapping.Id+' already exists and is in error state. Please delete manually and re-run migration job.');
+                await this.generateError('Certificate User Mapping', mapping.User, 'Service Instance Binding ' + mapping.Id + ' already exists and is in error state. Please delete manually and re-run migration job.');
             }
         } else {
             await this.createCFServiceInstanceBinding(mapping, instance);
@@ -1123,7 +1131,7 @@ class MigrationJob {
                 await this.addLogEntry(4, 'Service instance binding created');
             } else {
                 await this.addLogEntry(4, 'Service instance binding not created');
-                await this.generateError('Certificate User Mapping', mapping.User, 'Service Instance Binding '+mapping.Id+' could not be created.');
+                await this.generateError('Certificate User Mapping', mapping.User, 'Service Instance Binding ' + mapping.Id + ' could not be created.');
             }
         }
         return deployStatus;
@@ -1173,7 +1181,7 @@ class MigrationJob {
     };
 
     // Helpers
-    validateResponse = async (component, name, response, indent = 3, warnings = [], ignores = [], generatePositiveLog = true) => {
+    validateResponse = async (component, name, response, indent = 3, warnings = [], ignores = [], generatePositiveLog = true, path = null) => {
         var result = true;
         // console.log(response);
         const errorMessage = response.value.error ? response.value.error.message.value : response.value;
@@ -1181,10 +1189,10 @@ class MigrationJob {
             await this.addLogEntry(indent, 'Ignored (' + response.code + ') ' + errorMessage);
         } else if (warnings.includes(response.code)) {
             await this.addLogEntry(indent, 'Warning (' + response.code + ') ' + errorMessage);
-            await this.generateWarning(component, name, response.code + ' ' + errorMessage);
+            await this.generateWarning(component, name, response.code + ' ' + errorMessage, path);
         } else if (response.code >= 400) {
             await this.addLogEntry(indent, 'Error (' + response.code + ') ' + errorMessage);
-            await this.generateError(component, name, response.code + ' ' + errorMessage);
+            await this.generateError(component, name, response.code + ' ' + errorMessage, path);
             result = false;
         } else {
             generatePositiveLog && await this.addLogEntry(indent, 'Success (' + response.code + ') ' + response.value.statusText);

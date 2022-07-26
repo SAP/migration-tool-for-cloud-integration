@@ -29,5 +29,5 @@ mta_archives/
 .vscode
 *.code-workspace
 .idea
-db/data/migrationtool-Tenants.*
+db/data/migrationtool-Tenants*.csv
 temp/
