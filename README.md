@@ -41,7 +41,7 @@ Locally stored data is kept in a local SQLite database file.
 You can use the provided Dockerfile to install and run the application:
 
 In Terminal or Command Prompt, run:
-1. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git`
+1. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git --depth 1`
 2. Build this tool: `docker build -t migrationtool ./migration-tool-for-cloud-integration`
 
 Now the tool is built and can be started:
@@ -58,7 +58,7 @@ It is required to have an active installation of Node.js (version 14.5 or later)
 To install, in Terminal or Command Prompt, run:
 
 1. Install the SAP CAP SDK 'CDS-DK': `npm i -g @sap/cds-dk`
-2. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git`
+2. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git --depth 1`
 3. Navigate into the root project folder: `cd migration-tool-for-cloud-integration`
 4. Install this tool: `npm install`
 5. Prepare/rebuild the SQLite database: `cds deploy --to sqlite`
