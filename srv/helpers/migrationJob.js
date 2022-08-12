@@ -115,8 +115,11 @@ class MigrationJob {
             await this.migrateOAuth2ClientCredentials();
             await this.migrateAccessPolicies();
 
+            if (this.Task.SourceTenant.UseForCertificateUserMappings) {
+                if (this.Task.SourceTenant.Environment == 'Neo') {
             await this.migrateCertificateUserMappings();
-
+                }
+            }
             await this.migrateJMSBrokers();
 
             return true;
