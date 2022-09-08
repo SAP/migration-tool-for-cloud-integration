@@ -157,6 +157,7 @@ class ContentDownloader {
 
             each.toParent_ObjectID = parent_id;
             each.toParent_Id = package_id;
+            each.toParent_toParent_ObjectID = this.Tenant.ObjectID;
         }
         await DELETE.from('extIntegrationDesigntimeArtifacts').where({ 'toParent_ObjectID': parent_id });
         items.length > 0 && await INSERT(items).into('extIntegrationDesigntimeArtifacts');
@@ -225,6 +226,7 @@ class ContentDownloader {
             delete each.ValMapSchema;
             each.toParent_ObjectID = parent_id;
             each.toParent_Id = package_id;
+            each.toParent_toParent_ObjectID = this.Tenant.ObjectID;
         };
         await DELETE.from('extValueMappingDesigntimeArtifacts').where({ 'toParent_ObjectID': parent_id });
         items.length > 0 && await INSERT(items).into('extValueMappingDesigntimeArtifacts');
@@ -274,6 +276,7 @@ class ContentDownloader {
         for (let each of items) {
             each.toParent_ObjectID = parent_id;
             each.toParent_Id = package_id;
+            each.toParent_toParent_ObjectID = this.Tenant.ObjectID;
         };
         await DELETE.from('extCustomTags').where({ 'toParent_ObjectID': parent_id });
         items.length > 0 && await INSERT(items).into('extCustomTags');
@@ -569,7 +572,7 @@ class ContentDownloader {
             toParent: this.Tenant.ObjectID,
             Type: type,
             Component: component,
-            ComponentName: (item && item.Name) || 'Generic',
+            ComponentName: (item && item.Name) || item.toString() || 'Generic',
             Description: text,
             Path: fullPath,
             Severity: (type === 'Error' ? Settings.CriticalityCodes.Red : (type === 'Warning' ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Blue))

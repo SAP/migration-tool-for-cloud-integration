@@ -974,9 +974,7 @@ annotate ConfigService.CertificateUserMappingRoles with @(UI : {
             Value                 : name,
             ![@HTML5.CssDefaults] : {width : '18rem'}
         },
-        {
-            Value                 : applicationName
-        },
+        {Value : applicationName},
         {Value : providerAccount}
     ],
     Facets              : [{

@@ -131,7 +131,7 @@ entity extIntegrationPackages {
         LineOfBusiness                    : String;
         PartnerContent                    : Boolean;
         UpdateAvailable                   : Boolean;
-        toParent                          : Association to one Tenants;
+    key toParent                          : Association to one Tenants;
         ModifiedDateFormatted             : Date;
         virtual NumberOfErrors            : Integer @Core.Computed;
         virtual Criticality               : Integer @Core.Computed;
@@ -143,6 +143,7 @@ entity extIntegrationPackages {
                                                 on toCustomTags.toParent = $self;
         toErrors                          : Association to many Errors
                                                 on  toErrors.ComponentName = Name
+                                                and toErrors.toParent      = toParent.ObjectID
                                                 and toErrors.Component     = 'Integration Package';
 };
 
@@ -164,6 +165,7 @@ entity extIntegrationDesigntimeArtifacts {
                                      on toResources.toParent = $self;
         toErrors               : Association to many Errors
                                      on  toErrors.ComponentName = Name
+                                     and toErrors.toParent      = toParent.toParent.ObjectID
                                      and toErrors.Component     = 'Integration Flow';
 };
 

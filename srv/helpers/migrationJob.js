@@ -136,11 +136,6 @@ class MigrationJob {
 
         for (let item of items) {
             this.Variables.push(item);
-            // if (item.Visibility == 'Global') {
-            //     await this.addLogEntry(2, 'Variable ' + item.VariableName + ' (global)');
-            // } else {
-            //     await this.addLogEntry(2, 'Variable ' + item.VariableName + ' (local to ' + item.IntegrationFlow + ')');
-            // }
         }
         await this.addLogEntry(2, 'Found ' + this.Variables.filter(x => x.Visibility == 'Global').length + ' Global variables');
         await this.addLogEntry(2, 'Found ' + this.Variables.filter(x => x.Visibility != 'Global').length + ' Local variables');
@@ -182,7 +177,7 @@ class MigrationJob {
         } else {
             await this.addLogEntry(2, 'No items to migrate.');
         }
-    }
+    };
     migrateLocalVariables = async (flowIds) => {
         await this.addLogEntry(2, 'START LOCAL VARIABLES for package:');
 
@@ -224,7 +219,7 @@ class MigrationJob {
         }
 
         await this.addLogEntry(2, 'END LOCAL VARIABLES for package.');
-    }
+    };
     migrateVariables = async (variablesByFlows, packageId) => {
         await this.addLogEntry(2, 'Compiling integration flows ...');
         var successCount = 0;
