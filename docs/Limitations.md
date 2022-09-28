@@ -1,5 +1,5 @@
 # Limitations
-*Last updated: 17 Jun 2022*
+*Last updated: 28 Sep 2022*
 
 This tool has limitations on which content can be migrated and which not. Some limitations are set by the availability of suitable APIs, while other limitations are defined by security constraints.
 
@@ -31,7 +31,7 @@ Generic limitations of SAP Integration Suite on Multi Cloud are also documented 
 
 |Limitation|Reason|Solution
 |-|-|-
-|Data Stores can not be migrated|Tool roadmap item
+|~~Data Stores can not be migrated~~|~~Tool roadmap item~~|Delivered in v1.3.0
 |~~Variables can not be migrated~~|~~Tool roadmap item~~|Delivered in v1.1.0
 |JDBC Material can not be migrated|No suitable API available
 |Message Store can not be migrated|No suitable API available

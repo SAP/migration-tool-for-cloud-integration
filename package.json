@@ -1,6 +1,6 @@
 {
   "name": "migrationtool",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Assistant to support content migration from SAP Integration Services (Neo) to SAP Integration Suite (Multi-cloud)",
   "repository": "https://github.com/SAP/migration-tool-for-cloud-integration",
   "license": "Apache-2.0",

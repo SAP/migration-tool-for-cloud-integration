@@ -11,8 +11,9 @@ There is an official migration pack available via [SAP Note 2937549](https://lau
 
 This repo keeps track of versions via Tags:
 - Tag v1.0.x: scope similar to Postman collection v1.5.0 (26 Feb 2021)
-- Tag v1.1.x: scope similar to Postman collection v1.6.0 (14 Feb 2022)
-- Tag v1.2.x: scope similar to Postman collection v1.7.1 (30 May 2022)
+- Tag v1.1.x: scope similar to Postman collection v1.6.0 (14 Feb 2022) (Variables)
+- Tag v1.2.x: scope similar to Postman collection v1.7.1 (30 May 2022) (Certificate-to-User Mapping)
+- Tag v1.3.x: scope similar to Postman collection v1.8.0 (not yet released) (Data Stores)
 
 This Github repository is an alternative tool which aims to achieve the same as the Postman collection while offering greater flexibility and control over your migration project. Areas where this tool provides an advantage over the Postman collection:
 - Creation of 'Migration Tasks' which focus on a subset of the content in the tenant;
