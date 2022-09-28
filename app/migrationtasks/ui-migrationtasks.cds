@@ -302,6 +302,12 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
                     Sign   : #I,
                     Option : #EQ,
                     Low    : 'Global Variable'
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Global Data Store'
                 }
             ]
         }]

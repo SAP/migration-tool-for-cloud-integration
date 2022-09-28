@@ -24,6 +24,7 @@ class MigrationJob {
         this.Customizations = null;
 
         this.Variables = [];
+        this.DataStores = [];
     };
 
     execute = async () => {
@@ -102,9 +103,13 @@ class MigrationJob {
             this.MigrationContent.JMSBrokers = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.JMSBrokers && x.Included)).map(x => x.Id);
             this.MigrationContent.GlobalVariables = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Variables && x.Included)).map(x => x.Id);
             this.MigrationContent.CertificateUserMappings = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.CertificateUserMappings && x.Included)).map(x => x.Id);
+            this.MigrationContent.GlobalDataStores = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.DataStores && x.Included)).map(x => x.Id);
 
             await this.getListOfVariables();
             await this.migrateGlobalVariables();
+
+            await this.getListOfDataStores();
+            await this.migrateGlobalDataStores();
 
             await this.migrateIntegrationPackages();
             await this.migrateCustomCertificates();
@@ -117,7 +122,7 @@ class MigrationJob {
 
             if (this.Task.SourceTenant.UseForCertificateUserMappings) {
                 if (this.Task.SourceTenant.Environment == 'Neo') {
-            await this.migrateCertificateUserMappings();
+                    await this.migrateCertificateUserMappings();
                 }
             }
             await this.migrateJMSBrokers();
@@ -125,9 +130,182 @@ class MigrationJob {
             return true;
         } catch (error) {
             await this.addLogEntry(0, 'CRITICAL ERROR: ' + error);
-            await this.generateError('Internal', 'Job Execution', error);
+            await this.generateError('Internal', 'Job Execution', error.toString());
             return false;
         }
+    };
+
+    getListOfDataStores = async () => {
+        await this.addLogEntry(1, 'DATA STORES:');
+        const items = await this.ConnectorSource.externalCall(Settings.Paths.DataStores.path);
+
+        for (let item of items) {
+            this.DataStores.push(item);
+        }
+        await this.addLogEntry(2, 'Found ' + this.DataStores.filter(x => x.Visibility == 'Global').length + ' Global data stores');
+        await this.addLogEntry(2, 'Found ' + this.DataStores.filter(x => x.Visibility != 'Global').length + ' Local data stores');
+    };
+    migrateGlobalDataStores = async () => {
+        await this.addLogEntry(1, 'GLOBAL DATA STORES:');
+
+        const items = await this.ConnectorSource.externalCall(Settings.Paths.DataStores.path);
+        const itemsInScope = items.filter(x => this.MigrationContent.GlobalDataStores.includes(x.DataStoreName));
+
+        const itemsNotFound = this.MigrationContent.GlobalDataStores.filter(x => !itemsInScope.find(e => e.DataStoreName == x));
+        itemsNotFound && await this.addMissingContentErrors(itemsNotFound);
+
+        var successCount = 0;
+        if (itemsInScope.length > 0) {
+            const createPackageSuccess = await this.cpisCreateIntegrationPackage(Settings.Defaults.DataStores.packageId);
+            assert(createPackageSuccess, 'Could not create package ' + Settings.Defaults.DataStores.packageId);
+
+            await this.addLogEntry(2, 'Retrieving Data Stores:');
+            for (let item of itemsInScope) {
+                await this.migrateDataStore(item) && successCount++;
+            };
+
+            createPackageSuccess && await this.cpisDeleteIntegrationPackage(Settings.Defaults.DataStores.packageId);
+
+            await this.addLogEntry(2, successCount + '/' + itemsInScope.length + ' successful.');
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.');
+        }
+    };
+    migrateLocalDataStores = async (flowIds) => {
+        await this.addLogEntry(2, 'START LOCAL DATA STORES for package:');
+
+        const items = await this.ConnectorSource.externalCall(Settings.Paths.DataStores.path);
+        const itemsInScope = items.filter(x => x.Visibility == 'Integration Flow' && flowIds.includes(x.IntegrationFlow));
+
+        var successCount = 0;
+        if (itemsInScope.length > 0) {
+            const createPackageSuccess = await this.cpisCreateIntegrationPackage(Settings.Defaults.DataStores.packageId);
+            assert(createPackageSuccess, 'Could not create package ' + Settings.Defaults.DataStores.packageId);
+
+            await this.addLogEntry(2, 'Retrieving Data Stores:');
+            for (let item of itemsInScope) {
+                await this.migrateDataStore(item) && successCount++;
+            };
+
+            createPackageSuccess && await this.cpisDeleteIntegrationPackage(Settings.Defaults.DataStores.packageId);
+
+            await this.addLogEntry(2, successCount + '/' + itemsInScope.length + ' successful.');
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.');
+        }
+
+        await this.addLogEntry(2, 'END LOCAL DATA STORES for package.');
+    };
+    migrateDataStore = async (item) => {
+        await this.addLogEntry(3, 'Data Store ' + item.DataStoreName);
+        const entries = await this.ConnectorSource.externalCall(Settings.Paths.DataStores.Entries.path
+            .replace('{DATA_STORE_NAME}', item.DataStoreName)
+            .replace('{INTEGRATION_FLOW}', item.IntegrationFlow)
+            .replace('{TYPE}', item.Type));
+
+        for (let entry of entries) {
+            entry.content = await this.getDataStoreDataEntry(item.DataStoreName, item.IntegrationFlow, item.Type, entry.Id);
+        };
+        await this.Customizations.onMigrateDataStore(item, entries);
+
+        const successCount = await this.deployDataStore(Settings.Defaults.DataStores.packageId, Settings.Defaults.DataStores.flowId + '_' + item.DataStoreName, item, entries);
+
+        if (entries.length > 0) {
+            await this.addLogEntry(3, successCount + '/' + entries.length + ' successful.');
+        } else {
+            await this.addLogEntry(3, 'No items to migrate.');
+        }
+        return successCount == entries.length;
+    };
+
+    getDataStoreDataEntry = async (storeName, flowId, type, entryId) => {
+        await this.addLogEntry(4, 'Entry ' + entryId);
+        const response = await this.ConnectorSource.externalAxiosBinary(Settings.Paths.DataStores.Entries.download
+            .replace('{ENTRY_ID}', entryId)
+            .replace('{DATA_STORE_NAME}', storeName)
+            .replace('{INTEGRATION_FLOW}', flowId)
+            .replace('{TYPE}', type));
+
+        const itemData = {
+            headers: [],
+            body: ''
+        };
+        if (response.code < 400) {
+            try {
+                const zipHelper = new ZipHelper.ZipHelper();
+                const unzipped = await zipHelper.readZip(Buffer.from(response.value.data, 'binary'));
+
+                const headers = Buffer.from(unzipped['headers.prop'], 'binary').toString('utf-8');
+                if (headers.length > 0) {
+                    const keyvaluepairs = Array.from(headers.matchAll(Settings.RegEx.keyvaluepair), x => { return { key: x[1], value: x[2] } });
+                    const relevantHeaders = keyvaluepairs.filter(x => !Settings.Defaults.DataStores.discardHeaders.includes(x.key))
+                    relevantHeaders.forEach(async h => {
+                        await this.addLogEntry(4, 'Found header ' + h.key + ' with value ' + h.value);
+                    });
+                    itemData.headers = relevantHeaders;
+                }
+
+                const body = Buffer.from(unzipped['body'], 'binary').toString('utf-8');
+                if (body.length > 0) {
+                    await this.addLogEntry(4, 'Found body with length ' + body.length);
+                    itemData.body = body;
+                }
+            } catch (error) {
+                await this.addLogEntry(4, 'Error: ' + error);
+                await this.generateError('Data Store Entry', entryId, error);
+            }
+        } else {
+            await this.addLogEntry(4, 'Error: Could not download entry ' + entryId + '.');
+            await this.generateError('Data Store Entry', entryId, 'Could not download data store entry');
+        }
+        return itemData;
+    };
+    deployDataStore = async (packageId, flowId, store, entries) => {
+        await this.addLogEntry(2, 'Compiling integration flow ...');
+
+        const zipHelper = new ZipHelper.ZipHelper();
+        const updatedIntegrationFlowContent = await zipHelper.manipulateZipFile(Settings.Defaults.DataStores.templateFile, Settings.Defaults.DataStores.iflwFileInZip, async data => {
+            return await this.dataStoresSetValueInScript(data, store, entries);
+        });
+
+        await this.addLogEntry(2, 'Uploading Datastore for ' + flowId + ':');
+        const success = await this.cpisStartDeployment(packageId, flowId, updatedIntegrationFlowContent);
+        return success ? entries.length : 0;
+    };
+
+    dataStoresSetValueInScript = async (inputScript, store, entries) => {
+        try {
+            const entriesXML = entries.reduce((p, e) => {
+                return p + `<entry>
+                    <id>${e.Id}</id>
+                    <messageid>${e.MessageId}</messageid>
+                    <alert>${this.parseNumberDateToISO(e.DueAt)}</alert>
+                    <expire>${this.parseNumberDateToISO(e.RetainUntil)}</expire>
+                    <headers>
+                        ${e.content.headers.map(h => { return `<header><key>${h.key}</key><value>${h.value}</value></header>` }).join('\r\n')}
+                    </headers>
+                    <body>${e.content.body}</body>
+                </entry>`
+            }, '');
+            const rootXML = `<root>
+                <store>
+                    <name>${store.DataStoreName}</name>
+                    <flow>${store.IntegrationFlow}</flow>
+                    <entries>
+                        ${entriesXML}
+                    </entries>
+                </store>
+            </root>`;
+            return inputScript.replace('<root></root>', rootXML);
+        } catch (error) {
+            await this.addLogEntry(2, 'Error: ' + error);
+            await this.generateError('Datastore', 'Script set value', error);
+            return '';
+        }
+    };
+    parseNumberDateToISO = date => {
+        const d = new Date(parseInt(date.match(Settings.RegEx.dateTimestamp)[1]));
+        return d.toISOString().split('.')[0];
     };
 
     getListOfVariables = async () => {
@@ -224,7 +402,7 @@ class MigrationJob {
         await this.addLogEntry(2, 'Compiling integration flows ...');
         var successCount = 0;
 
-        const createPackageSuccess = await this.variablesCreateIntegrationPackage(packageId);
+        const createPackageSuccess = await this.cpisCreateIntegrationPackage(packageId);
         if (createPackageSuccess) {
             for (const variablesByFlow of variablesByFlows) {
                 const zipHelper = new ZipHelper.ZipHelper();
@@ -233,43 +411,11 @@ class MigrationJob {
                 });
 
                 await this.addLogEntry(2, 'Uploading Variables for ' + variablesByFlow.flowId + ':');
-                const createFlowSuccess = await this.variablesCreateIntegrationFlow(packageId, variablesByFlow.flowId, updatedIntegrationFlowContent);
-                const deployFlowSuccess = createFlowSuccess && await this.variablesDeployIntegrationFlow(variablesByFlow.flowId);
-
-                if (deployFlowSuccess) {
-                    await this.addLogEntry(3, 'Checking status of flow ' + variablesByFlow.flowId);
-                    const startTime = Date.now();
-                    var deployStatus = '';
-                    var waitAndFetchAgain = true;
-                    while (waitAndFetchAgain) {
-                        await this.sleep(Settings.Defaults.Variables.sleepInterval);
-                        deployStatus = await this.variablesGetIntegrationFlowDeploymentStatus(variablesByFlow.flowId);
-                        await this.addLogEntry(4, '... ' + deployStatus);
-                        waitAndFetchAgain = deployStatus !== Settings.Defaults.Variables.successStatus
-                            && deployStatus !== Settings.Defaults.Variables.errorStatus
-                            && (Date.now() - startTime < Settings.Defaults.Variables.maxWait);
-                    };
-                    if (deployStatus == Settings.Defaults.Variables.successStatus) {
-                        successCount += variablesByFlow.variables.length;
-                    } else {
-                        if (deployStatus == Settings.Defaults.Variables.errorStatus) {
-                            const errorText = 'Error: Integration flow ' + variablesByFlow.flowId + ' encountered an error during deployment. Try manually uploading generated zip file.'
-                            await this.addLogEntry(4, errorText);
-                            await this.generateError('Variable', 'Flow deployment status', errorText);
-                        } else {
-                            const errorText = 'Error: Integration flow ' + variablesByFlow.flowId + ' was not successfully deployed within ' + Settings.Defaults.Variables.maxWait + 'ms.'
-                            await this.addLogEntry(4, errorText);
-                            await this.generateError('Variable', 'Flow deployment status', errorText);
-                        }
-                    }
-                }
-                await this.addLogEntry(2, 'Cleaning up temporary artifacts:');
-                deployFlowSuccess && await this.variablesUndeployIntegrationFlow(variablesByFlow.flowId);
-                createFlowSuccess && await this.variablesDeleteIntegrationFlow(variablesByFlow.flowId);
+                const success = await this.cpisStartDeployment(packageId, variablesByFlow.flowId, updatedIntegrationFlowContent);
+                successCount += success ? variablesByFlow.variables.length : 0;
             }
         }
-
-        createPackageSuccess && await this.variablesDeleteIntegrationPackage(packageId);
+        createPackageSuccess && await this.cpisDeleteIntegrationPackage(packageId);
 
         return successCount;
     };
@@ -317,61 +463,6 @@ class MigrationJob {
             await this.generateError('Variable', 'XML set value', error);
             return '';
         }
-    };
-    variablesCreateIntegrationPackage = async (packageId) => {
-        await this.addLogEntry(3, 'Creating package ' + packageId);
-        const payload = {
-            Id: packageId,
-            Name: packageId,
-            Description: 'Helper Package for Global Variable Migration',
-            ShortText: 'Helper Package for Global Variable Migration',
-            Version: '1.0',
-            SupportedPlatform: 'SAP Cloud Integration',
-            Products: 'SAP Cloud Integration',
-            Keywords: 'SAP Cloud Integration',
-            Countries: '',
-            Industries: '',
-            LineOfBusiness: ''
-        };
-        const response = await this.ConnectorTarget.externalPost(Settings.Paths.IntegrationPackages.path, payload);
-        return await this.validateResponse('Variables', 'Package creation', response, 4, [], []); //409 ignore
-    };
-    variablesCreateIntegrationFlow = async (packageId, flowId, binaryContent) => {
-        await this.addLogEntry(3, 'Creating flow ' + flowId);
-        const artifactContent = Buffer.from(binaryContent, 'binary').toString('base64');
-        const payload = {
-            Name: flowId,
-            Id: flowId,
-            PackageId: packageId,
-            ArtifactContent: artifactContent
-        };
-        const response = await this.ConnectorTarget.externalPost(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.create, payload);
-        return await this.validateResponse('Variables', 'Flow creation', response, 4);
-    };
-    variablesDeployIntegrationFlow = async (flowId) => {
-        await this.addLogEntry(3, 'Deploying flow ' + flowId);
-        const response = await this.ConnectorTarget.externalPost(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.deploy.replace('{ARTIFACT_ID}', flowId));
-        return await this.validateResponse('Variables', 'Flow deployment', response, 4);
-    };
-    variablesGetIntegrationFlowDeploymentStatus = async (flowId) => {
-        const response = await this.ConnectorTarget.externalCall(Settings.Paths.IntegrationPackages.IntegrationRuntimeArtifacts.path.replace('{ARTIFACT_ID}', flowId), true);
-        const status = response ? response.Status : 'DEPLOYING';
-        return status;
-    };
-    variablesUndeployIntegrationFlow = async (flowId) => {
-        await this.addLogEntry(3, 'Undeploying flow ' + flowId);
-        const response = await this.ConnectorTarget.externalDelete(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.undeploy.replace('{ARTIFACT_ID}', flowId));
-        return await this.validateResponse('Variables', 'Flow undeployment', response, 4, [], [404]);
-    };
-    variablesDeleteIntegrationFlow = async (flowId) => {
-        await this.addLogEntry(3, 'Deleting flow ' + flowId);
-        const response = await this.ConnectorTarget.externalDelete(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.delete.replace('{ARTIFACT_ID}', flowId));
-        return await this.validateResponse('Variables', 'Flow deletion', response, 4, [], [404]);
-    };
-    variablesDeleteIntegrationPackage = async (packageId) => {
-        await this.addLogEntry(3, 'Deleting package ' + packageId);
-        const response = await this.ConnectorTarget.externalDelete(Settings.Paths.IntegrationPackages.delete.replace('{PACKAGE_ID}', packageId));
-        return await this.validateResponse('Variables', 'Package deletion', response, 4, [], [404]);
     };
 
     migrateIntegrationPackages = async () => {
@@ -493,11 +584,15 @@ class MigrationJob {
             // Deleting existing package
             deleteBeforeHand && await this.deleteIntegrationPackage(item);
 
-            // Migrating variables before the actual content
+            // Migrating Variables and Data stores before the actual content
             const integrationFlowIds = await this.listIntegrationFlowsInPackage(customizedData);
             const localVariables = this.Variables.filter(x => x.Visibility == 'Integration Flow' && integrationFlowIds.includes(x.IntegrationFlow));
             if (localVariables.length > 0) {
                 await this.migrateLocalVariables(integrationFlowIds);
+            }
+            const localDataStores = this.DataStores.filter(x => x.Visibility == 'Integration Flow' && integrationFlowIds.includes(x.IntegrationFlow));
+            if (localDataStores.length > 0) {
+                await this.migrateLocalDataStores(integrationFlowIds);
             }
 
             // Migrating actual content
@@ -1176,6 +1271,104 @@ class MigrationJob {
                 status: 'error'
             };
         }
+    };
+
+    //CPIS
+    cpisStartDeployment = async (packageId, flowId, flowContent) => {
+        var success = false;
+        const createFlowSuccess = await this.cpisCreateIntegrationFlow(packageId, flowId, flowContent);
+        const deployFlowSuccess = createFlowSuccess && await this.cpisDeployIntegrationFlow(flowId);
+
+        if (deployFlowSuccess) {
+            await this.addLogEntry(3, 'Checking status of flow ' + flowId);
+            const startTime = Date.now();
+            var deployStatus = '';
+            var waitAndFetchAgain = true;
+            while (waitAndFetchAgain) {
+                await this.sleep(Settings.Defaults.FlowDeployment.sleepInterval);
+                deployStatus = await this.cpisGetIntegrationFlowDeploymentStatus(flowId, new Date(startTime).toISOString().split('.')[0]);
+                await this.addLogEntry(4, '... ' + deployStatus);
+                waitAndFetchAgain = deployStatus !== Settings.Defaults.FlowDeployment.successStatus
+                    && deployStatus !== Settings.Defaults.FlowDeployment.errorStatus
+                    && (Date.now() - startTime < Settings.Defaults.FlowDeployment.maxWait);
+            };
+            if (deployStatus == Settings.Defaults.FlowDeployment.successStatus) {
+                success = true;
+            } else {
+                if (deployStatus == Settings.Defaults.FlowDeployment.errorStatus) {
+                    const errorText = 'Error: Integration flow ' + flowId + ' encountered an error during deployment. Try manually uploading generated zip file.'
+                    await this.addLogEntry(4, errorText);
+                    await this.generateError('iFlow Deployment', 'Flow deployment status', errorText);
+                } else {
+                    const errorText = 'Error: Integration flow ' + flowId + ' was not successfully deployed within ' + Settings.Defaults.FlowDeployment.maxWait + 'ms.'
+                    await this.addLogEntry(4, errorText);
+                    await this.generateError('iFlow Deployment', 'Flow deployment status', errorText);
+                }
+            }
+            await this.addLogEntry(2, 'Cleaning up temporary artifacts:');
+            deployFlowSuccess && await this.cpisUndeployIntegrationFlow(flowId);
+            createFlowSuccess && await this.cpisDeleteIntegrationFlow(flowId);
+        }
+        return success;
+    };
+    cpisCreateIntegrationPackage = async (packageId) => {
+        await this.addLogEntry(3, 'Creating package ' + packageId);
+        const payload = {
+            Id: packageId,
+            Name: packageId,
+            Description: 'Helper Package for Migration',
+            ShortText: 'Helper Package for Migration',
+            Version: '1.0',
+            SupportedPlatform: 'SAP Cloud Integration',
+            Products: '',
+            Keywords: 'Migration Tool Helper',
+            Countries: '',
+            Industries: '',
+            LineOfBusiness: ''
+        };
+        const response = await this.ConnectorTarget.externalPost(Settings.Paths.IntegrationPackages.path, payload);
+        return await this.validateResponse('Helper iFlow', 'Package creation', response, 4, [], []); //409 ignore
+    };
+    cpisCreateIntegrationFlow = async (packageId, flowId, binaryContent) => {
+        await this.addLogEntry(3, 'Creating flow ' + flowId);
+        const artifactContent = Buffer.from(binaryContent, 'binary').toString('base64');
+        const payload = {
+            Name: flowId,
+            Id: flowId,
+            PackageId: packageId,
+            ArtifactContent: artifactContent
+        };
+        const response = await this.ConnectorTarget.externalPost(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.create, payload);
+        return await this.validateResponse('Helper iFlow', 'Flow creation', response, 4);
+    };
+    cpisDeployIntegrationFlow = async (flowId) => {
+        await this.addLogEntry(3, 'Deploying flow ' + flowId);
+        const response = await this.ConnectorTarget.externalPost(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.deploy.replace('{ARTIFACT_ID}', flowId));
+        return await this.validateResponse('Helper iFlow', 'Flow deployment', response, 4);
+    };
+    cpisGetIntegrationFlowDeploymentStatus = async (flowId, startTime) => {
+        const response = await this.ConnectorTarget.externalCall(Settings.Paths.IntegrationPackages.IntegrationRuntimeArtifacts.path.replace('{ARTIFACT_ID}', flowId), true);
+        const status = response ? response.Status : 'DEPLOYING';
+
+        const msgProcessed = await this.ConnectorTarget.externalCall(Settings.Paths.MessageProcessingLogs.path.replace('{ARTIFACT_ID}', flowId).replace('{START_TIME}', startTime), true);
+        console.log(`Status: ${status}, messages processed: ${msgProcessed.length}`);
+
+        return msgProcessed.length > 0 ? Settings.Defaults.FlowDeployment.successStatus : status;
+    };
+    cpisUndeployIntegrationFlow = async (flowId) => {
+        await this.addLogEntry(3, 'Undeploying flow ' + flowId);
+        const response = await this.ConnectorTarget.externalDelete(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.undeploy.replace('{ARTIFACT_ID}', flowId));
+        return await this.validateResponse('Helper iFlow', 'Flow undeployment', response, 4, [], [404]);
+    };
+    cpisDeleteIntegrationFlow = async (flowId) => {
+        await this.addLogEntry(3, 'Deleting flow ' + flowId);
+        const response = await this.ConnectorTarget.externalDelete(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.delete.replace('{ARTIFACT_ID}', flowId));
+        return await this.validateResponse('Helper iFlow', 'Flow deletion', response, 4, [], [404]);
+    };
+    cpisDeleteIntegrationPackage = async (packageId) => {
+        await this.addLogEntry(3, 'Deleting package ' + packageId);
+        const response = await this.ConnectorTarget.externalDelete(Settings.Paths.IntegrationPackages.delete.replace('{PACKAGE_ID}', packageId));
+        return await this.validateResponse('Helper iFlow', 'Package deletion', response, 4, [], [404]);
     };
 
     // Helpers

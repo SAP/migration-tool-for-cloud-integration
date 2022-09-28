@@ -9,7 +9,8 @@ module.exports = {
             AccessPolicies: '/itspaces/shell/monitoring/AccessPolicies',
             Keystore: '/itspaces/shell/monitoring/Keystore',
             CustomTags: '/itspaces/shell/tenantsettings',
-            LimitationsDocument: 'https://github.com/SAP/migration-tool-for-cloud-integration/blob/main/docs/Limitations.md'
+            LimitationsDocument: 'https://github.com/SAP/migration-tool-for-cloud-integration/blob/main/docs/Limitations.md',
+            DataStores: '/itspaces/shell/monitoring/DataStores'
         },
         IntegrationPackages: {
             path: '/api/v1/IntegrationPackages',
@@ -36,6 +37,9 @@ module.exports = {
                 ValMapSchema: { path: '/api/v1/ValueMappingDesigntimeArtifacts(Id=\'{ARTIFACT_ID}\',Version=\'{VERSION_ID}\')/ValMapSchema' }
             },
             CustomTags: { path: '/api/v1/IntegrationPackages(\'{PACKAGE_ID}\')/CustomTags' }
+        },
+        MessageProcessingLogs: {
+            path: '/api/v1/MessageProcessingLogs?$inlinecount=allpages&$filter=IntegrationFlowName eq \'{ARTIFACT_ID}\' and Status eq \'COMPLETED\' and LogStart gt datetime\'{START_TIME}\''
         },
         ValueMappingDesigntimeArtifacts: {
             path: 'api/v1/ValueMappingDesigntimeArtifacts',
@@ -93,7 +97,13 @@ module.exports = {
             }
         },
         Batch: '/api/v1/$batch',
-        DataStores: { path: '/api/v1/DataStores' },
+        DataStores: {
+            path: '/api/v1/DataStores',
+            Entries: {
+                path: '/api/v1/DataStores(DataStoreName=\'{DATA_STORE_NAME}\',IntegrationFlow=\'{INTEGRATION_FLOW}\',Type=\'{TYPE}\')/Entries',
+                download: '/api/v1/DataStoreEntries(Id=\'{ENTRY_ID}\',DataStoreName=\'{DATA_STORE_NAME}\',IntegrationFlow=\'{INTEGRATION_FLOW}\',Type=\'{TYPE}\')/$value'
+            }
+        },
         Variables: {
             path: '/api/v1/Variables',
             download: '/api/v1/Variables(VariableName=\'{VARIABLE_NAME}\',IntegrationFlow=\'{FLOW_ID}\')/$value'
@@ -134,7 +144,8 @@ module.exports = {
         CustomTags: 'Custom Tag',
         JMSBrokers: 'JMS Broker',
         Variables: 'Global Variable',
-        CertificateUserMappings: 'Certificate User Mapping'
+        CertificateUserMappings: 'Certificate User Mapping',
+        DataStores: 'Global Data Store'
     },
 
     DefaultPassword: 'default',
@@ -170,21 +181,30 @@ module.exports = {
 
     Defaults: {
         Variables: {
-            packageId: 'migrationtoolMigrateVariables',
+            packageId: 'migrationtoolVariables',
             flowId: 'migrationtoolCreateVariables',
             templateFile: 'srv/config/migrationtoolCreateVariables.zip',
-            iflwFileInZip: 'src/main/resources/scenarioflows/integrationflow/CreateGlobalVariable.iflw',
-            sleepInterval: 2000,
+            iflwFileInZip: 'src/main/resources/scenarioflows/integrationflow/CreateGlobalVariable.iflw'
+        },
+        DataStores: {
+            packageId: 'migrationtoolDatastores',
+            flowId: 'migrationtoolCreateDatastore',
+            templateFile: 'srv/config/migrationtoolCreateDatastoreEntries.zip',
+            iflwFileInZip: 'src/main/resources/script/script1.groovy',
+            discardHeaders: ['SAP_MplCorrelationId', 'SAP_PregeneratedMplid']
+        },
+        FlowDeployment: {
+            sleepInterval: 3 * 1000,
             successStatus: 'STARTED',
             errorStatus: 'ERROR',
-            maxWait: 60000
+            maxWait: 4 * 60 * 1000
         },
         CertificateUserMappings: {
-            sleepInterval: 1500,
+            sleepInterval: 3 * 1000,
             actionType: 'create',
             successStatus: 'succeeded',
             errorStatus: 'failed',
-            maxWait: 60000
+            maxWait: 60 * 1000
         }
     }
 };

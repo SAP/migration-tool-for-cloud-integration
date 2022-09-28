@@ -28,17 +28,22 @@ service ConfigService {
             _it.toOAuth2ClientCredentials,
             _it.toUserCredentials,
             _it.toVariables,
-            _it.toCertificateUserMappings
+            _it.toCertificateUserMappings,
+            _it.toDataStores
         ]
         action Tenant_getIntegrationContent() returns Tenants;
 
         @cds.odata.bindingparameter.name   : '_it'
         @Common.SideEffects.TargetEntities : [_it.toMigrationTasks]
         action Tenant_createNewMigrationTask(
+
                 @UI.ParameterDefaultValue :  'My new migration task'
                 @title                    :  'Task Name'
                 @mandatory
-        Name : String, Description : String,
+        Name : String,
+
+
+        Description : String,
 
                 @title                    :  'Target Tenant'
                 @mandatory
@@ -111,6 +116,8 @@ service ConfigService {
     } group by ObjectID;
 
     entity CertificateUserMappingRoles     as projection on my.extCertificateUserMappingRoles;
+    entity DataStores                      as projection on my.extDataStores;
+    entity DataStoreEntries                as projection on my.extDataStoreEntries;
 
     @sap.deletable : false
     entity Errors                          as projection on my.Errors;

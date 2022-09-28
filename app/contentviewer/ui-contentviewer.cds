@@ -191,6 +191,15 @@ annotate ConfigService.Tenants with @(UI : {
                         $Type  : 'UI.ReferenceFacet',
                         Target : 'toVariables/@UI.PresentationVariant'
                     }]
+                },
+                {
+                    $Type  : 'UI.CollectionFacet',
+                    ID     : 'datastorescontent',
+                    Label  : 'Data Stores',
+                    Facets : [{
+                        $Type  : 'UI.ReferenceFacet',
+                        Target : 'toDataStores/@UI.PresentationVariant'
+                    }]
                 }
             ]
         },
@@ -233,7 +242,8 @@ annotate ConfigService.Tenants with @(UI : {
         {Value : Statistics_numOAuth2ClientCredentials},
         {Value : Statistics_numJMSBrokers},
         {Value : Statistics_numVariables},
-        {Value : Statistics_numCertificateUserMappings}
+        {Value : Statistics_numCertificateUserMappings},
+        {Value : Statistics_numDataStores}
     ]},
     FieldGroup #Tasks    : {Data : [{
         $Type  : 'UI.DataFieldForAction',
@@ -269,6 +279,7 @@ annotate ConfigService.Tenants with @(UI : {
         numJMSBrokers                      @title : 'JMS Brokers';
         numVariables                       @title : 'Variables';
         numCertificateUserMappings         @title : 'Certificate-to-User Mappings';
+        numDataStores                      @title : 'Data Stores';
     }
 };
 
@@ -1250,4 +1261,143 @@ annotate ConfigService.Variables with @(UI : {
     Visibility      @title : 'Visibility';
     UpdatedAt       @title : 'Updated at';
     RetainUntil     @title : 'Retain until';
+};
+
+
+// DataStores ----------------------------------------------------------------------------
+annotate ConfigService.DataStores with @(UI : {
+    PresentationVariant : {
+        SortOrder      : [{Property : DataStoreName}],
+        Visualizations : ['@UI.LineItem']
+    },
+    HeaderInfo          : {
+        TypeName       : 'Data Store',
+        TypeNamePlural : 'Data Stores',
+        Title          : {Value : DataStoreName},
+        Description    : {Value : ObjectID}
+    },
+    LineItem            : [
+        {
+            Value                 : DataStoreName,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
+        {
+            Value                 : Type,
+            ![@HTML5.CssDefaults] : {width : '8rem'}
+        },
+        {
+            Value                 : Visibility,
+            ![@HTML5.CssDefaults] : {width : '10rem'}
+        },
+        {
+            Value                 : IntegrationFlow,
+            ![@HTML5.CssDefaults] : {width : '30rem'}
+        },
+        {
+            Value                 : NumberOfMessages,
+            ![@HTML5.CssDefaults] : {width : '8rem'}
+        },
+        {
+            Value                 : NumberOfOverdueMessages,
+            ![@HTML5.CssDefaults] : {width : '10rem'}
+        }
+    ],
+    Facets              : [
+        {
+            $Type  : 'UI.CollectionFacet',
+            ID     : 'metadata',
+            Label  : 'Metadata',
+            Facets : [{
+                $Type  : 'UI.ReferenceFacet',
+                Target : '@UI.FieldGroup#Basic'
+            }]
+        },
+        {
+            $Type  : 'UI.CollectionFacet',
+            ID     : 'content',
+            Label  : 'Content',
+            Facets : [{
+                $Type  : 'UI.ReferenceFacet',
+                Target : 'toDataStoreEntries/@UI.PresentationVariant',
+            }]
+        }
+    ],
+    FieldGroup #Basic   : {Data : [
+        {Value : DataStoreName},
+        {Value : IntegrationFlow},
+        {Value : Type},
+        {Value : Visibility},
+        {Value : NumberOfMessages},
+        {Value : NumberOfOverdueMessages}
+    ]}
+}) {
+    DataStoreName           @title : 'Name';
+    IntegrationFlow         @title : 'Integration Flow';
+    Type                    @title : 'Type';
+    Visibility              @title : 'Visibility';
+    NumberOfMessages        @title : 'Messages';
+    NumberOfOverdueMessages @title : 'Overdue Messages';
+};
+
+annotate ConfigService.DataStoreEntries with @(UI : {
+    PresentationVariant : {
+        SortOrder      : [{Property : Id}],
+        Visualizations : ['@UI.LineItem']
+    },
+    HeaderInfo          : {
+        TypeName       : 'Entry',
+        TypeNamePlural : 'Entries',
+        Title          : {Value : Id},
+        Description    : {Value : ObjectID}
+    },
+    LineItem            : [
+        {
+            Value                 : Id,
+            ![@HTML5.CssDefaults] : {width : '16rem'}
+        },
+        {
+            Value                 : MessageId,
+            ![@HTML5.CssDefaults] : {width : '20rem'}
+        },
+        {
+            Value                 : Status,
+            ![@HTML5.CssDefaults] : {width : '10rem'}
+        },
+        {
+            Value                 : DueAt,
+            ![@HTML5.CssDefaults] : {width : '14rem'}
+        },
+        {
+            Value                 : CreatedAt,
+            ![@HTML5.CssDefaults] : {width : '14rem'}
+        },
+        {
+            Value                 : RetainUntil,
+            ![@HTML5.CssDefaults] : {width : '14rem'}
+        }
+    ],
+    Facets              : [{
+        $Type  : 'UI.CollectionFacet',
+        ID     : 'metadata',
+        Label  : 'Metadata',
+        Facets : [{
+            $Type  : 'UI.ReferenceFacet',
+            Target : '@UI.FieldGroup#Basic'
+        }]
+    }],
+    FieldGroup #Basic   : {Data : [
+        {Value : Id},
+        {Value : Status},
+        {Value : MessageId},
+        {Value : DueAt},
+        {Value : CreatedAt},
+        {Value : RetainUntil}
+    ]}
+}) {
+    Id          @title : 'Id';
+    Status      @title : 'Status';
+    MessageId   @title : 'Message ID';
+    DueAt       @title : 'Due At';
+    CreatedAt   @title : 'Created';
+    RetainUntil @title : 'Retain Until';
 };

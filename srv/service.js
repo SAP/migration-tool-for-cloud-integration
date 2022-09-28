@@ -157,7 +157,8 @@ module.exports = async (srv) => {
                 t('Statistics_numOAuth2ClientCredentials'),
                 t('Statistics_numAccessPolicies'),
                 t('Statistics_numVariables'),
-                t('Statistics_numCertificateUserMappings')
+                t('Statistics_numCertificateUserMappings'),
+                t('Statistics_numDataStores')
         });
 
         const countItems = Object.keys(TenantStats).reduce((p, c) => p + TenantStats[c], 0);
@@ -247,7 +248,8 @@ module.exports = async (srv) => {
                 x.Component == Settings.ComponentNames.NumberRange ||
                 x.Component == Settings.ComponentNames.CustomTags ||
                 x.Component == Settings.ComponentNames.JMSBrokers ||
-                x.Component == Settings.ComponentNames.Variables
+                x.Component == Settings.ComponentNames.Variables ||
+                x.Component == Settings.ComponentNames.DataStores
             )).length;
         }
     });

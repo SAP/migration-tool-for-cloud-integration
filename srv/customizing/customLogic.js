@@ -64,5 +64,40 @@ class CustomLogic {
         }
     };
 
+    onMigrateDataStore = async (store, entries) => {
+        // 'store' contains the data store information
+        // 'entries' contains an array of objects part of the data store (store property changes need to be done on the store object)
+        // sample data:
+        //
+        // store = {
+        //     DataStoreName: 'MyDS01',
+        //     IntegrationFlow: '',
+        //     Type: '',
+        //     Visibility: 'Global',
+        //     NumberOfMessages: '1',
+        //     NumberOfOverdueMessages: '1',
+        //     Entries: {}
+        // }
+        //
+        // entries = [
+        //     {
+        //       Id: 'myentry56',
+        //       DataStoreName: 'MyDS01',
+        //       IntegrationFlow: '',
+        //       Type: '',
+        //       Status: 'Overdue',
+        //       MessageId: 'AGMV9MLP7WEtNX45R9ktnck0d2VI',
+        //       DueAt: '/Date(1662556098586)/',
+        //       CreatedAt: '/Date(1662383298586)/',
+        //       RetainUntil: '/Date(1664975298586)/',
+        //       content: {
+        //         headers: [],
+        //         body: 'This is a test message in the datastore. global'
+        //       }
+        //     }
+        //   ]
+
+        this.customConfiguration.name_prefix && (store.DataStoreName = this.customConfiguration.name_prefix + store.DataStoreName);
+    }
 };
 module.exports = { CustomLogic: CustomLogic };

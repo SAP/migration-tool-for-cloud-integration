@@ -86,6 +86,8 @@ entity Tenants : managed {
                                             on toVariables.toParent = $self;
         toCertificateUserMappings     : Composition of many extCertificateUserMappings
                                             on toCertificateUserMappings.toParent = $self;
+        toDataStores                  : Composition of many extDataStores
+                                            on toDataStores.toParent = $self;
 };
 
 type TenantStatisticsType {
@@ -106,6 +108,7 @@ type TenantStatisticsType {
     numJMSBrokers                      : Integer default 0;
     numVariables                       : Integer default 0;
     numCertificateUserMappings         : Integer default 0;
+    numDataStores                      : Integer default 0;
 };
 
 
@@ -362,6 +365,32 @@ entity extVariables {
         UpdatedAt       : DateTime;
         RetainUntil     : DateTime;
 };
+
+// Data Stores ------------------------------------------------------------------------------------
+entity extDataStores {
+    key ObjectID                : UUID @Core.Computed;
+        toParent                : Association to one Tenants;
+        DataStoreName           : String;
+        IntegrationFlow         : String;
+        Type                    : String;
+        Visibility              : String;
+        NumberOfMessages        : String;
+        NumberOfOverdueMessages : String;
+        toDataStoreEntries      : Composition of many extDataStoreEntries
+                                      on toDataStoreEntries.toParent = $self;
+};
+
+entity extDataStoreEntries {
+    key ObjectID    : UUID @Core.Computed;
+        toParent    : Association to one extDataStores;
+    key Id          : String;
+        Status      : String;
+        MessageId   : String;
+        DueAt       : DateTime;
+        CreatedAt   : DateTime;
+        RetainUntil : DateTime;
+};
+
 
 // Migration Tasks ------------------------------------------------------------------------------------
 entity MigrationTasks : managed {

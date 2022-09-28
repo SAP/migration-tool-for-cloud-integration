@@ -175,6 +175,11 @@
                     "pattern": "Tenants({key})/toVariables({key2}):?query:",
                     "name": "VariablesObjectPage_toVariables",
                     "target": "VariablesObjectPage_toVariables"
+                },
+                {
+                    "pattern": "Tenants({key})/toDataStores({key2}):?query:",
+                    "name": "DataStoresObjectPage_toDataStores",
+                    "target": "DataStoresObjectPage_toDataStores"
                 }
             ],
             "targets": {
@@ -261,6 +266,11 @@
                                     "detail": {
                                         "route": "CertificateUserMappingsObjectPage_toCertificateUserMappings"
                                     }
+                                },
+                                "toDataStores": {
+                                    "detail": {
+                                        "route": "DataStoresObjectPage_toDataStores"
+                                    }
                                 }
                             },
                             "content": {},
@@ -317,6 +327,11 @@
                                     }
                                 },
                                 "toCertificateUserMappings/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "enableFullScreen": true
+                                    }
+                                },
+                                "toDataStores/@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
                                         "enableFullScreen": true
                                     }
@@ -551,6 +566,18 @@
                     "options": {
                         "settings": {
                             "entitySet": "CertificateUserMappingRoles",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "DataStoresObjectPage_toDataStores": {
+                    "type": "Component",
+                    "id": "DataStoresObjectPage_toDataStores",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "DataStores",
                             "navigation": {},
                             "content": {}
                         }

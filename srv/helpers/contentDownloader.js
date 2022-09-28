@@ -24,7 +24,8 @@ class ContentDownloader {
             Statistics_numOAuth2ClientCredentials: 0,
             Statistics_numJMSBrokers: 0,
             Statistics_numVariables: 0,
-            Statistics_numCertificateUserMappings: 0
+            Statistics_numCertificateUserMappings: 0,
+            Statistics_numDataStores: 0
         };
         this.Connector = this.Tenant && new Connectivity.ExternalConnection(this.Tenant);
         this.OAuth2ClientCredentialsList = [];
@@ -69,6 +70,7 @@ class ContentDownloader {
         await this.getOAuth2ClientCredentials().then(n => this.stats.Statistics_numOAuth2ClientCredentials += n);
         await this.getUserCredentials().then(n => this.stats.Statistics_numUserCredentials += n);
         await this.getVariables().then(n => this.stats.Statistics_numVariables += n);
+        await this.getDataStores().then(n => this.stats.Statistics_numDataStores += n);
 
         if (this.Tenant.UseForCertificateUserMappings) {
             if (this.Tenant.Environment == 'Neo') {
@@ -548,6 +550,53 @@ class ContentDownloader {
         return items.length;
     };
 
+    getDataStores = async () => {
+        console.log('getDataStores ' + this.Tenant.ObjectID);
+        const items = await this.Connector.externalCall(Settings.Paths.DataStores.path);
+
+        await this.checkDataStores(items);
+
+        this.removeInvalidParameters(cds.entities.extDataStores, items);
+        for (let each of items) {
+            each.toParent_ObjectID = this.Tenant.ObjectID;
+        };
+        await DELETE.from('extDataStores').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        items.length > 0 && await INSERT(items).into('extDataStores');
+
+        for (let each of items) {
+            await this.getDataStoreEntries(each.ObjectID, each.DataStoreName, each.IntegrationFlow, each.Type);
+        }
+        return items.length;
+    };
+    getDataStoreEntries = async (id, name, flow, type) => {
+        console.log('getDataStoreEntries ' + name);
+        const items = await this.Connector.externalCall(Settings.Paths.DataStores.Entries.path
+            .replace('{DATA_STORE_NAME}', name)
+            .replace('{INTEGRATION_FLOW}', flow)
+            .replace('{TYPE}', type));
+
+        this.removeInvalidParameters(cds.entities.extDataStoreEntries, items);
+        for (let each of items) {
+            each.DueAt = new Date(parseInt(each.DueAt.match(Settings.RegEx.dateTimestamp)[1]));
+            each.CreatedAt = new Date(parseInt(each.CreatedAt.match(Settings.RegEx.dateTimestamp)[1]));
+            each.RetainUntil = new Date(parseInt(each.RetainUntil.match(Settings.RegEx.dateTimestamp)[1]));
+            each.toParent_ObjectID = id;
+        };
+        await DELETE.from('extDataStoreEntries').where({ 'toParent_ObjectID': id });
+        items.length > 0 && await INSERT(items).into('extDataStoreEntries');
+
+        return items.length;
+    };
+    checkDataStores = async (items) => {
+        var count = 0;
+        for (let each of items) {
+            if (each.Type !== '')
+                count += await this.createError('Integration Flow', 'Error', each.IntegrationFlow, `Item relies on data store from ${each.Type} adapter, which can not be migrated`, Settings.Paths.DeepLinks.DataStores);
+        }
+        console.log('checkDataStores returned ' + count + ' errors.');
+        return count;
+    };
+
     generateLimitationNotices = async () => {
         console.log('generateLimitationNotices ' + this.Tenant.ObjectID);
 
@@ -557,7 +606,7 @@ class ContentDownloader {
         //         'This tenant contains ' + certificateUserMappings.length + ' certificate user mapping(s) which are not supported for migration: ' + certificateUserMappings.join(', '), Settings.Paths.DeepLinks.LimitationsDocument);
         // }
 
-        const dataStores = (await this.Connector.externalCall(Settings.Paths.DataStores.path)).map(x => x.DataStoreName);
+        const dataStores = (await this.Connector.externalCall(Settings.Paths.DataStores.path)).filter(x => x.Type !== '').map(x => `${x.DataStoreName} (${x.Type})`);
         dataStores.length > 0 && await this.createError('Data Store', 'Limitation', { Name: 'See documentation' },
             'This tenant contains ' + dataStores.length + ' data store(s) which are not supported for migration: ' + dataStores.join(', '), Settings.Paths.DeepLinks.LimitationsDocument);
 
@@ -709,13 +758,13 @@ class ContentDownloader {
                 const jsonCollaboration = jsonDefinitions && jsonDefinitions['bpmn2:collaboration'] || false;
                 const jsonElements = jsonCollaboration[0] || {};
                 const participantIDs = jsonElements['bpmn2:participant'] && jsonElements['bpmn2:participant'].filter(x => x['$']['ifl:type'] == 'EndpointSender').map(x => x['$']['id']) || [];
-            
+
                 participantIDs.forEach(p => {
                     const participantSettings = jsonElements['bpmn2:messageFlow'] && jsonElements['bpmn2:messageFlow'].find(x => x['$']['sourceRef'] == p) || false;
                     const properties = participantSettings && participantSettings['bpmn2:extensionElements'][0]['ifl:property'] || false;
                     const senderAuthTypeProperty = properties && properties.find(x => x.key[0] == 'senderAuthType') || false;
                     const senderAuthType = senderAuthTypeProperty && senderAuthTypeProperty.value[0];
-            
+
                     if (senderAuthTypeProperty) console.log('    Participant ' + p + ' is a ' + participantSettings['$']['name'] + ' sender with authentication type set to ' + senderAuthType);
                     if (senderAuthType == 'ClientCertificate') count++;
                 });
