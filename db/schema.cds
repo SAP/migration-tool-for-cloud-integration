@@ -38,7 +38,7 @@ entity Tenants : managed {
         Host                          : String;
         Token_host                    : String;
         Oauth_clientid                : String;
-        Oauth_secret                  : String  @Common.MaskedAlways :         true;
+        Oauth_secret                  : String;
         Oauth_servicekeyid            : String;
         CF_organizationID             : String;
         CF_organizationName           : String;

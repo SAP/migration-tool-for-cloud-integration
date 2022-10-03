@@ -224,10 +224,7 @@ service RegistrationService {
         @Core.OperationAvailable         : _it.IsActiveEntity
         action Tenant_testConnection() returns Boolean;
 
-        // @cds.odata.bindingparameter.name : '_it'
-        // @Core.OperationAvailable         : _it.IsActiveEntity
-        @Common.IsActionCritical         : true
-        action Tenant_export()         returns Boolean;
+        action Tenant_duplicate()      returns Tenants;
     };
 
     @readonly
@@ -236,8 +233,12 @@ service RegistrationService {
     @readonly
     entity Landscapes  as projection on my.Landscapes;
 
+    @Common.IsActionCritical : true
+    action Tenant_export() returns Boolean;
+
 };
 
 service AppInformation {
+    @readonly
     entity LaunchpadInfo as projection on my.LaunchpadInfo;
 };

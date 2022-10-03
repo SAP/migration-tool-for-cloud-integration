@@ -65,15 +65,19 @@ annotate RegistrationService.Tenants with @(UI : {
             ![@HTML5.CssDefaults] : {width : '30rem'}
         },
         {
-            $Type       : 'UI.DataFieldForAction',
-            Label       : 'Test Connection',
-            Determining : false,
-            Action      : 'RegistrationService.Tenant_testConnection'
+            $Type  : 'UI.DataFieldForAction',
+            Label  : 'Duplicate',
+            Action : 'RegistrationService.Tenant_duplicate'
         },
         {
             $Type  : 'UI.DataFieldForAction',
-            Label  : 'Export All to CSV',
-            Action : 'RegistrationService.Tenant_export'
+            Label  : 'Test Connection',
+            Action : 'RegistrationService.Tenant_testConnection'
+        },
+        {
+            $Type  : 'UI.DataFieldForAction',
+            Label  : 'Export to CSV',
+            Action : 'RegistrationService.EntityContainer/Tenant_export'
         }
     ],
     HeaderFacets                  : [{
@@ -233,7 +237,10 @@ annotate RegistrationService.Tenants with @(UI : {
     FieldGroup #Connection_auth   : {Data : [
         {Value : Token_host},
         {Value : Oauth_clientid},
-        {Value : Oauth_secret}
+        {
+            Value         : Oauth_secret,
+            ![@UI.Hidden] : {$edmJson : {$Path : 'IsActiveEntity'}}
+        }
     ]},
     FieldGroup #CF_data           : {Data : [
         {Value : CF_organizationName},
@@ -244,12 +251,18 @@ annotate RegistrationService.Tenants with @(UI : {
     FieldGroup #CF_Platform_user  : {Data : [
         {Value : CF_Platform_domain},
         {Value : CF_Platform_user},
-        {Value : CF_Platform_password}
+        {
+            Value         : CF_Platform_password,
+            ![@UI.Hidden] : {$edmJson : {$Path : 'IsActiveEntity'}}
+        }
     ]},
     FieldGroup #Neo_Platform_user : {Data : [
         {Value : Neo_Platform_domain},
         {Value : Neo_Platform_user},
-        {Value : Neo_Platform_password}
+        {
+            Value         : Neo_Platform_password,
+            ![@UI.Hidden] : {$edmJson : {$Path : 'IsActiveEntity'}}
+        }
     ]}
 }) {
     ObjectID                      @title : 'View Content'  @Common.SemanticObject       : 'tenants';
@@ -257,7 +270,7 @@ annotate RegistrationService.Tenants with @(UI : {
     Host                          @title : 'Integration Host'  @UI.Placeholder          : '{subdomain}.{environment}.cfapps.eu10-001.hana.ondemand.com'  @mandatory;
     Token_host                    @title : 'Token Host'  @UI.Placeholder                : '{subdomain}.authentication.eu10.hana.ondemand.com'  @mandatory;
     Oauth_clientid                @title : 'oAuth Client ID'  @UI.Placeholder           : 'See OAuth Client credentials'  @mandatory;
-    Oauth_secret                  @title : 'oAuth Secret'  @UI.Placeholder              : 'See OAuth Client credentials'  @mandatory  @Common.MaskedAlways : true;
+    Oauth_secret                  @title : 'oAuth Secret'  @UI.Placeholder              : 'See OAuth Client credentials'  @mandatory;
     Oauth_servicekeyid            @title : 'oAuth Service Instance ID'  @UI.Placeholder : 'ID of the service instance';
     Role                          @title : 'System Role'  @UI.Placeholder               : 'Select role'  @mandatory;
     Environment                   @title : 'Environment'  @UI.Placeholder               : 'Select environment'  @mandatory;
@@ -268,10 +281,10 @@ annotate RegistrationService.Tenants with @(UI : {
     Neo_accountid                 @title : 'Subaccount Technical Name'  @UI.Placeholder : 'Cockpit > Overview > Technical Name';
     CF_Platform_domain            @title : 'Platform Host'  @UI.Placeholder             : 'eu10.hana.ondemand.com';
     CF_Platform_user              @title : 'Email'  @UI.Placeholder                     : 'platform.user@domain.com';
-    CF_Platform_password          @title : 'Password'  @UI.Placeholder                  : 'Password'  @Common.MaskedAlways                     : true;
+    CF_Platform_password          @title : 'Password'  @UI.Placeholder                  : 'Password';
     Neo_Platform_domain           @title : 'Platform Host'  @UI.Placeholder             : 'hana.ondemand.com';
     Neo_Platform_user             @title : 'oAuth Client ID'  @UI.Placeholder           : 'See OAuth Client credentials';
-    Neo_Platform_password         @title : 'oAuth Secret'  @UI.Placeholder              : 'See OAuth Client credentials'  @Common.MaskedAlways : true;
+    Neo_Platform_password         @title : 'oAuth Secret'  @UI.Placeholder              : 'See OAuth Client credentials';
     UseForCertificateUserMappings @title : 'Enable migration of Certificate to User Mappings (source or target)';
 };
 

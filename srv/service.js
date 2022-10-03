@@ -7,6 +7,11 @@ const Settings = require('./config/settings');
 const assert = require('assert');
 const fs = require('fs');
 
+const TenantTableFields = ['ObjectID', 'Name', 'Host', 'Token_host', 'Oauth_clientid', 'Oauth_secret', 'Role', 'Environment', 'ReadOnly',
+    'Oauth_servicekeyid', 'CF_organizationID', 'CF_organizationName', 'CF_spaceID', 'CF_spaceName', 'CF_servicePlanID', 'Neo_accountid',
+    'Neo_Platform_domain', 'Neo_Platform_user', 'Neo_Platform_password', 'CF_Platform_domain', 'CF_Platform_user', 'CF_Platform_password',
+    'UseForCertificateUserMappings'];
+
 const { Tenants, MigrationTasks, MigrationJobs, MigrationTaskNodes, extIntegrationPackages } = cds.entities;
 
 module.exports = async (srv) => {
@@ -45,6 +50,12 @@ module.exports = async (srv) => {
             return next();
         }
     });
+    srv.after('EDIT', srv.entities.Tenants, tenant => {
+        const mask = '*********'
+        tenant.CF_Platform_password = mask;
+        tenant.Neo_Platform_password = mask;
+        tenant.Oauth_secret = mask;
+    });
     srv.before('DELETE', srv.entities.Tenants, async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
         const tenant = await srv.read(Tenants, tenant_id, t => { t('*'), t.toMigrationTasks(n => n('*')) });
@@ -57,6 +68,20 @@ module.exports = async (srv) => {
         console.log(tasks);
         tasks.length > 0 && await srv.update(MigrationTasks).with({ TargetTenant_ObjectID: null }).where({ TargetTenant_ObjectID: tenant_id });
         return next();
+    });
+    srv.on('Tenant_duplicate', async (req) => {
+        const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
+        const tenantInfo = await srv.read(Tenants, tenant_id);
+        const tenantCopy = {};
+
+        TenantTableFields.forEach(f => tenantCopy[f] = tenantInfo[f]);
+        tenantCopy.ObjectID = generateUUID.v4();;
+        tenantCopy.Name += '_duplicate';
+
+        await srv.create(Tenants, tenantCopy);
+        req.notify('Tenant duplicated with name ' + tenantCopy.Name);
+
+        return tenantCopy;
     });
     srv.on('Tenant_testConnection', async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
@@ -182,37 +207,11 @@ module.exports = async (srv) => {
     });
     srv.on('Tenant_export', async (req) => {
         const TenantList = await srv.read(Tenants);
-        const headers = 'ObjectID;Name;Host;Token_host;Oauth_clientid;Oauth_secret;Role;Environment;ReadOnly;Oauth_servicekeyid;CF_organizationID;CF_organizationName;' +
-            'CF_spaceID;CF_spaceName;CF_servicePlanID;Neo_accountid;Neo_Platform_domain;Neo_Platform_user;Neo_Platform_password;CF_Platform_domain;CF_Platform_user;CF_Platform_password;UseForCertificateUserMappings';
-        const content = [headers];
-        for (const t of TenantList) {
-            content.push([
-                t.ObjectID,
-                t.Name,
-                t.Host,
-                t.Token_host,
-                t.Oauth_clientid,
-                t.Oauth_secret,
-                t.Role,
-                t.Environment,
-                t.ReadOnly,
-                t.Oauth_servicekeyid,
-                t.CF_organizationID,
-                t.CF_organizationName,
-                t.CF_spaceID,
-                t.CF_spaceName,
-                t.CF_servicePlanID,
-                t.Neo_accountid,
-                t.Neo_Platform_domain,
-                t.Neo_Platform_user,
-                t.Neo_Platform_password,
-                t.CF_Platform_domain,
-                t.CF_Platform_user,
-                t.CF_Platform_password,
-                t.UseForCertificateUserMappings
-            ].join(';'));
-        }
-        fs.writeFileSync('db/data/migrationtool-Tenants.csv', content.join('\r\n'));
+
+        const csv = [TenantTableFields.join(';')];
+        TenantList.forEach(t => csv.push(TenantTableFields.flatMap(x => t[x]).join(';')))
+        fs.writeFileSync('db/data/migrationtool-Tenants.csv', csv.join('\r\n'));
+
         req.notify(201, 'CSV created: ' + TenantList.length + ' registration(s) exported.');
     });
     srv.after('READ', ['IntegrationPackages', 'IntegrationDesigntimeArtifacts'], each => {
