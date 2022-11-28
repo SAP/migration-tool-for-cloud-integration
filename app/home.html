@@ -11,68 +11,15 @@
     <script src="app-information/LaunchpadInfo/Script/$value"></script>
     <script>
         window['sap-ushell-config'] = {
-            defaultRenderer: 'fiori2',
-            applications: {
-                'registration-manage': {
-                    title: 'Register Tenants',
-                    description: 'Create Connections',
-                    additionalInformation: 'SAPUI5.Component=registration',
-                    applicationType: 'URL',
-                    url: '/registration/webapp',
-                    navigationMode: 'embedded',
-                    icon: 'sap-icon://connected',
-                    // tileType: "sap.ushell.ui.tile.DynamicTile",
-                    // number: LaunchpadInfo.TileRegistration
-                },
-                'tenants-manage': {
-                    title: 'Explore Tenants',
-                    description: 'Explore and Migrate',
-                    additionalInformation: 'SAPUI5.Component=contentviewer',
-                    applicationType: 'URL',
-                    url: '/contentviewer/webapp',
-                    navigationMode: 'embedded',
-                    icon: 'sap-icon://it-system'
-                    // tileType: "sap.ushell.ui.tile.DynamicTile",
-                    // number: LaunchpadInfo.TileTenants
-                },
-                'migrationtasks-manage': {
-                    title: 'Migration Tasks',
-                    description: 'Configure and Run',
-                    additionalInformation: 'SAPUI5.Component=migrationtasks',
-                    applicationType: 'URL',
-                    url: '/migrationtasks/webapp',
-                    navigationMode: 'embedded',
-                    icon: 'sap-icon://begin'
-                    // tileType: "sap.ushell.ui.tile.DynamicTile",
-                    // number: LaunchpadInfo.TileTasks
-                },
-                'migrationjobs-manage': {
-                    title: 'Job Logs',
-                    description: 'View Logs',
-                    additionalInformation: 'SAPUI5.Component=migrationjobs',
-                    applicationType: 'URL',
-                    url: '/migrationjobs/webapp',
-                    navigationMode: 'embedded',
-                    icon: 'sap-icon://survey'
-                    // tileType: "sap.ushell.ui.tile.DynamicTile",
-                    // number: LaunchpadInfo.TileJobs
-                },
-                'documentation-view': {
-                    title: 'Documentation',
-                    description: 'App version: ' + LaunchpadInfo.AppVersion,
-                    applicationType: 'URL',
-                    url: 'https://github.com/SAP/migration-tool-for-cloud-integration/tree/main/docs',
-                    icon: 'sap-icon://education'
-                }
-            }
+            defaultRenderer: 'fiori2'
         };
     </script>
 
     <script src="./sandbox.js"></script>
     <!-- <script src="https://sapui5.hana.ondemand.com/test-resources/sap/ushell/bootstrap/sandbox.js"></script> -->
-    <script src="https://sapui5.hana.ondemand.com/1.99.0/resources/sap-ui-core.js"
+    <script src="https://sapui5.hana.ondemand.com/1.108.1/resources/sap-ui-core.js"
         data-sap-ui-libs="sap.m, sap.ushell, sap.fe.templates" data-sap-ui-compatVersion="edge"
-        data-sap-ui-theme="sap_fiori_3" data-sap-ui-frameOptions="allow" data-sap-ui-bindingSyntax="complex"></script>
+        data-sap-ui-theme="sap_horizon" data-sap-ui-frameOptions="allow" data-sap-ui-bindingSyntax="complex"></script>
     <script>
         sap.ui.getCore().attachInit(function () {
             sap.ushell.Container.createRenderer().placeAt('content');

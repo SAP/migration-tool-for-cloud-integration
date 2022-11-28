@@ -82,7 +82,8 @@ To learn how to use the tool, please refer to the [user documentation](/docs).
 - **1.95.0**: (deprecated) Most stable, but does not support showCount=true (manifest) for Task Items table in MigrationTasks > Detail screen
 - **1.96.2**: (deprecated) Issue: does not show Integration Artifacts table in Explore Tenant > Integration Packages > Detail screen
 - **1.97.0**: (deprecated) Issue: does not show Integration Artifacts table in Explore Tenant > Integration Packages > Detail screen, but solves the showCount issue of 1.95.0
-- **1.99.0**: Stable
+- **1.99.0**: Deprecated
+- **1.108.1**: Stable
 
 Specify the version to be used in [/app/home.html](./app/home.html)
 

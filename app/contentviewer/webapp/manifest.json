@@ -23,21 +23,6 @@
         "sourceTemplate": {
             "id": "ui5template.fiorielements.v4.lrop",
             "version": "1.0.0"
-        },
-        "crossNavigation": {
-            "inbounds": {
-                "contentviewer-inbound": {
-                    "signature": {
-                        "parameters": {},
-                        "additionalParameters": "allowed"
-                    },
-                    "semanticObject": "tenants",
-                    "action": "show",
-                    "title": "Registered Tenants",
-                    "subTitle": "",
-                    "icon": ""
-                }
-            }
         }
     },
     "sap.ui": {
@@ -221,6 +206,7 @@
                     "options": {
                         "settings": {
                             "entitySet": "Tenants",
+                            "variantManagement": "None",
                             "navigation": {
                                 "toIntegrationPackages": {
                                     "detail": {

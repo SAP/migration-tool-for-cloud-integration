@@ -6,7 +6,8 @@ annotate ConfigService.Errors with @(UI : {
             {Property : Component},
             {Property : ComponentName}
         ],
-        Visualizations : ['@UI.LineItem']
+        Visualizations : ['@UI.LineItem'],
+        GroupBy:[Component]
     },
     Identification      : [{Value : ObjectID}],
     HeaderInfo          : {

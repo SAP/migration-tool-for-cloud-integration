@@ -23,21 +23,6 @@
         "sourceTemplate": {
             "id": "ui5template.fiorielements.v4.lrop",
             "version": "1.0.0"
-        },
-        "crossNavigation": {
-            "inbounds": {
-                "registration-inbound": {
-                    "signature": {
-                        "parameters": {},
-                        "additionalParameters": "allowed"
-                    },
-                    "semanticObject": "registration",
-                    "action": "show",
-                    "title": "Registrations",
-                    "subTitle": "Tenants",
-                    "icon": ""
-                }
-            }
         }
     },
     "sap.ui": {
@@ -134,6 +119,7 @@
                         "settings": {
                             "entitySet": "Tenants",
                             "enhanceI18n": "i18n/i18n.properties",
+                            "variantManagement": "None",
                             "navigation": {},
                             "content": {
                                 "header": {

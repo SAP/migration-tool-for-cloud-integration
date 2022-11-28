@@ -5,7 +5,8 @@ annotate RegistrationService.Tenants with @(UI : {
         $Type          : 'UI.PresentationVariantType',
         SortOrder      : [{Property : Name}],
         Visualizations : ['@UI.LineItem'],
-        RequestAtLeast : [ReadOnly]
+        RequestAtLeast : [ReadOnly],
+        GroupBy        : [Role]
     },
     Identification                : [
         {Value : ObjectID},

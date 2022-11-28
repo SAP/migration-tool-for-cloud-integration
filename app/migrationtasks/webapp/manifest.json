@@ -23,21 +23,6 @@
         "sourceTemplate": {
             "id": "ui5template.fiorielements.v4.lrop",
             "version": "1.0.0"
-        },
-        "crossNavigation": {
-            "inbounds": {
-                "migrationtasks-inbound": {
-                    "signature": {
-                        "parameters": {},
-                        "additionalParameters": "allowed"
-                    },
-                    "semanticObject": "migrationtasks",
-                    "action": "manage",
-                    "title": "Migration Tasks",
-                    "subTitle": "Tasks",
-                    "icon": ""
-                }
-            }
         }
     },
     "sap.ui": {
@@ -140,6 +125,7 @@
                             "editableHeaderContent": false,
                             "entitySet": "MigrationTasks",
                             "enhanceI18n": "i18n/i18n.properties",
+                            "variantManagement": "None",
                             "navigation": {
                                 "toMigrationJobs": {
                                     "detail": {

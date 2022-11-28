@@ -23,21 +23,6 @@
         "sourceTemplate": {
             "id": "ui5template.fiorielements.v4.lrop",
             "version": "1.0.0"
-        },
-        "crossNavigation": {
-            "inbounds": {
-                "migrationjobs-inbound": {
-                    "signature": {
-                        "parameters": {},
-                        "additionalParameters": "allowed"
-                    },
-                    "semanticObject": "migrationjobs",
-                    "action": "manage",
-                    "title": "Migration Jobs",
-                    "subTitle": "",
-                    "icon": ""
-                }
-            }
         }
     },
     "sap.ui": {
@@ -131,6 +116,7 @@
                     "options": {
                         "settings": {
                             "entitySet": "MigrationJobs",
+                            "variantManagement": "None",
                             "content": {
                                 "body": {
                                     "sections": {

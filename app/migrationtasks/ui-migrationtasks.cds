@@ -168,9 +168,9 @@ annotate ConfigService.MigrationTasks with @(UI : {
 }) {
     ObjectID                   @title : 'Task ID';
     createdAt                  @title : 'Created';
-    SourceTenant               @title : 'Source Tenant'  @mandatory;
+    SourceTenant               @title : 'Source Tenant'         @mandatory;
     TargetTenant               @title : 'Target Tenant';
-    Name                       @title : 'Task Name'  @mandatory  @Common.SemanticObject : 'migrationtasks';
+    Name                       @title : 'Task Name'             @mandatory  @Common.SemanticObject : 'migrationtasks';
     Description                @title : 'Description';
     LastStatus                 @title : 'Last Run Status';
     CustomConfig               @title : 'Custom Configuration'  @UI.MultiLineText : true;
@@ -219,7 +219,8 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
         RequestAtLeast : [
             Included,
             ConfigureOnly
-        ]
+        ],
+        GroupBy        : [Component]
     },
     SelectionVariant #Packages : {
         Text          : 'Integration Packages',
@@ -388,10 +389,10 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
         ]
     }
 }) {
-    Name              @title : 'Name'  @readonly;
+    Name              @title : 'Name'            @readonly;
     Component         @title : 'Component Type'  @readonly;
-    ExistInSource     @title : 'In Source'  @readonly;
-    ExistInTarget     @title : 'In Target'  @readonly;
+    ExistInSource     @title : 'In Source'       @readonly;
+    ExistInTarget     @title : 'In Target'       @readonly;
     IncludedText      @title : 'Selected for Migration';
     ConfigureOnlyText @title : 'Configuration';
     PackageVendor     @title : 'Vendor';

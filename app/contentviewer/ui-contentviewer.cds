@@ -7,7 +7,8 @@ annotate ConfigService.Tenants with @(UI : {
     PresentationVariant  : {
         SortOrder      : [{Property : Name}],
         Visualizations : ['@UI.LineItem'],
-        RequestAtLeast : [NumberOfErrors]
+        RequestAtLeast : [NumberOfErrors],
+        GroupBy        : [Role]
     },
     Identification       : [
         {Value : ObjectID},
@@ -322,7 +323,8 @@ annotate ConfigService.IntegrationPackages with @(UI : {
             {Property : Name}
         ],
         Visualizations : ['@UI.LineItem'],
-        RequestAtLeast : [NumberOfErrors]
+        RequestAtLeast : [NumberOfErrors],
+        GroupBy        : [Vendor]
     },
     Identification      : [
         {Value : Name},
