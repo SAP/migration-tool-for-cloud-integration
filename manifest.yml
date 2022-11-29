@@ -1,0 +1,7 @@
+---
+applications:
+- name: migrationtool
+  random-route: true
+  path: .
+  memory: 256M
+  # buildpack: nodejs_buildpack
