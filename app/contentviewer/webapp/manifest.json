@@ -333,6 +333,7 @@
                     "options": {
                         "settings": {
                             "entitySet": "IntegrationPackages",
+                            "variantManagement": "None",
                             "navigation": {
                                 "toIntegrationDesigntimeArtifacts": {
                                     "detail": {
@@ -361,6 +362,7 @@
                     "options": {
                         "settings": {
                             "entitySet": "IntegrationDesigntimeArtifacts",
+                            "variantManagement": "None",
                             "navigation": {
                                 "toConfigurations": {
                                     "detail": {
@@ -420,6 +422,7 @@
                     "options": {
                         "settings": {
                             "entitySet": "ValueMappingDesigntimeArtifacts",
+                            "variantManagement": "None",
                             "navigation": {
                                 "toValMapSchema": {
                                     "detail": {
@@ -534,6 +537,7 @@
                     "options": {
                         "settings": {
                             "entitySet": "CertificateUserMappings",
+                            "variantManagement": "None",
                             "navigation": {
                                 "toRoles": {
                                     "detail": {
@@ -564,6 +568,7 @@
                     "options": {
                         "settings": {
                             "entitySet": "DataStores",
+                            "variantManagement": "None",
                             "navigation": {},
                             "content": {}
                         }

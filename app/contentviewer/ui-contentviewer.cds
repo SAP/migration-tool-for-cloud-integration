@@ -323,8 +323,7 @@ annotate ConfigService.IntegrationPackages with @(UI : {
             {Property : Name}
         ],
         Visualizations : ['@UI.LineItem'],
-        RequestAtLeast : [NumberOfErrors],
-        GroupBy        : [Vendor]
+        RequestAtLeast : [NumberOfErrors]
     },
     Identification      : [
         {Value : Name},

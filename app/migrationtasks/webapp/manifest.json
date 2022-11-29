@@ -172,6 +172,7 @@
                         "settings": {
                             "editableHeaderContent": false,
                             "entitySet": "MigrationJobs",
+                            "variantManagement": "None",
                             "content": {
                                 "body": {
                                     "sections": {
