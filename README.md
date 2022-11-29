@@ -22,6 +22,7 @@ This Github repository is an alternative tool which aims to achieve the same as 
 - API enabled, to run specific Migration Tasks from external triggers (e.g. CI-CD or Job Scheduling);
 
 This tool is provided as-is and is not covered by SAP Support.
+A write-up about this tool can be found here: [SAP Blog: Getting Grips on your Cloud Integration Migration from Neo to Cloud Foundry](https://blogs.sap.com/2022/07/27/getting-grips-on-your-cloud-integration-migration-from-neo-to-cloud-foundry/)
 
 ## Requirements
 
@@ -43,7 +44,7 @@ You can use the provided Dockerfile to install and run the application:
 
 In Terminal or Command Prompt, run:
 1. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git --depth 1`
-2. Build this tool: `docker build -t migrationtool ./migration-tool-for-cloud-integration`
+2. Build this tool: `docker build -t migrationtool ./migration-tool-for-cloud-integration` (in case you receive an error on the Sqlite3 package, delete the package-lock.json file and try the build again)
 
 Now the tool is built and can be started:
 
@@ -95,6 +96,7 @@ Version availability: https://ui5.sap.com/versionoverview.html
 - **5.6.2**: Issue: UPDATE function to update ExistInSource columns in MigrationTasks has bugs
 - **5.7.3**: Stable
 - **5.8.3**: Stable
+- **6.3.2**: Stable
 
 More information on changelog: https://cap.cloud.sap/docs/releases
 

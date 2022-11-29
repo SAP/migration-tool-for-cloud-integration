@@ -4,6 +4,8 @@ const ZipHelper = require('./zip');
 const xml2js = require('xml2js');
 const assert = require('assert');
 
+const Entities = cds.entities('migrationtool');
+
 class ContentDownloader {
     constructor(t) {
         this.Tenant = t;
@@ -58,7 +60,7 @@ class ContentDownloader {
         this.validatePreconditions();
 
         await this.Connector.refreshIntegrationToken();
-        await DELETE.from('Errors').where({ 'toParent': this.Tenant.ObjectID });
+        await DELETE.from(Entities.Errors).where({ 'toParent': this.Tenant.ObjectID });
 
         await this.getIntegrationPackages().then(n => this.stats.Statistics_numIntegrationPackages += n);
 
@@ -79,8 +81,8 @@ class ContentDownloader {
                 await this.getCFCertificateUserMappings().then(n => this.stats.Statistics_numCertificateUserMappings += n);
             }
         } else {
-            await DELETE.from('extCertificateUserMappingRoles').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-            await DELETE.from('extCertificateUserMappings').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+            await DELETE.from(Entities.extCertificateUserMappingRoles).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+            await DELETE.from(Entities.extCertificateUserMappings).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
         }
 
         await this.getJMSBrokers().then(n => this.stats.Statistics_numJMSBrokers += n);
@@ -109,8 +111,8 @@ class ContentDownloader {
             each.toParent_ObjectID = this.Tenant.ObjectID;
             each.ModifiedDateFormatted = (new Date(parseInt(each.ModifiedDate))).toUTCString();
         }
-        await DELETE.from('extIntegrationPackages').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into('extIntegrationPackages');
+        await DELETE.from(Entities.extIntegrationPackages).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        items.length > 0 && await INSERT(items).into(Entities.extIntegrationPackages);
 
         for (let each of items) {
             await this.getIntegrationDesigntimeArtifacts(each.Id, each.ObjectID).then(n => this.stats.Statistics_numIntegrationDesigntimeArtifacts += n);
@@ -161,8 +163,8 @@ class ContentDownloader {
             each.toParent_Id = package_id;
             each.toParent_toParent_ObjectID = this.Tenant.ObjectID;
         }
-        await DELETE.from('extIntegrationDesigntimeArtifacts').where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into('extIntegrationDesigntimeArtifacts');
+        await DELETE.from(Entities.extIntegrationDesigntimeArtifacts).where({ 'toParent_ObjectID': parent_id });
+        items.length > 0 && await INSERT(items).into(Entities.extIntegrationDesigntimeArtifacts);
 
         if (Settings.Flags.DownloadConfigurationsAndResources) {
             for (let each of items) {
@@ -191,8 +193,8 @@ class ContentDownloader {
             each.toParent_ObjectID = parent_id;
             each.toParent_Id = artifact_id;
         };
-        await DELETE.from('extConfigurations').where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into('extConfigurations');
+        await DELETE.from(Entities.extConfigurations).where({ 'toParent_ObjectID': parent_id });
+        items.length > 0 && await INSERT(items).into(Entities.extConfigurations);
 
         return items.length;
     };
@@ -209,8 +211,8 @@ class ContentDownloader {
             each.toParent_ObjectID = parent_id;
             each.toParent_Id = artifact_id;
         };
-        await DELETE.from('extResources').where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into('extResources');
+        await DELETE.from(Entities.extResources).where({ 'toParent_ObjectID': parent_id });
+        items.length > 0 && await INSERT(items).into(Entities.extResources);
 
         return items.length;
         // } else {
@@ -230,8 +232,8 @@ class ContentDownloader {
             each.toParent_Id = package_id;
             each.toParent_toParent_ObjectID = this.Tenant.ObjectID;
         };
-        await DELETE.from('extValueMappingDesigntimeArtifacts').where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into('extValueMappingDesigntimeArtifacts');
+        await DELETE.from(Entities.extValueMappingDesigntimeArtifacts).where({ 'toParent_ObjectID': parent_id });
+        items.length > 0 && await INSERT(items).into(Entities.extValueMappingDesigntimeArtifacts);
 
         for (let each of items) {
             if (each.Version != 'Draft') // API can not download content of Draft items
@@ -264,8 +266,8 @@ class ContentDownloader {
             each.toParent_Id = artifact_id;
             each.toParent_Version = version_id;
         };
-        await DELETE.from('extValMapSchema').where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into('extValMapSchema');
+        await DELETE.from(Entities.extValMapSchema).where({ 'toParent_ObjectID': parent_id });
+        items.length > 0 && await INSERT(items).into(Entities.extValMapSchema);
 
         return items.length;
     };
@@ -280,8 +282,8 @@ class ContentDownloader {
             each.toParent_Id = package_id;
             each.toParent_toParent_ObjectID = this.Tenant.ObjectID;
         };
-        await DELETE.from('extCustomTags').where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into('extCustomTags');
+        await DELETE.from(Entities.extCustomTags).where({ 'toParent_ObjectID': parent_id });
+        items.length > 0 && await INSERT(items).into(Entities.extCustomTags);
 
         return items.length;
     };
@@ -300,8 +302,8 @@ class ContentDownloader {
         for (let each of itemsSupported) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
-        await DELETE.from('extKeyStoreEntries').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        itemsSupported.length > 0 && await INSERT(itemsSupported).into('extKeyStoreEntries');
+        await DELETE.from(Entities.extKeyStoreEntries).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        itemsSupported.length > 0 && await INSERT(itemsSupported).into(Entities.extKeyStoreEntries);
 
         return itemsSupported.length;
     };
@@ -314,8 +316,8 @@ class ContentDownloader {
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
-        await DELETE.from('extNumberRanges').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into('extNumberRanges');
+        await DELETE.from(Entities.extNumberRanges).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        items.length > 0 && await INSERT(items).into(Entities.extNumberRanges);
 
         return items.length;
     };
@@ -329,8 +331,8 @@ class ContentDownloader {
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
-        await DELETE.from('extCustomTagConfigurations').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into('extCustomTagConfigurations');
+        await DELETE.from(Entities.extCustomTagConfigurations).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        items.length > 0 && await INSERT(items).into(Entities.extCustomTagConfigurations);
 
         return items.length;
     };
@@ -350,8 +352,8 @@ class ContentDownloader {
         for (let each of itemsSupported) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
-        await DELETE.from('extUserCredentials').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        itemsSupported.length > 0 && await INSERT(itemsSupported).into('extUserCredentials');
+        await DELETE.from(Entities.extUserCredentials).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        itemsSupported.length > 0 && await INSERT(itemsSupported).into(Entities.extUserCredentials);
 
         return itemsSupported.length;
     };
@@ -376,8 +378,8 @@ class ContentDownloader {
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
-        await DELETE.from('extOAuth2ClientCredentials').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into('extOAuth2ClientCredentials');
+        await DELETE.from(Entities.extOAuth2ClientCredentials).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        items.length > 0 && await INSERT(items).into(Entities.extOAuth2ClientCredentials);
 
         return items.length;
     };
@@ -402,8 +404,8 @@ class ContentDownloader {
             each.LastModifiedTime = new Date(parseInt(each.LastModifiedTime.match(Settings.RegEx.dateTimestamp)[1]));
             each.ValidUntil = new Date(parseInt(each.ValidUntil));
         };
-        await DELETE.from('extCertificateUserMappings').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into('extCertificateUserMappings');
+        await DELETE.from(Entities.extCertificateUserMappings).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        items.length > 0 && await INSERT(items).into(Entities.extCertificateUserMappings);
 
         for (let each of items) {
             await this.getNeoRolesForUser(each);
@@ -426,8 +428,8 @@ class ContentDownloader {
             each.toParent_ObjectID = certificateUserMapping.ObjectID;
             each.toParent_User = certificateUserMapping.User;
         };
-        await DELETE.from('extCertificateUserMappingRoles').where({ 'toParent_ObjectID': certificateUserMapping.ObjectID });
-        roles.length > 0 && await INSERT(roles).into('extCertificateUserMappingRoles');
+        await DELETE.from(Entities.extCertificateUserMappingRoles).where({ 'toParent_ObjectID': certificateUserMapping.ObjectID });
+        roles.length > 0 && await INSERT(roles).into(Entities.extCertificateUserMappingRoles);
 
         return roles.length;
     };
@@ -451,8 +453,8 @@ class ContentDownloader {
                 ValidUntil: null
             }
         });
-        await DELETE.from('extCertificateUserMappings').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        userMappings.length > 0 && await INSERT(userMappings).into('extCertificateUserMappings');
+        await DELETE.from(Entities.extCertificateUserMappings).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        userMappings.length > 0 && await INSERT(userMappings).into(Entities.extCertificateUserMappings);
 
         for (let each of userMappings) {
             await this.getCFCertificateUserMappingBindings(each);
@@ -477,8 +479,8 @@ class ContentDownloader {
                 providerAccount: null
             }
         });
-        await DELETE.from('extCertificateUserMappingRoles').where({ 'toParent_ObjectID': instance.ObjectID });
-        credentials.length > 0 && await INSERT(credentials).into('extCertificateUserMappingRoles');
+        await DELETE.from(Entities.extCertificateUserMappingRoles).where({ 'toParent_ObjectID': instance.ObjectID });
+        credentials.length > 0 && await INSERT(credentials).into(Entities.extCertificateUserMappingRoles);
 
         return credentials.length;
     };
@@ -487,7 +489,7 @@ class ContentDownloader {
         console.log('getJMSBrokers ' + this.Tenant.ObjectID);
         console.log('The next call might result in an error. This just means that JMS is not activated. The error will be ignored.');
         const item = await this.Connector.externalCall(Settings.Paths.JMSBrokers.path, true);
-        await DELETE.from('extJMSBrokers').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        await DELETE.from(Entities.extJMSBrokers).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
 
         if (item) {
             await this.checkJMSBrokers(item);
@@ -496,7 +498,7 @@ class ContentDownloader {
             this.removeInvalidParameters(cds.entities.extJMSBrokers, item);
 
             item.toParent_ObjectID = this.Tenant.ObjectID;
-            await INSERT(item).into('extJMSBrokers');
+            await INSERT(item).into(Entities.extJMSBrokers);
         }
         return item ? 1 : 0;
     };
@@ -512,8 +514,8 @@ class ContentDownloader {
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
-        await DELETE.from('extAccessPolicies').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into('extAccessPolicies');
+        await DELETE.from(Entities.extAccessPolicies).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        items.length > 0 && await INSERT(items).into(Entities.extAccessPolicies);
 
         for (let each of items) {
             await this.getArtifactReferences(each.Id, each.ObjectID).then(n => this.stats.Statistics_numAccessPolicyReferences += n);
@@ -528,8 +530,8 @@ class ContentDownloader {
         for (let each of items) {
             each.toParent_ObjectID = parent_id;
         };
-        await DELETE.from('extArtifactReferences').where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into('extArtifactReferences');
+        await DELETE.from(Entities.extArtifactReferences).where({ 'toParent_ObjectID': parent_id });
+        items.length > 0 && await INSERT(items).into(Entities.extArtifactReferences);
 
         return items.length;
     };
@@ -544,8 +546,8 @@ class ContentDownloader {
             each.RetainUntil = new Date(parseInt(each.RetainUntil.match(Settings.RegEx.dateTimestamp)[1]));
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
-        await DELETE.from('extVariables').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into('extVariables');
+        await DELETE.from(Entities.extVariables).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        items.length > 0 && await INSERT(items).into(Entities.extVariables);
 
         return items.length;
     };
@@ -560,8 +562,8 @@ class ContentDownloader {
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
-        await DELETE.from('extDataStores').where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into('extDataStores');
+        await DELETE.from(Entities.extDataStores).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
+        items.length > 0 && await INSERT(items).into(Entities.extDataStores);
 
         for (let each of items) {
             await this.getDataStoreEntries(each.ObjectID, each.DataStoreName, each.IntegrationFlow, each.Type);
@@ -582,8 +584,8 @@ class ContentDownloader {
             each.RetainUntil = new Date(parseInt(each.RetainUntil.match(Settings.RegEx.dateTimestamp)[1]));
             each.toParent_ObjectID = id;
         };
-        await DELETE.from('extDataStoreEntries').where({ 'toParent_ObjectID': id });
-        items.length > 0 && await INSERT(items).into('extDataStoreEntries');
+        await DELETE.from(Entities.extDataStoreEntries).where({ 'toParent_ObjectID': id });
+        items.length > 0 && await INSERT(items).into(Entities.extDataStoreEntries);
 
         return items.length;
     };
@@ -626,7 +628,7 @@ class ContentDownloader {
             Path: fullPath,
             Severity: (type === 'Error' ? Settings.CriticalityCodes.Red : (type === 'Warning' ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Blue))
         };
-        await INSERT(errorBody).into('Errors');
+        await INSERT(errorBody).into(Entities.Errors);
         return 1;
     };
     removeInvalidParameters = (entity, items, allow = []) => {

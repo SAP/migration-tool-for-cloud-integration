@@ -37,45 +37,45 @@ service ConfigService {
         @Common.SideEffects.TargetEntities : [_it.toMigrationTasks]
         action Tenant_createNewMigrationTask(
 
-                @UI.ParameterDefaultValue :  'My new migration task'
-                @title                    :  'Task Name'
-                @mandatory
+        @UI.ParameterDefaultValue : 'My new migration task'
+        @title                    : 'Task Name'
+        @mandatory
         Name : String,
 
 
         Description : String,
 
-                @title                    :  'Target Tenant'
-                @mandatory
-                @(Common : {
-                ValueListWithFixedValues : true,
-                ValueListMapping         : {
-                    CollectionPath : 'Tenants_TargetsOnly',
-                    Parameters     : [{
-                        $Type             : 'Common.ValueListParameterOut',
-                        ValueListProperty : 'ObjectID',
-                        LocalDataProperty : 'TargetTenant'
-                    }]
-                }
-            })
-            TargetTenant : UUID,
+        @title                    : 'Target Tenant'
+        @mandatory
+        @(Common : {
+            ValueListWithFixedValues : true,
+            ValueListMapping         : {
+                CollectionPath : 'Tenants_TargetsOnly',
+                Parameters     : [{
+                    $Type             : 'Common.ValueListParameterOut',
+                    ValueListProperty : 'ObjectID',
+                    LocalDataProperty : 'TargetTenant'
+                }]
+            }
+        })
+        TargetTenant : UUID,
 
-                @title                    :  'How do you want to generate the task'
-                @mandatory
-                @UI.ParameterDefaultValue :  'Optimal'
-                @(Common : {
-                    ValueListWithFixedValues : true,
-                    ValueListMapping         : {
-                        CollectionPath : 'MigrationTaskPresets',
-                        Parameters     : [{
-                            $Type             : 'Common.ValueListParameterOut',
-                            ValueListProperty : 'Code',
-                            LocalDataProperty : 'Preset'
-                        }]
-                    }
-                })
-                Preset : String)              returns MigrationTasks;
-            };
+        @title                    : 'How do you want to generate the task'
+        @mandatory
+        @UI.ParameterDefaultValue : 'Optimal'
+        @(Common : {
+            ValueListWithFixedValues : true,
+            ValueListMapping         : {
+                CollectionPath : 'MigrationTaskPresets',
+                Parameters     : [{
+                    $Type             : 'Common.ValueListParameterOut',
+                    ValueListProperty : 'Code',
+                    LocalDataProperty : 'Preset'
+                }]
+            }
+        })
+        Preset : String)                      returns MigrationTasks;
+    };
 
     entity IntegrationPackages             as projection on my.extIntegrationPackages {
         *,
@@ -142,9 +142,9 @@ service ConfigService {
         ]
         @Common.IsActionCritical           : true
         action Task_resetTaskNodes(
-        @title                    :          'How would you like to preset the items'
+        @title                    : 'How would you like to preset the items'
         @mandatory
-        @UI.ParameterDefaultValue :          'Optimal'
+        @UI.ParameterDefaultValue : 'Optimal'
         @(Common : {
             ValueListWithFixedValues : true,
             ValueListMapping         : {
@@ -164,7 +164,7 @@ service ConfigService {
             _it.TargetTenant
         ]
         action Task_setTargetTenant(
-        @title                    :          'New Target Tenant'
+        @title                    : 'New Target Tenant'
         @mandatory
         @(Common : {
             ValueListWithFixedValues : true,
@@ -235,7 +235,6 @@ service RegistrationService {
 
     @Common.IsActionCritical : true
     action Tenant_export() returns Boolean;
-
 };
 
 service AppInformation {

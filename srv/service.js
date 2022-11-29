@@ -12,7 +12,7 @@ const TenantTableFields = ['ObjectID', 'Name', 'Host', 'Token_host', 'Oauth_clie
     'Neo_Platform_domain', 'Neo_Platform_user', 'Neo_Platform_password', 'CF_Platform_domain', 'CF_Platform_user', 'CF_Platform_password',
     'UseForCertificateUserMappings'];
 
-const { Tenants, MigrationTasks, MigrationJobs, MigrationTaskNodes, extIntegrationPackages } = cds.entities;
+const Entities = cds.entities('migrationtool');
 
 module.exports = async (srv) => {
     srv.after('READ', srv.entities.Tenants, each => {
@@ -58,34 +58,34 @@ module.exports = async (srv) => {
     });
     srv.before('DELETE', srv.entities.Tenants, async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
-        const tenant = await srv.read(Tenants, tenant_id, t => { t('*'), t.toMigrationTasks(n => n('*')) });
+        const tenant = await srv.read(Entities.Tenants, tenant_id, t => { t('*'), t.toMigrationTasks(n => n('*')) });
 
         tenant.toMigrationTasks.length > 0 && req.error(400, 'This tenant has ' + tenant.toMigrationTasks.length + ' migration task(s). Please delete the task(s) first, before deleting the tenant.');
     });
     srv.on('DELETE', srv.entities.Tenants, async (req, next) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
-        const tasks = await srv.read(MigrationTasks).where({ TargetTenant_ObjectID: tenant_id });
+        const tasks = await srv.read(Entities.MigrationTasks).where({ TargetTenant_ObjectID: tenant_id });
         console.log(tasks);
-        tasks.length > 0 && await srv.update(MigrationTasks).with({ TargetTenant_ObjectID: null }).where({ TargetTenant_ObjectID: tenant_id });
+        tasks.length > 0 && await srv.update(Entities.MigrationTasks).with({ TargetTenant_ObjectID: null }).where({ TargetTenant_ObjectID: tenant_id });
         return next();
     });
     srv.on('Tenant_duplicate', async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
-        const tenantInfo = await srv.read(Tenants, tenant_id);
+        const tenantInfo = await srv.read(Entities.Tenants, tenant_id);
         const tenantCopy = {};
 
         TenantTableFields.forEach(f => tenantCopy[f] = tenantInfo[f]);
         tenantCopy.ObjectID = generateUUID.v4();;
         tenantCopy.Name += '_duplicate';
 
-        await srv.create(Tenants, tenantCopy);
+        await srv.create(Entities.Tenants, tenantCopy);
         req.notify('Tenant duplicated with name ' + tenantCopy.Name);
 
         return tenantCopy;
     });
     srv.on('Tenant_testConnection', async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
-        const tenant = await srv.read(Tenants, tenant_id);
+        const tenant = await srv.read(Entities.Tenants, tenant_id);
 
         const caller = new Connectivity.ExternalConnection(tenant);
 
@@ -106,7 +106,7 @@ module.exports = async (srv) => {
     });
     srv.on('Tenant_getIntegrationContent', async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
-        const Tenant = await srv.read(Tenants, tenant_id);
+        const Tenant = await srv.read(Entities.Tenants, tenant_id);
 
         assert(req._emitter, 'No EventEmitter present in Request object. Please use Node v14.5 or higher.');
         req._emitter.setMaxListeners(0);
@@ -116,7 +116,7 @@ module.exports = async (srv) => {
         req.notify(201, 'Integration Content of ' + Tenant.Name + ' has been refreshed with ' + count + ' items.');
 
         console.log('Updating migration tasks that have this tenant either as source or as target ...');
-        const AffectedTasks = await srv.read(MigrationTasks, t => { t('*'), t.toTaskNodes(n => n('*')), t.SourceTenant(o => o('*')) })
+        const AffectedTasks = await srv.read(Entities.MigrationTasks, t => { t('*'), t.toTaskNodes(n => n('*')), t.SourceTenant(o => o('*')) })
             .where({ SourceTenant_ObjectID: tenant_id, or: { TargetTenant_ObjectID: tenant_id } });
         for (let Task of AffectedTasks) {
             const migrationTask = new MigrationTaskHelper.MigrationTask(Task);
@@ -137,13 +137,13 @@ module.exports = async (srv) => {
         }
         console.log('Done.');
 
-        return await srv.read(Tenants, tenant_id);
+        return await srv.read(Entities.Tenants, tenant_id);
     });
     srv.on('Package_analyzeScriptFiles', async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
         const package_id = req.params[1];
-        const Tenant = await srv.read(Tenants, tenant_id);
-        const Package = await srv.read(extIntegrationPackages, package_id);
+        const Tenant = await srv.read(Entities.Tenants, tenant_id);
+        const Package = await srv.read(Entities.extIntegrationPackages, package_id);
 
         const downloader = new DownloadHelper.ContentDownloader(Tenant);
         const packageContent = await downloader.downloadPackage(req, Package);
@@ -173,7 +173,7 @@ module.exports = async (srv) => {
     srv.on('Tenant_createNewMigrationTask', async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
 
-        const TenantStats = await srv.read(Tenants, tenant_id, t => {
+        const TenantStats = await srv.read(Entities.Tenants, tenant_id, t => {
             t('Statistics_numIntegrationPackages'),
                 t('Statistics_numKeyStoreEntries'),
                 t('Statistics_numUserCredentials'),
@@ -190,7 +190,7 @@ module.exports = async (srv) => {
         countItems == 0 && req.error(400, 'No content downloaded yet. Please click on \'Get Integration Content\' first before creating a Migration Task');
 
         const uuid = generateUUID.v4();
-        const newTask = await srv.create(MigrationTasks, {
+        const newTask = await srv.create(Entities.MigrationTasks, {
             ObjectID: uuid,
             Name: req.data.Name,
             Description: req.data.Description,
@@ -198,7 +198,7 @@ module.exports = async (srv) => {
             TargetTenant_ObjectID: req.data.TargetTenant,
         });
 
-        const Task = await srv.read(MigrationTasks, uuid, t => { t('*'), t.toTaskNodes(n => n('*')) });
+        const Task = await srv.read(Entities.MigrationTasks, uuid, t => { t('*'), t.toTaskNodes(n => n('*')) });
         const migrationTask = new MigrationTaskHelper.MigrationTask(Task);
         await migrationTask.generateTaskNodes(req.data.Preset);
 
@@ -206,7 +206,7 @@ module.exports = async (srv) => {
         return Task;
     });
     srv.on('Tenant_export', async (req) => {
-        const TenantList = await srv.read(Tenants);
+        const TenantList = await srv.read(Entities.Tenants);
 
         const csv = [TenantTableFields.join(';')];
         TenantList.forEach(t => csv.push(TenantTableFields.flatMap(x => t[x]).join(';')))
@@ -214,17 +214,17 @@ module.exports = async (srv) => {
 
         req.notify(201, 'CSV created: ' + TenantList.length + ' registration(s) exported.');
     });
-    srv.after('READ', ['IntegrationPackages', 'IntegrationDesigntimeArtifacts'], each => {
+    srv.after('READ', [srv.entities.IntegrationPackages, srv.entities.IntegrationDesigntimeArtifacts], each => {
         each.Criticality = each.NumberOfErrors > 0 ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Default;
     });
-    srv.after('READ', 'CertificateUserMappings', each => {
+    srv.after('READ',  srv.entities.CertificateUserMappings, each => {
         each.ValidUntilCriticality = new Date(each.ValidUntil) < Date.now() ? Settings.CriticalityCodes.Red : Settings.CriticalityCodes.Green;
     });
 
     srv.after('READ', srv.entities.MigrationTasks, async (tasks, req) => {
         const taskList = Array.isArray(tasks) ? tasks : [tasks];
         for (const t of taskList) {
-            const status = await SELECT.one.from(MigrationJobs).where({ 'MigrationTaskID': t.ObjectID }).orderBy('StartTime desc').columns(['Status', 'StatusCriticality']);
+            const status = await SELECT.one.from(Entities.MigrationJobs).where({ 'MigrationTaskID': t.ObjectID }).orderBy('StartTime desc').columns(['Status', 'StatusCriticality']);
             if (status) {
                 t.LastStatus = status.Status;
                 t.LastStatusCriticality = status.StatusCriticality;
@@ -232,7 +232,7 @@ module.exports = async (srv) => {
                 t.LastStatus = 'No executions yet';
                 t.LastStatusCriticality = Settings.CriticalityCodes.Orange;
             }
-            const nodes = await srv.read(MigrationTaskNodes).where({ 'toMigrationTask_ObjectID': t.ObjectID }).columns(['Component', 'Included', 'ConfigureOnly']);
+            const nodes = await srv.read(Entities.MigrationTaskNodes).where({ 'toMigrationTask_ObjectID': t.ObjectID }).columns(['Component', 'Included', 'ConfigureOnly']);
             t.Statistics_numIntegrationPackages = nodes.filter(x => x.Included && (
                 x.Component == Settings.ComponentNames.Package
             )).length;
@@ -286,25 +286,25 @@ module.exports = async (srv) => {
             ObjectID: req.params[1].ObjectID,
             toMigrationTask_ObjectID: req.params[1].toMigrationTask_ObjectID
         };
-        await srv.update(MigrationTaskNodes, nodeId).with({ 'Included': false, 'ConfigureOnly': false });
+        await srv.update(Entities.MigrationTaskNodes, nodeId).with({ 'Included': false, 'ConfigureOnly': false });
     });
     srv.on('Nodes_IncludeSelected', async (req) => {
         const nodeId = {
             ObjectID: req.params[1].ObjectID,
             toMigrationTask_ObjectID: req.params[1].toMigrationTask_ObjectID
         };
-        await srv.update(MigrationTaskNodes, nodeId).with({ 'Included': true });
+        await srv.update(Entities.MigrationTaskNodes, nodeId).with({ 'Included': true });
     });
     srv.on('Nodes_ConfigurePackage', async (req) => {
         const nodeId = {
             ObjectID: req.params[1].ObjectID,
             toMigrationTask_ObjectID: req.params[1].toMigrationTask_ObjectID
         };
-        const Node = await srv.read(MigrationTaskNodes, nodeId);
-        await srv.update(MigrationTaskNodes, nodeId).with({ 'ConfigureOnly': !Node.ConfigureOnly });
+        const Node = await srv.read(Entities.MigrationTaskNodes, nodeId);
+        await srv.update(Entities.MigrationTaskNodes, nodeId).with({ 'ConfigureOnly': !Node.ConfigureOnly });
 
         if (!Node.ConfigureOnly) {
-            const children = await srv.read(MigrationTaskNodes)
+            const children = await srv.read(Entities.MigrationTaskNodes)
                 .where([
                     { ref: ['toMigrationTask_ObjectID'] }, '=', { val: Node.toMigrationTask_ObjectID },
                     'and',
@@ -325,7 +325,7 @@ module.exports = async (srv) => {
     });
     srv.on('Task_startMigration', async (req) => {
         const task_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
-        const Task = await srv.read(MigrationTasks, task_id, t => {
+        const Task = await srv.read(Entities.MigrationTasks, task_id, t => {
             t.SourceTenant(n => { n('Name'), n('UseForCertificateUserMappings'), n('Environment') }),
                 t.TargetTenant(n => { n('Name'), n('UseForCertificateUserMappings'), n('Environment') }),
                 t.toTaskNodes(n => { n('ObjectID'), n('Component') }).where({ 'Included': true })
@@ -344,7 +344,7 @@ module.exports = async (srv) => {
         }
 
         const job_id = generateUUID.v4();
-        await srv.create(MigrationJobs,
+        await srv.create(Entities.MigrationJobs,
             {
                 ObjectID: job_id,
                 MigrationTaskID: task_id,
@@ -354,7 +354,7 @@ module.exports = async (srv) => {
                 EndTime: null
             }
         );
-        const Job = await srv.read(MigrationJobs, job_id);
+        const Job = await srv.read(Entities.MigrationJobs, job_id);
         const myJob = new MigrationJobHelper.MigrationJob(Job);
 
         myJob.execute();
@@ -366,7 +366,7 @@ module.exports = async (srv) => {
     srv.on('Task_resetTaskNodes', async (req) => {
         const task_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
 
-        const Task = await srv.read(MigrationTasks, task_id, t => { t('*'), t.toTaskNodes(n => n('*')) });
+        const Task = await srv.read(Entities.MigrationTasks, task_id, t => { t('*'), t.toTaskNodes(n => n('*')) });
         const migrationTask = new MigrationTaskHelper.MigrationTask(Task);
         await migrationTask.resetTaskNodes(req.data.Preset);
 
@@ -374,9 +374,9 @@ module.exports = async (srv) => {
     });
     srv.on('Task_setTargetTenant', async (req) => {
         const task_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
-        await srv.update(MigrationTasks, task_id).with({ 'TargetTenant_ObjectID': req.data.TargetTenant });
+        await srv.update(Entities.MigrationTasks, task_id).with({ 'TargetTenant_ObjectID': req.data.TargetTenant });
 
-        const Task = await srv.read(MigrationTasks, task_id, t => { t('*'), t.toTaskNodes(n => n('*')) });
+        const Task = await srv.read(Entities.MigrationTasks, task_id, t => { t('*'), t.toTaskNodes(n => n('*')) });
         const migrationTask = new MigrationTaskHelper.MigrationTask(Task);
         await migrationTask.updateExistInTenantFlags();
     });

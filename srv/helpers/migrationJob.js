@@ -7,6 +7,8 @@ const fs = require('fs');
 const xml2js = require('xml2js');
 const assert = require('assert');
 
+const Entities = cds.entities('migrationtool');
+
 class MigrationJob {
     constructor(j) {
         this.Job = j;
@@ -36,7 +38,7 @@ class MigrationJob {
             await this.addLogEntry(0, 'Starting Migration Execution of Job ' + this.Job.ObjectID);
             await this.setStatus('Running', Settings.CriticalityCodes.Blue);
 
-            this.Task = await SELECT.from('MigrationTasks', { ObjectID: this.Job.MigrationTaskID })
+            this.Task = await SELECT.from(Entities.MigrationTasks, { ObjectID: this.Job.MigrationTaskID })
                 .columns(['*', { ref: ['toTaskNodes'], expand: ['*'] }, { ref: ['SourceTenant'], expand: ['*'] }, { ref: ['TargetTenant'], expand: ['*'] }]);
             await this.addLogEntry(0, 'Task details: ' + this.Task.Name + ' (' + this.Task.ObjectID + ')');
 
@@ -1417,7 +1419,7 @@ class MigrationJob {
             Path: path ? ('https://' + path) : '#',
             Severity: (type === 'Error' ? Settings.CriticalityCodes.Red : (type === 'Warning' ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Blue))
         };
-        await INSERT(errorBody).into('Errors');
+        await INSERT(errorBody).into(Entities.Errors);
     };
     addLogEntry = async (indent, text = null) => {
         const now = new Date().toLocaleTimeString();
@@ -1426,15 +1428,15 @@ class MigrationJob {
 
         console.log(entry);
         this.Log = this.Log + entryNewLine;
-        await UPDATE('MigrationJobs', { ObjectID: this.Job.ObjectID }).set`log = (log || ${entryNewLine})`;
+        await UPDATE(Entities.MigrationJobs, { ObjectID: this.Job.ObjectID }).set`log = (log || ${entryNewLine})`;
         return entry;
     };
     clearLogEntries = async () => {
         this.Log = '';
-        await UPDATE('MigrationJobs', { ObjectID: this.Job.ObjectID }).set`log = ''`;
+        await UPDATE(Entities.MigrationJobs, { ObjectID: this.Job.ObjectID }).set`log = ''`;
     };
     setStatus = async (statusText, StatusCriticality = Settings.CriticalityCodes.Orange, isRunning = true) => {
-        await UPDATE('MigrationJobs', { ObjectID: this.Job.ObjectID }).set(
+        await UPDATE(Entities.MigrationJobs, { ObjectID: this.Job.ObjectID }).set(
             {
                 Status: statusText,
                 IsRunning: isRunning,
@@ -1443,10 +1445,10 @@ class MigrationJob {
         );
     };
     setStartTime = async () => {
-        await UPDATE('MigrationJobs', { ObjectID: this.Job.ObjectID }).set({ StartTime: new Date().toISOString() });
+        await UPDATE(Entities.MigrationJobs, { ObjectID: this.Job.ObjectID }).set({ StartTime: new Date().toISOString() });
     };
     setEndTime = async () => {
-        await UPDATE('MigrationJobs', { ObjectID: this.Job.ObjectID }).set({ EndTime: new Date().toISOString() });
+        await UPDATE(Entities.MigrationJobs, { ObjectID: this.Job.ObjectID }).set({ EndTime: new Date().toISOString() });
     };
     sleep = async (ms) => {
         await new Promise(resolve => setTimeout(resolve, ms));
