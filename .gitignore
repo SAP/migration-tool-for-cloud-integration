@@ -1,6 +1,7 @@
 # CAP MigrationTool
 _out
 *.db*
+*.sqlite*
 connection.properties
 default-*.json
 gen/
