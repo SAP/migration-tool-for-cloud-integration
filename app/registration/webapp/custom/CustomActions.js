@@ -106,6 +106,8 @@ sap.ui.define([
                 this.oInputJSONDialog.open();
             }
         },
+        downloadTenants: function () { return window.open('/downloadTenants', 'blank') },
+        downloadDatabase: function () { return window.open('/downloadDatabase', 'blank') }
     };
 }
 );

@@ -105,6 +105,18 @@
                                     "tableSettings": {
                                         "type": "ResponsiveTable",
                                         "selectionMode": "Multi"
+                                    },
+                                    "actions": {
+                                        "downloadDatabase": {
+                                            "press": "registration.custom.CustomActions.downloadDatabase",
+                                            "enabled": true,
+                                            "text": "Download db.sqlite file"
+                                        },
+                                        "downloadTenants": {
+                                            "press": "registration.custom.CustomActions.downloadTenants",
+                                            "enabled": true,
+                                            "text": "Download Tenants.csv file"
+                                        }
                                     }
                                 }
                             }

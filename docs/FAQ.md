@@ -8,7 +8,9 @@
 
 **Q: Can I export the connection details of my tenants so the information is not lost when redeploying the database?**
 
-**A:** Yes. In the Register Tenants app, click on 'Export All to CSV'. This will create a CSV file with the connection details of all you tenants (all tenants are exported regardless which you select from the list). The CSV file is located in a special folder which is used during the database deploy phase. Apart from doing the export there is nothing more to do and you can just re-deploy the database. Other information (tenant content, migration tasks, migration job logs) is NOT exported and will be deleted.
+**A:** Yes. In the Register Tenants app, click on 'Save to Tenants.csv file'. This will create a CSV file with the connection details of all your tenants. The CSV file is located in a special folder which is used during the database deploy phase. After saving the file, you can either regenerate the database (cds deploy --to sqlite), or download the file to your laptop (click on 'Download Tenants.csv file').
+
+To also download other information about the tenants (tenant content, migration tasks, migration job logs), use the 'Download db.sqlite file' button.
 
 ---
 

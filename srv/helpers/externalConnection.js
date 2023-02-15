@@ -267,8 +267,8 @@ class ExternalConnection {
         } catch (error) {
             console.log('External call error ignored: ' + error);
             return {
-                code: error.response.status,
-                value: error.response.data
+                code: error?.response?.status || 500,
+                value: error?.response?.data || error.toString()
             };
         }
     };

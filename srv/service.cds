@@ -16,8 +16,8 @@ service ConfigService {
     } group by ObjectID actions {
         action Tenant_testConnection()        returns Boolean;
 
-        @cds.odata.bindingparameter.name   : '_it'
-        @Common.SideEffects.TargetEntities : [
+        @cds.odata.bindingparameter.name  : '_it'
+        @Common.SideEffects.TargetEntities: [
             _it.toAccessPolicies,
             _it.toCustomTagConfigurations,
             _it.toErrors,
@@ -33,44 +33,44 @@ service ConfigService {
         ]
         action Tenant_getIntegrationContent() returns Tenants;
 
-        @cds.odata.bindingparameter.name   : '_it'
-        @Common.SideEffects.TargetEntities : [_it.toMigrationTasks]
+        @cds.odata.bindingparameter.name  : '_it'
+        @Common.SideEffects.TargetEntities: [_it.toMigrationTasks]
         action Tenant_createNewMigrationTask(
 
-        @UI.ParameterDefaultValue : 'My new migration task'
-        @title                    : 'Task Name'
+        @UI.ParameterDefaultValue: 'My new migration task'
+        @title                   : 'Task Name'
         @mandatory
         Name : String,
 
 
         Description : String,
 
-        @title                    : 'Target Tenant'
+        @title                   : 'Target Tenant'
         @mandatory
-        @(Common : {
-            ValueListWithFixedValues : true,
-            ValueListMapping         : {
-                CollectionPath : 'Tenants_TargetsOnly',
-                Parameters     : [{
-                    $Type             : 'Common.ValueListParameterOut',
-                    ValueListProperty : 'ObjectID',
-                    LocalDataProperty : 'TargetTenant'
+        @(Common: {
+            ValueListWithFixedValues: true,
+            ValueListMapping        : {
+                CollectionPath: 'Tenants_TargetsOnly',
+                Parameters    : [{
+                    $Type            : 'Common.ValueListParameterOut',
+                    ValueListProperty: 'ObjectID',
+                    LocalDataProperty: 'TargetTenant'
                 }]
             }
         })
         TargetTenant : UUID,
 
-        @title                    : 'How do you want to generate the task'
+        @title                   : 'How do you want to generate the task'
         @mandatory
-        @UI.ParameterDefaultValue : 'Optimal'
-        @(Common : {
-            ValueListWithFixedValues : true,
-            ValueListMapping         : {
-                CollectionPath : 'MigrationTaskPresets',
-                Parameters     : [{
-                    $Type             : 'Common.ValueListParameterOut',
-                    ValueListProperty : 'Code',
-                    LocalDataProperty : 'Preset'
+        @UI.ParameterDefaultValue: 'Optimal'
+        @(Common: {
+            ValueListWithFixedValues: true,
+            ValueListMapping        : {
+                CollectionPath: 'MigrationTaskPresets',
+                Parameters    : [{
+                    $Type            : 'Common.ValueListParameterOut',
+                    ValueListProperty: 'Code',
+                    LocalDataProperty: 'Preset'
                 }]
             }
         })
@@ -119,61 +119,61 @@ service ConfigService {
     entity DataStores                      as projection on my.extDataStores;
     entity DataStoreEntries                as projection on my.extDataStoreEntries;
 
-    @sap.deletable : false
+    @sap.deletable: false
     entity Errors                          as projection on my.Errors;
 
     @odata.draft.enabled
     @fiori.draft.enabled
     entity MigrationTasks                  as projection on my.MigrationTasks actions {
 
-        @cds.odata.bindingparameter.name   : '_it'
-        @Common.SideEffects.TargetEntities : [_it.toMigrationJobs]
-        @Common.IsActionCritical           : true
+        @cds.odata.bindingparameter.name  : '_it'
+        @Common.SideEffects.TargetEntities: [_it.toMigrationJobs]
+        @Common.IsActionCritical          : true
         action Task_startMigration() returns MigrationJobs;
 
-        @cds.odata.bindingparameter.name   : '_it'
-        @Common.SideEffects.TargetEntities : [_it.toMigrationJobs]
+        @cds.odata.bindingparameter.name  : '_it'
+        @Common.SideEffects.TargetEntities: [_it.toMigrationJobs]
         action Task_refreshJobsTable();
 
-        @cds.odata.bindingparameter.name   : '_it'
-        @Common.SideEffects.TargetEntities : [
+        @cds.odata.bindingparameter.name  : '_it'
+        @Common.SideEffects.TargetEntities: [
             _it.toTaskNodes,
             _it
         ]
-        @Common.IsActionCritical           : true
+        @Common.IsActionCritical          : true
         action Task_resetTaskNodes(
-        @title                    : 'How would you like to preset the items'
+        @title                   : 'How would you like to preset the items'
         @mandatory
-        @UI.ParameterDefaultValue : 'Optimal'
-        @(Common : {
-            ValueListWithFixedValues : true,
-            ValueListMapping         : {
-                CollectionPath : 'MigrationTaskPresets',
-                Parameters     : [{
-                    $Type             : 'Common.ValueListParameterOut',
-                    ValueListProperty : 'Code',
-                    LocalDataProperty : 'Preset'
+        @UI.ParameterDefaultValue: 'Optimal'
+        @(Common: {
+            ValueListWithFixedValues: true,
+            ValueListMapping        : {
+                CollectionPath: 'MigrationTaskPresets',
+                Parameters    : [{
+                    $Type            : 'Common.ValueListParameterOut',
+                    ValueListProperty: 'Code',
+                    LocalDataProperty: 'Preset'
                 }]
             }
         })
         Preset : String);
 
-        @cds.odata.bindingparameter.name   : '_it'
-        @Common.SideEffects.TargetEntities : [
+        @cds.odata.bindingparameter.name  : '_it'
+        @Common.SideEffects.TargetEntities: [
             _it.toTaskNodes,
             _it.TargetTenant
         ]
         action Task_setTargetTenant(
-        @title                    : 'New Target Tenant'
+        @title                   : 'New Target Tenant'
         @mandatory
-        @(Common : {
-            ValueListWithFixedValues : true,
-            ValueListMapping         : {
-                CollectionPath : 'Tenants_TargetsOnly',
-                Parameters     : [{
-                    $Type             : 'Common.ValueListParameterOut',
-                    ValueListProperty : 'ObjectID',
-                    LocalDataProperty : 'TargetTenant'
+        @(Common: {
+            ValueListWithFixedValues: true,
+            ValueListMapping        : {
+                CollectionPath: 'Tenants_TargetsOnly',
+                Parameters    : [{
+                    $Type            : 'Common.ValueListParameterOut',
+                    ValueListProperty: 'ObjectID',
+                    LocalDataProperty: 'TargetTenant'
                 }]
             }
         })
@@ -189,28 +189,28 @@ service ConfigService {
     @readonly
     entity MigrationTaskPresets            as projection on my.MigrationTaskPresets;
 
-    @sap.creatable : false
+    @sap.creatable: false
     entity MigrationJobs                   as projection on my.MigrationJobs;
 
     entity MigrationTaskNodes              as projection on my.MigrationTaskNodes actions {
 
-        @cds.odata.bindingparameter.name   : '_it'
-        @Common.SideEffects.TargetEntities : [
+        @cds.odata.bindingparameter.name  : '_it'
+        @Common.SideEffects.TargetEntities: [
             _it,
             _it.toMigrationTask
         ]
         action Nodes_IncludeSelected();
 
-        @cds.odata.bindingparameter.name   : '_it'
-        @Common.SideEffects.TargetEntities : [
+        @cds.odata.bindingparameter.name  : '_it'
+        @Common.SideEffects.TargetEntities: [
             _it,
             _it.toMigrationTask
         ]
         action Nodes_SkipSelected();
 
-        @cds.odata.bindingparameter.name   : '_it'
-        @Core.OperationAvailable           : _it.flagCanConfigure
-        @Common.SideEffects.TargetEntities : [_it]
+        @cds.odata.bindingparameter.name  : '_it'
+        @Core.OperationAvailable          : _it.flagCanConfigure
+        @Common.SideEffects.TargetEntities: [_it]
         action Nodes_ConfigurePackage();
     }
 };
@@ -218,26 +218,26 @@ service ConfigService {
 // Registration service is separate as it enables Draft mode on the Tenant object
 service RegistrationService {
     @odata.draft.enabled
-    entity Tenants     as projection on my.Tenants actions {
+    entity Tenants                         as projection on my.Tenants actions {
 
-        @cds.odata.bindingparameter.name : '_it'
-        @Core.OperationAvailable         : _it.IsActiveEntity
+        @cds.odata.bindingparameter.name: '_it'
+        @Core.OperationAvailable        : _it.IsActiveEntity
         action Tenant_testConnection() returns Boolean;
 
         action Tenant_duplicate()      returns Tenants;
     };
 
     @readonly
-    entity SystemRoles as projection on my.SystemRoles;
+    entity SystemRoles                     as projection on my.SystemRoles;
 
     @readonly
-    entity Landscapes  as projection on my.Landscapes;
+    entity Landscapes                      as projection on my.Landscapes;
 
-    @Common.IsActionCritical : true
-    action Tenant_export() returns Boolean;
+    @Common.IsActionCritical: true
+    action Tenant_export();
 };
 
 service AppInformation {
     @readonly
-    entity LaunchpadInfo as projection on my.LaunchpadInfo;
+    entity LaunchpadInfo                   as projection on my.LaunchpadInfo;
 };
