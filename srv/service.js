@@ -15,6 +15,16 @@ const TenantTableFields = ['ObjectID', 'Name', 'Host', 'Token_host', 'Oauth_clie
 const Entities = cds.entities('migrationtool');
 
 module.exports = async (srv) => {
+    var IntegrationContentStatus = {};
+    srv.on('getIntegrationContentStatus', req => {
+        return {
+            Running: IntegrationContentStatus.Running,
+            Tenant: IntegrationContentStatus.Tenant,
+            Progress: Math.floor(IntegrationContentStatus.Progress),
+            Topic: IntegrationContentStatus.Topic,
+            Item: IntegrationContentStatus.Item
+        }
+    });
     srv.after('READ', srv.entities.Tenants, each => {
         if (each.NumberOfErrors > 0) {
             each.ErrorsText = each.NumberOfErrors + ' errors found';
@@ -104,40 +114,44 @@ module.exports = async (srv) => {
 
         return success;
     });
+    srv.on('Tenant_getIntegrationContentRefresh', req => { }); //empty function, but triggers side effect to refresh the page
     srv.on('Tenant_getIntegrationContent', async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
         const Tenant = await srv.read(Entities.Tenants, tenant_id);
 
+        IntegrationContentStatus = {
+            Running: true,
+            Tenant: Tenant.Name,
+            Progress: 0,
+            Topic: 'Initializing',
+            Item: ''
+        };
+
         assert(req._emitter, 'No EventEmitter present in Request object. Please use Node v14.5 or higher.');
         req._emitter.setMaxListeners(0);
 
-        const downloader = new DownloadHelper.ContentDownloader(Tenant)
-        const count = await downloader.getIntegrationContent();
-        req.notify(201, 'Integration Content of ' + Tenant.Name + ' has been refreshed with ' + count + ' items.');
+        const downloader = new DownloadHelper.ContentDownloader(Tenant, IntegrationContentStatus)
+        downloader.getIntegrationContent().then(async (count) => {
+            IntegrationContentStatus.Topic = `Integration Content has been refreshed with ${count} items.`;
+            IntegrationContentStatus.Item = '';
 
-        console.log('Updating migration tasks that have this tenant either as source or as target ...');
-        const AffectedTasks = await srv.read(Entities.MigrationTasks, t => { t('*'), t.toTaskNodes(n => n('*')), t.SourceTenant(o => o('*')) })
-            .where({ SourceTenant_ObjectID: tenant_id, or: { TargetTenant_ObjectID: tenant_id } });
-        for (let Task of AffectedTasks) {
-            const migrationTask = new MigrationTaskHelper.MigrationTask(Task);
-            const errorList = await migrationTask.updateExistInTenantFlags();
-            console.log('- Task ' + Task.Name + ' has ' + errorList.length + ' issues.');
-            if (errorList.length > 0) {
-                const errorText = errorList.map(x => '- ' + x).join('\r\n');
-                req.warn(200, 'Task ' + Task.Name + ' from tenant ' + Task.SourceTenant.Name + ' has issues.\r\n' +
-                    '\r\n' +
-                    'The migration task has been updated to reflect the available content, but ' + errorList.length + ' of the items selected to be in scope of this task is no longer available on the source tenant:\r\n' +
-                    errorText + '\r\n' +
-                    '\r\n' +
-                    'Please open the migration task and switch the item(s) to \'skip\'.'
-                );
-            } else {
-                req.notify(200, 'Task ' + Task.Name + ' from tenant ' + Task.SourceTenant.Name + ' has been updated to reflect the available content.');
+            console.log('Updating migration tasks that have this tenant either as source or as target ...');
+            const AffectedTasks = await srv.read(Entities.MigrationTasks, t => { t('*'), t.toTaskNodes(n => n('*')), t.SourceTenant(o => o('*')) })
+                .where({ SourceTenant_ObjectID: tenant_id, or: { TargetTenant_ObjectID: tenant_id } });
+            for (let Task of AffectedTasks) {
+                const migrationTask = new MigrationTaskHelper.MigrationTask(Task);
+                const errorList = await migrationTask.updateExistInTenantFlags();
+                console.log('- Task ' + Task.Name + ' has ' + errorList.length + ' issues.');
+                if (errorList.length > 0) {
+                    const errorText = errorList.map(x => '- ' + x).join('\r\n');
+                    IntegrationContentStatus.Item += `Task ${Task.Name} has been updated to reflect the available content, but ${errorList.length} of the items selected to be in scope of this task are no longer available on the source tenant:\r\n${errorText}\r\n\r\nPlease open the migration task and switch the item(s) to 'skip'.\r\n`
+                } else {
+                    IntegrationContentStatus.Item += `Task ${Task.Name} has been updated to reflect the available content.\r\n`
+                }
             }
-        }
-        console.log('Done.');
-
-        return await srv.read(Entities.Tenants, tenant_id);
+            IntegrationContentStatus.Running = false;
+            console.log('Done.');
+        });
     });
     srv.on('Package_analyzeScriptFiles', async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
@@ -217,7 +231,7 @@ module.exports = async (srv) => {
     srv.after('READ', [srv.entities.IntegrationPackages, srv.entities.IntegrationDesigntimeArtifacts], each => {
         each.Criticality = each.NumberOfErrors > 0 ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Default;
     });
-    srv.after('READ',  srv.entities.CertificateUserMappings, each => {
+    srv.after('READ', srv.entities.CertificateUserMappings, each => {
         each.ValidUntilCriticality = new Date(each.ValidUntil) < Date.now() ? Settings.CriticalityCodes.Red : Settings.CriticalityCodes.Green;
     });
 

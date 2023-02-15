@@ -5,10 +5,16 @@ using from './ui-errors';
 // Tenants ---------------------------------------------------------------
 annotate ConfigService.Tenants with @(UI : {
     PresentationVariant  : {
-        SortOrder      : [{Property : Name}],
+        SortOrder     : [
+            {
+                Property  : Environment,
+                Descending: true
+            },
+            {Property: Name}
+        ],
         Visualizations : ['@UI.LineItem'],
         RequestAtLeast : [NumberOfErrors],
-        GroupBy        : [Role]
+        GroupBy        : [Environment]
     },
     Identification       : [
         {Value : ObjectID},
@@ -16,11 +22,11 @@ annotate ConfigService.Tenants with @(UI : {
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Test Connection',
             Action : 'ConfigService.Tenant_testConnection'
-        },
-        {
-            $Type  : 'UI.DataFieldForAction',
-            Label  : 'Get Integration Content',
-            Action : 'ConfigService.Tenant_getIntegrationContent'
+        // },
+        // {
+        //     $Type  : 'UI.DataFieldForAction',
+        //     Label  : 'Get Integration Content',
+        //     Action : 'ConfigService.Tenant_getIntegrationContent'
         }
     ],
     HeaderInfo           : {
@@ -76,11 +82,11 @@ annotate ConfigService.Tenants with @(UI : {
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Test Connection',
             Action : 'ConfigService.Tenant_testConnection'
-        },
-        {
-            $Type  : 'UI.DataFieldForAction',
-            Label  : 'Get Integration Content',
-            Action : 'ConfigService.Tenant_getIntegrationContent'
+        // },
+        // {
+        //     $Type  : 'UI.DataFieldForAction',
+        //     Label  : 'Get Integration Content',
+        //     Action : 'ConfigService.Tenant_getIntegrationContent'
         }
     ],
     Facets               : [

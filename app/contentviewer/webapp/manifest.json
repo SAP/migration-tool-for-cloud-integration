@@ -193,6 +193,13 @@
                                             "sort": true
                                         },
                                         "selectionMode": "Multi"
+                                    },
+                                    "actions": {
+                                        "startGetIntegrationContent": {
+                                            "press": "contentviewer.custom.progress.startGetIntegrationContent",
+                                            "text": "Get Integration Content",
+                                            "enabled": "contentviewer.custom.progress.enabledForSingleSelect"
+                                        }
                                     }
                                 }
                             }
@@ -259,7 +266,17 @@
                                     }
                                 }
                             },
-                            "content": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "startGetIntegrationContent": {
+                                            "press": "contentviewer.custom.progress.startGetIntegrationContent",
+                                            "text": "Get Integration Content",
+                                            "visible": true
+                                        }
+                                    }
+                                }
+                            },
                             "sectionLayout": "Tabs",
                             "controlConfiguration": {
                                 "toIntegrationPackages/@com.sap.vocabularies.UI.v1.LineItem": {

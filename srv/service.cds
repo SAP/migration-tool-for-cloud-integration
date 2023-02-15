@@ -14,7 +14,7 @@ service ConfigService {
             toErrors.ObjectID
         ) as NumberOfErrors : Integer
     } group by ObjectID actions {
-        action Tenant_testConnection()        returns Boolean;
+        action Tenant_testConnection()               returns Boolean;
 
         @cds.odata.bindingparameter.name  : '_it'
         @Common.SideEffects.TargetEntities: [
@@ -31,7 +31,9 @@ service ConfigService {
             _it.toCertificateUserMappings,
             _it.toDataStores
         ]
-        action Tenant_getIntegrationContent() returns Tenants;
+        action Tenant_getIntegrationContentRefresh() returns Tenants;
+
+        action Tenant_getIntegrationContent();
 
         @cds.odata.bindingparameter.name  : '_it'
         @Common.SideEffects.TargetEntities: [_it.toMigrationTasks]
@@ -74,7 +76,15 @@ service ConfigService {
                 }]
             }
         })
-        Preset : String)                      returns MigrationTasks;
+        Preset : String)                             returns MigrationTasks;
+    };
+
+    function getIntegrationContentStatus() returns {
+        Running : Boolean;
+        Tenant : String;
+        Progress : Integer;
+        Topic : String;
+        Item : String;
     };
 
     entity IntegrationPackages             as projection on my.extIntegrationPackages {

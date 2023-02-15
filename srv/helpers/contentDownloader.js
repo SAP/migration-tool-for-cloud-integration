@@ -7,7 +7,8 @@ const assert = require('assert');
 const Entities = cds.entities('migrationtool');
 
 class ContentDownloader {
-    constructor(t) {
+    constructor(t, m) {
+        this.IntegrationContentStatus = m;
         this.Tenant = t;
         this.stats = {
             Statistics_numIntegrationPackages: 0,
@@ -57,22 +58,42 @@ class ContentDownloader {
     getIntegrationContent = async () => {
         console.log('getIntegrationContent ' + this.Tenant.ObjectID);
 
+        this.IntegrationContentStatus.Progress = 0;
+        this.setIntegrationContentStatusTopic('Connecting ...');
+        const IntegrationContentStatusProgressPerItem = 100 / (11 + (this.Tenant.UseForCertificateUserMappings ? 1 : 0));
+
         this.validatePreconditions();
 
         await this.Connector.refreshIntegrationToken();
         await DELETE.from(Entities.Errors).where({ 'toParent': this.Tenant.ObjectID });
 
         await this.getIntegrationPackages().then(n => this.stats.Statistics_numIntegrationPackages += n);
+        this.setIntegrationContentStatusProgress(IntegrationContentStatusProgressPerItem); // 01
+        this.setIntegrationContentStatusItem('');
 
         await this.getKeyStoreEntries().then(n => this.stats.Statistics_numKeyStoreEntries += n);
+        this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem); // 02
+
         await this.getNumberRanges().then(n => this.stats.Statistics_numNumberRanges += n);
+        this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem); // 03
+
         await this.getCustomTagConfigurations().then(n => this.stats.Statistics_numCustomTagConfigurations += n);
+        this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem); // 04
+
         await this.getAccessPolicies().then(n => this.stats.Statistics_numAccessPolicies += n);
+        this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem); // 05
 
         await this.getOAuth2ClientCredentials().then(n => this.stats.Statistics_numOAuth2ClientCredentials += n);
+        this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem); // 06
+
         await this.getUserCredentials().then(n => this.stats.Statistics_numUserCredentials += n);
+        this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem); // 07
+
         await this.getVariables().then(n => this.stats.Statistics_numVariables += n);
+        this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem); // 08
+
         await this.getDataStores().then(n => this.stats.Statistics_numDataStores += n);
+        this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem); // 09
 
         if (this.Tenant.UseForCertificateUserMappings) {
             if (this.Tenant.Environment == 'Neo') {
@@ -80,14 +101,17 @@ class ContentDownloader {
             } else {
                 await this.getCFCertificateUserMappings().then(n => this.stats.Statistics_numCertificateUserMappings += n);
             }
+            this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem); // 12
         } else {
             await DELETE.from(Entities.extCertificateUserMappingRoles).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
             await DELETE.from(Entities.extCertificateUserMappings).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
         }
 
         await this.getJMSBrokers().then(n => this.stats.Statistics_numJMSBrokers += n);
+        this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem); // 10
 
         await this.generateLimitationNotices();
+        this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem); // 11
 
         var count = 0;
         for (let i of Object.keys(this.stats)) { count += this.stats[i] };
@@ -95,13 +119,16 @@ class ContentDownloader {
         this.stats.RefreshedDate = (new Date()).toISOString();
         await UPDATE(cds.entities.Tenants, this.Tenant.ObjectID).with(this.stats);
 
-        console.log('Done: ' + count + ' items.');
+        console.log(`Done: ${count} items.`);
         return count;
     };
 
     getIntegrationPackages = async () => {
         console.log('getIntegrationPackages ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('Integration Packages:');
         const items = await this.Connector.externalCall(Settings.Paths.IntegrationPackages.path);
+        const IntegrationContentStatusProgressPerPackage = 100 / items.length;
+
         await this.checkIntegrationPackages(items);
 
         this.removeInvalidParameters(cds.entities.extIntegrationPackages, items);
@@ -115,6 +142,7 @@ class ContentDownloader {
         items.length > 0 && await INSERT(items).into(Entities.extIntegrationPackages);
 
         for (let each of items) {
+            this.setIntegrationContentStatusItem(each.Id);
             await this.getIntegrationDesigntimeArtifacts(each.Id, each.ObjectID).then(n => this.stats.Statistics_numIntegrationDesigntimeArtifacts += n);
             await this.getValueMappingDesigntimeArtifacts(each.Id, each.ObjectID).then(n => this.stats.Statistics_numValueMappingDesigntimeArtifacts += n);
             await this.getCustomTags(each.Id, each.ObjectID).then(n => this.stats.Statistics_numCustomTags += n);
@@ -136,6 +164,7 @@ class ContentDownloader {
                     console.log('Could not analyze embedded certificates.');
                 }
             }
+            this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerPackage);
         }
         return items.length;
     };
@@ -290,6 +319,7 @@ class ContentDownloader {
 
     getKeyStoreEntries = async () => {
         console.log('getKeyStoreEntries ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('Key Store Entries');
         const items = (await this.Connector.externalCall(Settings.Paths.KeyStoreEntries.path)).filter(x => x.Owner != 'SAP');
 
         const itemsSupported = items.filter(x => x.Type == 'Certificate');
@@ -310,6 +340,7 @@ class ContentDownloader {
 
     getNumberRanges = async () => {
         console.log('getNumberRanges ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('Number Ranges');
         const items = await this.Connector.externalCall(Settings.Paths.NumberRanges.path);
 
         this.removeInvalidParameters(cds.entities.extNumberRanges, items);
@@ -324,6 +355,7 @@ class ContentDownloader {
 
     getCustomTagConfigurations = async () => {
         console.log('getCustomTagConfigurations ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('Custom Tag Configurations');
         var items = await this.Connector.externalCall(Settings.Paths.CustomTagConfigurations.path);
         items = items.customTagsConfiguration;
 
@@ -339,6 +371,7 @@ class ContentDownloader {
 
     getUserCredentials = async () => {
         console.log('getUserCredentials ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('User Credentials');
         const items = await this.Connector.externalCall(Settings.Paths.UserCredentials.path);
 
         const itemsSupported = items.filter(x => (x.Kind == 'default' || x.Kind == 'successfactors'));
@@ -369,6 +402,7 @@ class ContentDownloader {
 
     getOAuth2ClientCredentials = async () => {
         console.log('getOAuth2ClientCredentials ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('OAuth2 Client Credentials');
         const items = await this.Connector.externalCall(Settings.Paths.OAuth2ClientCredentials.path);
         await this.checkOAuth2ClientCredentials(items);
 
@@ -395,6 +429,7 @@ class ContentDownloader {
 
     getNeoCertificateUserMappings = async () => {
         console.log('getNeoCertificateUserMappings ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('Certificate User Mappings');
         const items = await this.Connector.externalCall(Settings.Paths.CertificateUserMappings.Neo.path);
 
         this.removeInvalidParameters(cds.entities.extCertificateUserMappings, items);
@@ -436,6 +471,7 @@ class ContentDownloader {
 
     getCFCertificateUserMappings = async () => {
         console.log('getCFCertificateUserMappings ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('Certificate User Mappings');
         const items = await this.Connector.externalPlatformCall(Settings.Paths.CertificateUserMappings.CF.ServiceInstances
             .replace('{SPACE_ID}', this.Tenant.CF_spaceID)
             .replace('{SERVICEPLAN_ID}', this.Tenant.CF_servicePlanID)
@@ -487,6 +523,7 @@ class ContentDownloader {
 
     getJMSBrokers = async () => {
         console.log('getJMSBrokers ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('JMS Brokers');
         console.log('The next call might result in an error. This just means that JMS is not activated. The error will be ignored.');
         const item = await this.Connector.externalCall(Settings.Paths.JMSBrokers.path, true);
         await DELETE.from(Entities.extJMSBrokers).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
@@ -508,6 +545,7 @@ class ContentDownloader {
 
     getAccessPolicies = async () => {
         console.log('getAccessPolicies ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('Access Policies');
         const items = await this.Connector.externalCall(Settings.Paths.AccessPolicies.path);
 
         this.removeInvalidParameters(cds.entities.extAccessPolicies, items);
@@ -538,6 +576,7 @@ class ContentDownloader {
 
     getVariables = async () => {
         console.log('getVariables ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('Variables');
         const items = await this.Connector.externalCall(Settings.Paths.Variables.path);
 
         this.removeInvalidParameters(cds.entities.extVariables, items);
@@ -554,6 +593,7 @@ class ContentDownloader {
 
     getDataStores = async () => {
         console.log('getDataStores ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('Data Stores');
         const items = await this.Connector.externalCall(Settings.Paths.DataStores.path);
 
         await this.checkDataStores(items);
@@ -601,6 +641,7 @@ class ContentDownloader {
 
     generateLimitationNotices = async () => {
         console.log('generateLimitationNotices ' + this.Tenant.ObjectID);
+        this.setIntegrationContentStatusTopic('Finishing up');
 
         // if (this.Tenant.Environment == 'Neo') {
         //     const certificateUserMappings = (await this.Connector.externalCall(Settings.Paths.CertificateUserMappings.Neo.path)).map(x => x.User);
@@ -788,6 +829,11 @@ class ContentDownloader {
             }];
         }
     };
+    setIntegrationContentStatusTopic = (topic) => this.IntegrationContentStatus.Topic = topic;
+    setIntegrationContentStatusItem = (item) => this.IntegrationContentStatus.Item = item;
+    setIntegrationContentStatusProgress = (progress) => this.IntegrationContentStatus.Progress = progress;
+    setIntegrationContentStatusProgressIncrease = (increase) => this.IntegrationContentStatus.Progress += increase;
+    setIntegrationContentStatusRunning = (running) => this.IntegrationContentStatus.Running = running;
 };
 
 module.exports = {

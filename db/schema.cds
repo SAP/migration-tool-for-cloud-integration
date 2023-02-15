@@ -10,8 +10,8 @@ entity Landscapes : CodeList {};
 entity MigrationTaskPresets : CodeList {};
 
 aspect CodeList {
-    key Code : String(10) @title : 'Code'  @Common.Text : Value;
-    Value    : String(50) @title : 'Description';
+    key Code : String(10)  @title: 'Code'  @Common.Text: Value;
+    Value    : String(50)  @title: 'Description';
 }
 
 @cds.persistence.skip
@@ -33,7 +33,7 @@ entity Errors {
 
 // Tenants ---------------------------------------------------------------
 entity Tenants : managed {
-    key ObjectID                      : UUID    @Core.Computed  @Common.Text : Name;
+    key ObjectID                      : UUID    @Core.Computed  @Common.Text: Name;
         Name                          : String;
         Host                          : String;
         Token_host                    : String;
@@ -437,8 +437,8 @@ entity MigrationTaskNodes {
         PackageVendor                    : String; //used only for Integration Packages to show which are SAP and which are Custom
 };
 
-type TechnicalBooleanFlag : Boolean @Core.Computed  @UI.Hidden;
-type CriticalityType : Integer @Core.Computed;
+type TechnicalBooleanFlag : Boolean  @Core.Computed  @UI.Hidden;
+type CriticalityType      : Integer @Core.Computed;
 
 entity MigrationJobs {
     key ObjectID          : UUID;
