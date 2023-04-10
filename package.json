@@ -24,7 +24,7 @@
     "express": "^4.17.1",
     "qs": "^6.10.3",
     "sqlite3": "https://github.com/mapbox/node-sqlite3/tarball/master",
-    "xml2js": "^0.4.23",
+    "xml2js": "^0.5.0",
     "yauzl": "^2.10.0",
     "yazl": "^2.5.0"
   },
