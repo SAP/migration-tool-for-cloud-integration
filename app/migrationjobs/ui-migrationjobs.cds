@@ -1,4 +1,4 @@
-using ConfigService from '../../srv/service';
+using ConfigService from '../../srv/service_config';
 using from '../contentviewer/ui-errors';
 
 annotate ConfigService.MigrationJobs with @(UI : {

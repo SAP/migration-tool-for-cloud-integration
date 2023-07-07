@@ -1,4 +1,4 @@
-using ConfigService from '../../srv/service';
+using ConfigService from '../../srv/service_config';
 using from '../migrationtasks/ui-migrationtasks';
 using from './ui-errors';
 

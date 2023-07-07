@@ -10,7 +10,7 @@
     "email": "willem.pardaens@sap.com"
   },
   "engines": {
-    "node": ">=14.18"
+    "node": ">=18.16"
   },
   "keywords": [
     "SAP Integration Suite",
@@ -18,27 +18,30 @@
     "Migration tool"
   ],
   "dependencies": {
+    "@cap-js/sqlite": "^1.0.1",
     "@sap-cloud-sdk/http-client": "^3.2",
-    "@sap/cds": "^6.8.1",
+    "@sap/cds": "^7.0.2",
     "axios": "^1.4",
     "express": "^4.18.2",
     "qs": "^6.11.2",
-    "sqlite3": "^5.1",
     "xml2js": "^0.6.0",
     "yauzl": "^2.10.0",
     "yazl": "^2.5.1"
   },
   "scripts": {
-    "start": "cds run"
+    "start": "cds-serve"
   },
   "cds": {
     "requires": {
       "db": {
         "kind": "sqlite",
         "credentials": {
-          "database": "db.sqlite"
+          "url": "db.sqlite"
         }
       }
+    },
+    "cdsc": {
+      "defaultStringLength": 1000
     }
   }
 }

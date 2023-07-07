@@ -11,7 +11,7 @@
         "description": "View logs of previous job runs",
         "dataSources": {
             "mainService": {
-                "uri": "/config/",
+                "uri": "/odata/v4/config/",
                 "type": "OData",
                 "settings": {
                     "odataVersion": "4.0"

@@ -1,4 +1,4 @@
-using ConfigService from '../../srv/service';
+using ConfigService from '../../srv/service_config';
 
 annotate ConfigService.Errors with @(UI : {
     PresentationVariant : {

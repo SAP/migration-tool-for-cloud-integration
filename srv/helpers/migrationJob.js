@@ -1428,12 +1428,12 @@ class MigrationJob {
 
         console.log(entry);
         this.Log = this.Log + entryNewLine;
-        await UPDATE(Entities.MigrationJobs, { ObjectID: this.Job.ObjectID }).set`log = (log || ${entryNewLine})`;
+        await UPDATE(Entities.MigrationJobs, { ObjectID: this.Job.ObjectID }).set`Log = (Log || ${entryNewLine})`;
         return entry;
     };
     clearLogEntries = async () => {
         this.Log = '';
-        await UPDATE(Entities.MigrationJobs, { ObjectID: this.Job.ObjectID }).set`log = ''`;
+        await UPDATE(Entities.MigrationJobs, { ObjectID: this.Job.ObjectID }).set`Log = ''`;
     };
     setStatus = async (statusText, StatusCriticality = Settings.CriticalityCodes.Orange, isRunning = true) => {
         await UPDATE(Entities.MigrationJobs, { ObjectID: this.Job.ObjectID }).set(

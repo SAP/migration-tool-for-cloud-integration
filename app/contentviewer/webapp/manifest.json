@@ -11,7 +11,7 @@
         "description": "Explore the content of your tenant",
         "dataSources": {
             "mainService": {
-                "uri": "/config/",
+                "uri": "/odata/v4/config/",
                 "type": "OData",
                 "settings": {
                     "odataVersion": "4.0"

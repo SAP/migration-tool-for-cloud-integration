@@ -224,30 +224,3 @@ service ConfigService {
         action Nodes_ConfigurePackage();
     }
 };
-
-// Registration service is separate as it enables Draft mode on the Tenant object
-service RegistrationService {
-    @odata.draft.enabled
-    entity Tenants                         as projection on my.Tenants actions {
-
-        @cds.odata.bindingparameter.name: '_it'
-        @Core.OperationAvailable        : _it.IsActiveEntity
-        action Tenant_testConnection() returns Boolean;
-
-        action Tenant_duplicate()      returns Tenants;
-    };
-
-    @readonly
-    entity SystemRoles                     as projection on my.SystemRoles;
-
-    @readonly
-    entity Landscapes                      as projection on my.Landscapes;
-
-    @Common.IsActionCritical: true
-    action Tenant_export();
-};
-
-service AppInformation {
-    @readonly
-    entity LaunchpadInfo                   as projection on my.LaunchpadInfo;
-};

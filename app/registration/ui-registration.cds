@@ -1,4 +1,4 @@
-using RegistrationService from '../../srv/service';
+using RegistrationService from '../../srv/service_registration';
 
 annotate RegistrationService.Tenants with @(UI: {
     PresentationVariant          : {

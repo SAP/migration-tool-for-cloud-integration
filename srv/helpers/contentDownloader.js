@@ -384,6 +384,8 @@ class ContentDownloader {
         this.removeInvalidParameters(cds.entities.extUserCredentials, itemsSupported, ['SecurityArtifactDescriptor']);
         for (let each of itemsSupported) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
+            Object.entries(each.SecurityArtifactDescriptor).forEach(e => each['SecurityArtifactDescriptor_' + e[0]] = e[1]);
+            delete each.SecurityArtifactDescriptor;
         };
         await DELETE.from(Entities.extUserCredentials).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
         itemsSupported.length > 0 && await INSERT(itemsSupported).into(Entities.extUserCredentials);
@@ -411,6 +413,8 @@ class ContentDownloader {
         this.removeInvalidParameters(cds.entities.extOAuth2ClientCredentials, items, ['SecurityArtifactDescriptor']);
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
+            Object.entries(each.SecurityArtifactDescriptor).forEach(e => each['SecurityArtifactDescriptor_' + e[0]] = e[1]);
+            delete each.SecurityArtifactDescriptor;
         };
         await DELETE.from(Entities.extOAuth2ClientCredentials).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
         items.length > 0 && await INSERT(items).into(Entities.extOAuth2ClientCredentials);

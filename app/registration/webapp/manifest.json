@@ -11,7 +11,7 @@
         "description": "Register tenants to be used in the migration",
         "dataSources": {
             "mainService": {
-                "uri": "/registration/",
+                "uri": "/odata/v4/registration/",
                 "type": "OData",
                 "settings": {
                     "odataVersion": "4.0"
