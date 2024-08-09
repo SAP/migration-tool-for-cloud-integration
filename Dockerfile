@@ -1,12 +1,14 @@
-FROM node:18-alpine
+# specifying plaform is needed when deploying from M1/2 chip devices
+FROM --platform=linux/amd64 node:18
 
 WORKDIR /app
-COPY . .
+COPY app /app/app
+COPY db /app/db
+COPY srv /app/srv
+COPY db.sqlite /app
+COPY package.json /app
 
-RUN npm install -g @sap/cds-dk
 RUN npm install
-RUN cds deploy --to sqlite
-
 EXPOSE 4004
 
-CMD ["npm", "start"]
+CMD ["node_modules/.bin/cds-serve"]

@@ -273,14 +273,14 @@ annotate RegistrationService.Tenants with @(UI: {
     ]}
 }) {
     ObjectID                      @title: 'View Content'               @Common.SemanticObject: 'tenants';
-    Name                          @title: 'Name'                       @UI.Placeholder       : 'Please provide a name'                                        @mandatory;
-    Host                          @title: 'Integration Host'           @UI.Placeholder       : '{subdomain}.{environment}.cfapps.eu10-001.hana.ondemand.com'  @mandatory;
-    Token_host                    @title: 'Token Host'                 @UI.Placeholder       : '{subdomain}.authentication.eu10.hana.ondemand.com'            @mandatory;
-    Oauth_clientid                @title: 'oAuth Client ID'            @UI.Placeholder       : 'See OAuth Client credentials'                                 @mandatory;
-    Oauth_secret                  @title: 'oAuth Secret'               @UI.Placeholder       : 'See OAuth Client credentials'                                 @mandatory;
+    Name                          @title: 'Name'                       @UI.Placeholder       : 'Please provide a name'                                    @mandatory;
+    Host                          @title: 'Integration Host'           @UI.Placeholder       : 'subdomain.environment.cfapps.eu10-001.hana.ondemand.com'  @mandatory;
+    Token_host                    @title: 'Token Host'                 @UI.Placeholder       : 'subdomain.authentication.eu10.hana.ondemand.com'          @mandatory;
+    Oauth_clientid                @title: 'oAuth Client ID'            @UI.Placeholder       : 'See OAuth Client credentials'                             @mandatory;
+    Oauth_secret                  @title: 'oAuth Secret'               @UI.Placeholder       : 'See OAuth Client credentials'                             @mandatory;
     Oauth_servicekeyid            @title: 'oAuth Service Instance ID'  @UI.Placeholder       : 'ID of the service instance';
-    Role                          @title: 'System Role'                @UI.Placeholder       : 'Select role'                                                  @mandatory;
-    Environment                   @title: 'Environment'                @UI.Placeholder       : 'Select environment'                                           @mandatory;
+    Role                          @title: 'System Role'                @UI.Placeholder       : 'Select role'                                              @mandatory;
+    Environment                   @title: 'Environment'                @UI.Placeholder       : 'Select environment'                                       @mandatory;
     ReadOnly                      @title: 'Source-only system';
     ReadOnlyText                  @title: 'Mode';
     CF_organizationName           @title: 'CF Organization'            @readonly;

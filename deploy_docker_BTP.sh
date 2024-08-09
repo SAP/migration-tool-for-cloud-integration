@@ -15,6 +15,12 @@ BTP_SPACE="dev"
 
 echo .
 echo .
+echo Deploying database if not extists ...
+[ -e db.sqlite ] || cds deploy
+echo .
+
+echo .
+echo .
 echo Please provide DOCKER HUB credentials:
 docker login -u "$DOCKER_USER"
 
@@ -37,10 +43,12 @@ docker push $DOCKER_USER/$DOCKER_REPO:$DOCKER_TAG
 echo .
 echo .
 echo Pushing docker to BTP:
-cf push migrationtool_docker --no-manifest --memory 256M --random-route --docker-image $DOCKER_USER/$DOCKER_REPO:$DOCKER_TAG --docker-username "$DOCKER_USER"
+cf push migrationtool_docker --no-manifest --memory 1G --disk 2G --random-route --docker-image $DOCKER_USER/$DOCKER_REPO:$DOCKER_TAG --docker-username "$DOCKER_USER"
 
 echo .
 echo .
 echo FINISHED.
 echo To retrieve the logs of the application use:
-echo $ cf logs migrationtool_docker | grep -v RTR
+echo 
+echo   cf logs migrationtool_docker \| grep -v RTR
+echo 

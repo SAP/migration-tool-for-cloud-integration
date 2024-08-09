@@ -44,7 +44,10 @@ You can use the provided Dockerfile to install and run the application:
 
 In Terminal or Command Prompt, run:
 1. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git --depth 1`
-2. Build this tool: `docker build -t migrationtool ./migration-tool-for-cloud-integration` (in case you receive an error on the Sqlite3 package, delete the package-lock.json file and try the build again)
+2. Navigate into the root project folder: `cd migration-tool-for-cloud-integration`
+3. Install this tool: `npm install`
+4. Prepare/rebuild the SQLite database: `cds deploy --to sqlite`
+5. Build this tool: `docker build -t migrationtool .` (in case you receive an error on the Sqlite3 package, delete the package-lock.json file and try the build again)
 
 Now the tool is built and can be started:
 
