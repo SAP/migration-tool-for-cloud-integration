@@ -121,6 +121,7 @@ To learn how to use the tool, please refer to the [user documentation](/docs).
 - **1.99.0**: Deprecated
 - **1.108.2**: Stable
 - **1.126.2**: Stable
+- **1.129.2**: Stable
 
 Specify the version to be used in [/app/home.html](./app/home.html)
 
@@ -136,6 +137,7 @@ Version availability: https://ui5.sap.com/versionoverview.html
 - **6.8.4**: Stable
 - **7.0.2**: Stable (new major release, so some codeline was migrated)
 - **7.9.3**: Stable
+- **8.3.1**: Stable
 
 More information on changelog: https://cap.cloud.sap/docs/releases
 
