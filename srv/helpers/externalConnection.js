@@ -56,7 +56,7 @@ class ExternalConnection {
             assert(response.access_token, 'Authentication server response did not include an access_token');
             return response.access_token;
         } catch (error) {
-            throw new Error('Integration Tenant token authentication:\r\n\r\n' + error);
+            throw new Error('Integration Tenant token authentication:<br/><br/>' + error);
         }
     };
     getCFPlatformToken = async () => {
@@ -83,7 +83,7 @@ class ExternalConnection {
             if (response.code >= 400) throw new Error(JSON.stringify(response.value));
             return response.value.data.access_token;
         } catch (error) {
-            throw new Error('CF Platform token authentication:\r\n\r\n' + error);
+            throw new Error('CF Platform token authentication:<br/><br/>' + error);
         }
     };
     getNeoPlatformToken = async () => {
@@ -103,7 +103,7 @@ class ExternalConnection {
             if (response.code >= 400) throw new Error(JSON.stringify(response.value));
             return response.value.data.access_token;
         } catch (error) {
-            throw new Error('Neo Platform token authentication:\r\n\r\n' + error);
+            throw new Error('Neo Platform token authentication:<br/><br/>' + error);
         }
     };
     getCFOrgDataFromServiceInstanceID = async () => {
@@ -184,7 +184,7 @@ class ExternalConnection {
                 console.log('External call error ignored: ' + error);
                 return null;
             } else {
-                throw new Error('External call failed.\r\n\r\n' + error);
+                throw new Error('External call failed.<br/><br/>' + error);
             }
         }
     };

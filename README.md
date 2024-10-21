@@ -34,7 +34,7 @@ If you don't have a SAP Integration Suite license yet, you can use the BTP Free 
 
 ## Download & Installation
 
-This tool is designed to run locally on your own laptop, server or VM. It is developed using the [SAP Cloud Application Programming Model](https://cap.cloud.sap), using Node.js as server language. It can also be hosted on SAP Business Technology Platform via Docker.
+This tool is designed to run locally on your own laptop, server or VM. It is developed using the [SAP Cloud Application Programming Model](https://cap.cloud.sap), using Node.js as server language. It can also be hosted on SAP Business Technology Platform natively via CF, HC and Work Zone, or via Docker.
 
 Locally stored data is kept in a local SQLite database file.
 
@@ -56,9 +56,9 @@ Now the tool is built and can be started:
 
 To stop the tool, in Terminal or Command Prompt, press `control-C`
 
-### Manual Install
+### Locally on laptop
 
-It is required to have an active installation of Node.js (version 14.5 or later), available from the [Node.js](https://nodejs.org/) website, including Node Package Manager (NPM). You can verify your installed version via `node -v`.
+It is required to have an active installation of Node.js (version 20 or later), available from the [Node.js](https://nodejs.org/) website, including Node Package Manager (NPM). You can verify your installed version via `node -v`.
 
 To install, in Terminal or Command Prompt, run:
 
@@ -74,6 +74,38 @@ Now the tool is installed and can be started:
 2. Open your local browser to: `http://localhost:4004/home.html`
 
 To stop the tool, in Terminal or Command Prompt, press `control-C`
+
+### Natively on BTP using Cloud Foundry, HANA Cloud/PostgresSQL and Work Zone
+
+This option requires you to have a HANA Cloud database (or you can use Postgres), and a subscription to SAP Work Zone (standard edition)
+
+*Optional: The default MTA.yaml configuration specifies HANA Cloud. To switch to Postgres, do the following:*
+*1. Change package.json hybrid > db > kind to 'postgres'*
+*2. Change mta.yaml and change the 'requires' section of the srv module + disable the db-deployer in favor of the postgres-deployer, as well as the postgres db resource.*
+
+To install, in Terminal or Command Prompt, run:
+
+1. Install the SAP CAP SDK 'CDS-DK': `npm i -g @sap/cds-dk`
+2. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git --depth 1`
+3. Navigate into the root project folder: `cd migration-tool-for-cloud-integration`
+4. Install this tool: `npm install`
+5. Build the project: `mbt build`
+6. Deploy the project: `cf deploy ./mta_archives/migrationtool_1.3.0.mtar`
+
+Now you can add the Fiori applications to your Work Zone site via the Work Zone Admin site:
+1. Sync your HTML5 repository
+2. Add the HTML5 apps to your content
+3. Assign the apps to a Group and Role
+4. Create a Site containing the Role
+
+Now you can grant users access to the application via the BTP Cockpit Role Collections
+1. Assign the CF role `CPI Migration Tool User`
+2. Assign the front-end role created by you in the previous step
+
+Now the tool can be accessed via Work Zone:
+To locally monitor the application logs, run the following command in Terminal: `cf logs migrationtool-srv | grep -v RTR`
+
+To enable Hybrid mode, excute `cds bind -2 migrationtool-db` to use the HANA database and run your local application via `cds watch --profile hybrid`.
 
 ## Documentation
 

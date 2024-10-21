@@ -1,4 +1,4 @@
-const generateUUID = require('@sap/cds-foss')('uuid');
+const generateUUID = require('node:crypto').randomUUID;
 const Connectivity = require('./helpers/externalConnection');
 const DownloadHelper = require('./helpers/contentDownloader');
 const MigrationJobHelper = require('./helpers/migrationJob');
@@ -63,31 +63,34 @@ module.exports = async (srv) => {
             Item: ''
         };
 
-        assert(req._emitter, 'No EventEmitter present in Request object. Please use Node v14.5 or higher.');
-        req._emitter.setMaxListeners(0);
+        // assert(req._emitter, 'No EventEmitter present in Request object. Please use Node v14.5 or higher.');
+        // req._emitter.setMaxListeners(0);
+        req.http.req.setMaxListeners(0);
 
         const downloader = new DownloadHelper.ContentDownloader(Tenant, IntegrationContentStatus)
-        downloader.getIntegrationContent().then(async (count) => {
-            IntegrationContentStatus.Topic = `Integration Content has been refreshed with ${count} items.`;
-            IntegrationContentStatus.Item = '';
+        downloader.getIntegrationContent()
+            .then(async (count) => {
+                IntegrationContentStatus.Topic = `Integration Content has been refreshed with ${count} items.`;
+                IntegrationContentStatus.Item = '';
 
-            console.log('Updating migration tasks that have this tenant either as source or as target ...');
-            const AffectedTasks = await srv.read(Entities.MigrationTasks, t => { t('*'), t.toTaskNodes(n => n('*')), t.SourceTenant(o => o('*')) })
-                .where({ SourceTenant_ObjectID: tenant_id, or: { TargetTenant_ObjectID: tenant_id } });
-            for (let Task of AffectedTasks) {
-                const migrationTask = new MigrationTaskHelper.MigrationTask(Task);
-                const errorList = await migrationTask.updateExistInTenantFlags();
-                console.log('- Task ' + Task.Name + ' has ' + errorList.length + ' issues.');
-                if (errorList.length > 0) {
-                    const errorText = errorList.map(x => '- ' + x).join('\r\n');
-                    IntegrationContentStatus.Item += `Task ${Task.Name} has been updated to reflect the available content, but ${errorList.length} of the items selected to be in scope of this task are no longer available on the source tenant:\r\n${errorText}\r\n\r\nPlease open the migration task and switch the item(s) to 'skip'.\r\n`
-                } else {
-                    IntegrationContentStatus.Item += `Task ${Task.Name} has been updated to reflect the available content.\r\n`
+                console.log('Updating migration tasks that have this tenant either as source or as target ...');
+                const AffectedTasks = await srv.read(Entities.MigrationTasks, t => { t('*'), t.toTaskNodes(n => n('*')), t.SourceTenant(o => o('*')) })
+                    .where({ SourceTenant_ObjectID: tenant_id, or: { TargetTenant_ObjectID: tenant_id } });
+                for (let Task of AffectedTasks) {
+                    const migrationTask = new MigrationTaskHelper.MigrationTask(Task);
+                    const errorList = await migrationTask.updateExistInTenantFlags();
+                    console.log('- Task ' + Task.Name + ' has ' + errorList.length + ' issues.');
+                    if (errorList.length > 0) {
+                        const errorText = errorList.map(x => '- ' + x).join('\r\n');
+                        IntegrationContentStatus.Item += `Task ${Task.Name} has been updated to reflect the available content, but ${errorList.length} of the items selected to be in scope of this task are no longer available on the source tenant:\r\n${errorText}\r\n\r\nPlease open the migration task and switch the item(s) to 'skip'.\r\n`
+                    } else {
+                        IntegrationContentStatus.Item += `Task ${Task.Name} has been updated to reflect the available content.\r\n`
+                    }
                 }
-            }
-            IntegrationContentStatus.Running = false;
-            console.log('Done.');
-        });
+                IntegrationContentStatus.Running = false;
+                console.log('Done.');
+            })
+            .catch(e => req.error(400, e));
     });
     srv.on('Package_analyzeScriptFiles', async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
@@ -99,22 +102,22 @@ module.exports = async (srv) => {
         const packageContent = await downloader.downloadPackage(req, Package);
         const result = packageContent && await downloader.searchForEnvVarsInPackage(packageContent);
         if (result) {
-            resultTextFound = result.filter(x => x.count > 0).map(x => '- ' + x.artifact + ': ' + x.file + ' = ' + x.count + ' occurrences').join('\r\n') || '(none)';
-            resultTextNotFound = result.filter(x => x.count == 0).map(x => '- ' + x.artifact + ': ' + x.file).join('\r\n') || '(none)';
-            resultTextError = result.filter(x => x.count == -1).map(x => '- ' + x.artifact + ': ' + x.file).join('\r\n') || '';
+            resultTextFound = result.filter(x => x.count > 0).map(x => '- ' + x.artifact + ': ' + x.file + ' = ' + x.count + ' occurrences').join('<br/>') || '(none)';
+            resultTextNotFound = result.filter(x => x.count == 0).map(x => '- ' + x.artifact + ': ' + x.file).join('<br/>') || '(none)';
+            resultTextError = result.filter(x => x.count == -1).map(x => '- ' + x.artifact + ': ' + x.file).join('<br/>') || '';
             if (result.length == 0) {
                 req.info(200, 'No script files in package "' + Package.Name + '"');
             } else {
                 req.info(200, 'Script files in package "' + Package.Name + '" have been analyzed for their usage of environment variables. ' +
-                    'Scripts that use these need to be updated after migration to Cloud Foundry. Environment variables are accessed via "System.getenv()".\r\n' +
-                    '\r\n' +
-                    'Scripts that contain Environment Variables:\r\n' +
-                    resultTextFound + '\r\n' +
-                    '\r\n' +
-                    'Scripts without Environment Variables:\r\n' +
-                    resultTextNotFound + '\r\n' +
+                    'Scripts that use these need to be updated after migration to Cloud Foundry. Environment variables are accessed via "System.getenv()".<br/>' +
+                    '<br/>' +
+                    'Scripts that contain Environment Variables:<br/>' +
+                    resultTextFound + '<br/>' +
+                    '<br/>' +
+                    'Scripts without Environment Variables:<br/>' +
+                    resultTextNotFound + '<br/>' +
                     (resultTextError.length > 0 ?
-                        ('\r\nArtifacts which could not be analyzed:\r\n' + resultTextError) : '')
+                        ('<br/>Artifacts which could not be analyzed:<br/>' + resultTextError) : '')
                 );
             }
         }
@@ -139,7 +142,7 @@ module.exports = async (srv) => {
         const countItems = Object.keys(TenantStats).reduce((p, c) => p + TenantStats[c], 0);
         countItems == 0 && req.error(400, 'No content downloaded yet. Please click on \'Get Integration Content\' first before creating a Migration Task');
 
-        const uuid = generateUUID.v4();
+        const uuid = generateUUID();
         const newTask = await srv.create(Entities.MigrationTasks, {
             ObjectID: uuid,
             Name: req.data.Name,
@@ -148,7 +151,7 @@ module.exports = async (srv) => {
             TargetTenant_ObjectID: req.data.TargetTenant,
         });
 
-        const Task = await srv.read(Entities.MigrationTasks, uuid, t => { t('*'), t.toTaskNodes(n => n('*')) });
+        const Task = await srv.read(Entities.MigrationTasks, newTask.ObjectID, t => { t('*'), t.toTaskNodes(n => n('*')) });
         const migrationTask = new MigrationTaskHelper.MigrationTask(Task);
         await migrationTask.generateTaskNodes(req.data.Preset);
 
@@ -162,7 +165,7 @@ module.exports = async (srv) => {
         each.ValidUntilCriticality = new Date(each.ValidUntil) < Date.now() ? Settings.CriticalityCodes.Red : Settings.CriticalityCodes.Green;
     });
 
-    srv.after('READ', srv.entities.MigrationTasks, async (tasks, req) => {
+    srv.after('READ', [srv.entities.MigrationTasks, srv.entities.MigrationTasks.drafts], async (tasks, req) => {
         const taskList = Array.isArray(tasks) ? tasks : [tasks];
         for (const t of taskList) {
             const status = await SELECT.one.from(Entities.MigrationJobs).where({ 'MigrationTaskID': t.ObjectID }).orderBy('StartTime desc').columns(['Status', 'StatusCriticality']);
@@ -197,10 +200,10 @@ module.exports = async (srv) => {
         const customConfig = req.data.CustomConfig;
         if (customConfig) {
             try { JSON.parse(customConfig) }
-            catch (e) { req.reject(400, 'Validation of the custom configuration failed. Please verify you express valid JSON content.\r\n\r\n' + e.message) }
+            catch (e) { req.reject(400, 'Validation of the custom configuration failed. Please verify you express valid JSON content.<br/><br/>' + e.message) }
         }
     });
-    srv.after('READ', srv.entities.MigrationTaskNodes, each => {
+    srv.after('READ', [srv.entities.MigrationTaskNodes, srv.entities.MigrationTaskNodes.drafts], each => {
         if (each.ExistInSource) {
             each.Status = each.Included ? Settings.CriticalityCodes.Green : Settings.CriticalityCodes.Default;
         } else {
@@ -251,58 +254,59 @@ module.exports = async (srv) => {
                     'and',
                     { ref: ['PackageId'] }, '=', { val: Node.Id }
                 ]);
-            const resultTextFlows = children.filter(x => x.Component == Settings.ComponentNames.Flow).map(x => '- ' + x.Name).join('\r\n') || 'none';
-            const resultTextValmaps = children.filter(x => x.Component == Settings.ComponentNames.ValMap).map(x => '- ' + x.Name).join('\r\n') || 'none';
+            const resultTextFlows = children.filter(x => x.Component == Settings.ComponentNames.Flow).map(x => '- ' + x.Name).join('<br/>') || 'none';
+            const resultTextValmaps = children.filter(x => x.Component == Settings.ComponentNames.ValMap).map(x => '- ' + x.Name).join('<br/>') || 'none';
 
-            req.info(200, 'This package contains the following items which are now configured for \'Configuration Only\':\r\n' +
-                '\r\n' +
-                'Artifacts:\r\n' +
-                resultTextFlows + '\r\n' +
-                '\r\n' +
-                'Value Mappings:\r\n' +
+            req.info(200, 'This package contains the following items which are now configured for \'Configuration Only\':<br/>' +
+                '<br/>' +
+                'Artifacts:<br/>' +
+                resultTextFlows + '<br/>' +
+                '<br/>' +
+                'Value Mappings:<br/>' +
                 resultTextValmaps
             );
         }
     });
     srv.on('Task_startMigration', async (req) => {
-        const task_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
-        const Task = await srv.read(Entities.MigrationTasks, task_id, t => {
-            t.SourceTenant(n => { n('Name'), n('UseForCertificateUserMappings'), n('Environment') }),
-                t.TargetTenant(n => { n('Name'), n('UseForCertificateUserMappings'), n('Environment') }),
-                t.toTaskNodes(n => { n('ObjectID'), n('Component') }).where({ 'Included': true })
-        });
-        assert(Task.TargetTenant !== null, 'No target tenant has been defined.\r\n\r\nPlease select a target tenant via \'Change Target ...\'.');
-        assert(Task.toTaskNodes.length > 0, 'No items are selected for migration. Can not run empty job.')
+        try {
+            const task_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
+            const Task = await srv.read(Entities.MigrationTasks, task_id, t => {
+                t.SourceTenant(n => { n('Name'), n('UseForCertificateUserMappings'), n('Environment') }),
+                    t.TargetTenant(n => { n('Name'), n('UseForCertificateUserMappings'), n('Environment') }),
+                    t.toTaskNodes(n => { n('ObjectID'), n('Component') }).where({ 'Included': true })
+            });
+            assert(Task.TargetTenant !== null, 'No target tenant has been defined.<br/><br/>Please select a target tenant via \'Change Target ...\'.');
+            assert(Task.toTaskNodes.length > 0, 'No items are selected for migration. Can not run empty job.')
 
-        const countCertificateUserMappings = Task.toTaskNodes.filter(x => x.Component == Settings.ComponentNames.CertificateUserMappings).length;
-        if (countCertificateUserMappings > 0) {
-            assert(Task.SourceTenant.Environment == 'Neo' && Task.TargetTenant.Environment == 'Cloud Foundry',
-                'You have included at least 1 Certificate-to-User Mapping for this migration. This is only supported for migrations from Neo (source) to Cloud Foundry (target).');
-            assert(Task.SourceTenant.UseForCertificateUserMappings && Task.TargetTenant.UseForCertificateUserMappings,
-                'You have included at least 1 Certificate-to-User Mapping for this migration. Before these can be migrated, both source and target tenants have to be configured for the migration of Certificate-to-User Mappings via the \'Register Tenants\' application:\r\n\r\n' +
-                Task.SourceTenant.Name + ': ' + (Task.SourceTenant.UseForCertificateUserMappings ? 'Ok' : 'Not configured') + '\r\n' +
-                Task.TargetTenant.Name + ': ' + (Task.TargetTenant.UseForCertificateUserMappings ? 'Ok' : 'Not configured'));
-        }
-
-        const job_id = generateUUID.v4();
-        await srv.create(Entities.MigrationJobs,
-            {
-                ObjectID: job_id,
-                MigrationTaskID: task_id,
-                StartTime: new Date().toISOString(),
-                Status: 'Pending start',
-                StatusCriticality: Settings.CriticalityCodes.Orange,
-                EndTime: null
+            const countCertificateUserMappings = Task.toTaskNodes.filter(x => x.Component == Settings.ComponentNames.CertificateUserMappings).length;
+            if (countCertificateUserMappings > 0) {
+                assert(Task.SourceTenant.Environment == 'Neo' && Task.TargetTenant.Environment == 'Cloud Foundry',
+                    'You have included at least 1 Certificate-to-User Mapping for this migration. This is only supported for migrations from Neo (source) to Cloud Foundry (target).');
+                assert(Task.SourceTenant.UseForCertificateUserMappings && Task.TargetTenant.UseForCertificateUserMappings,
+                    'You have included at least 1 Certificate-to-User Mapping for this migration. Before these can be migrated, both source and target tenants have to be configured for the migration of Certificate-to-User Mappings via the \'Register Tenants\' application:<br/><br/>' +
+                    Task.SourceTenant.Name + ': ' + (Task.SourceTenant.UseForCertificateUserMappings ? 'Ok' : 'Not configured') + '<br/>' +
+                    Task.TargetTenant.Name + ': ' + (Task.TargetTenant.UseForCertificateUserMappings ? 'Ok' : 'Not configured'));
             }
-        );
-        const Job = await srv.read(Entities.MigrationJobs, job_id);
-        const myJob = new MigrationJobHelper.MigrationJob(Job);
 
-        myJob.execute();
-        req.notify(200, 'Job started ...');
+            const job_id = generateUUID();
+            const newJob = await srv.create(Entities.MigrationJobs,
+                {
+                    ObjectID: job_id,
+                    MigrationTaskID: task_id,
+                    StartTime: new Date(),
+                    Status: 'Pending start',
+                    StatusCriticality: Settings.CriticalityCodes.Orange,
+                    EndTime: null
+                }
+            );
+            const Job = await srv.read(Entities.MigrationJobs, newJob.ObjectID);
+            const myJob = new MigrationJobHelper.MigrationJob(Job);
 
-        return Job;
+            myJob.execute();
+            req.notify(200, 'Job started ...');
 
+            return Job;
+        } catch (e) { return req.error(400, e) }
     });
     srv.on('Task_resetTaskNodes', async (req) => {
         const task_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];

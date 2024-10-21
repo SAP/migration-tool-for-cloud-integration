@@ -1,4 +1,4 @@
-const generateUUID = require('@sap/cds-foss')('uuid');
+const generateUUID = require('node:crypto').randomUUID;
 const Connectivity = require('./helpers/externalConnection');
 const Settings = require('./config/settings');
 const fs = require('fs');
@@ -41,7 +41,7 @@ module.exports = async (srv) => {
             tenant.CF_spaceID = null;
             tenant.CF_spaceName = null;
             tenant.CF_servicePlanID = null;
-            req.warn('Your data was saved, but a connection was not successful: Setting the organization and space from the Service instance was not successful.\r\n\r\n' + error);
+            req.warn('Your data was saved, but a connection was not successful: Setting the organization and space from the Service instance was not successful.<br/><br/>' + error);
         } finally {
             return next();
         }
@@ -71,7 +71,7 @@ module.exports = async (srv) => {
         const tenantCopy = {};
 
         TenantTableFields.forEach(f => tenantCopy[f] = tenantInfo[f]);
-        tenantCopy.ObjectID = generateUUID.v4();;
+        tenantCopy.ObjectID = generateUUID();
         tenantCopy.Name += '_duplicate';
 
         await srv.create(Entities.Tenants, tenantCopy);

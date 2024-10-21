@@ -1,5 +1,6 @@
 using migrationtool as my from '../db/schema';
 
+@requires: 'MigrationUser'
 service ConfigService {
     @readonly
     entity Tenants_TargetsOnly             as projection on my.Tenants {
@@ -13,7 +14,37 @@ service ConfigService {
         count(
             toErrors.ObjectID
         ) as NumberOfErrors : Integer
-    } group by ObjectID actions {
+    } group by
+        ObjectID,
+        createdAt,
+        createdBy,
+        modifiedAt,
+        modifiedBy,
+        Name,
+        Host,
+        Token_host,
+        Oauth_clientid,
+        Oauth_secret,
+        Oauth_servicekeyid,
+        CF_organizationID,
+        CF_organizationName,
+        CF_spaceID,
+        CF_spaceName,
+        CF_servicePlanID,
+        Neo_accountid,
+        Neo_Platform_domain,
+        Neo_Platform_user,
+        Neo_Platform_password,
+        CF_Platform_domain,
+        CF_Platform_user,
+        CF_Platform_password,
+        UseForCertificateUserMappings,
+        Role,
+        Environment,
+        Statistics,
+        RefreshedDate,
+        ReadOnly
+    actions {
         action Tenant_testConnection()               returns Boolean;
 
         @cds.odata.bindingparameter.name  : '_it'
@@ -92,7 +123,30 @@ service ConfigService {
         count(
             toErrors.ObjectID
         ) as NumberOfErrors : Integer,
-    } group by ObjectID actions {
+    } group by
+        ObjectID,
+        Id,
+        Name,
+        Description,
+        ShortText,
+        Version,
+        Vendor,
+        Mode,
+        SupportedPlatform,
+        ModifiedBy,
+        CreationDate,
+        ModifiedDate,
+        CreatedBy,
+        Products,
+        Keywords,
+        Countries,
+        Industries,
+        LineOfBusiness,
+        PartnerContent,
+        UpdateAvailable,
+        toParent,
+        ModifiedDateFormatted
+    actions {
         action Package_analyzeScriptFiles() returns many String;
     };
 
@@ -101,7 +155,15 @@ service ConfigService {
         count(
             toErrors.ObjectID
         ) as NumberOfErrors : Integer
-    } group by ObjectID;
+    } group by
+        ObjectID,
+        Id,
+        Version,
+        PackageId,
+        Name,
+        Description,
+        ArtifactContent,
+        toParent;
 
     entity KeyStoreEntries                 as projection on my.extKeyStoreEntries;
     entity Configurations                  as projection on my.extConfigurations;
@@ -123,7 +185,15 @@ service ConfigService {
         count(
             toRoles.ObjectID
         ) as NumberOfRoles : Integer
-    } group by ObjectID;
+    } group by 
+        ObjectID,
+        toParent,
+        Id,
+        User,
+        LastModifiedBy,
+        LastModifiedTime,
+        ValidUntil,
+        ValidUntilCriticality;
 
     entity CertificateUserMappingRoles     as projection on my.extCertificateUserMappingRoles;
     entity DataStores                      as projection on my.extDataStores;

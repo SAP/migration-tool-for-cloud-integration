@@ -136,10 +136,12 @@ class ContentDownloader {
             delete each.IntegrationDesigntimeArtifacts;
 
             each.toParent_ObjectID = this.Tenant.ObjectID;
-            each.ModifiedDateFormatted = (new Date(parseInt(each.ModifiedDate))).toUTCString();
+            each.ModifiedDateFormatted = (new Date(parseInt(each.ModifiedDate))).toISOString();// .toUTCString();
         }
         await DELETE.from(Entities.extIntegrationPackages).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into(Entities.extIntegrationPackages);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extIntegrationPackages);
+        } catch (error) { console.log(error); throw error }
 
         for (let each of items) {
             this.setIntegrationContentStatusItem(each.Id);
@@ -193,7 +195,9 @@ class ContentDownloader {
             each.toParent_toParent_ObjectID = this.Tenant.ObjectID;
         }
         await DELETE.from(Entities.extIntegrationDesigntimeArtifacts).where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into(Entities.extIntegrationDesigntimeArtifacts);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extIntegrationDesigntimeArtifacts);
+        } catch (error) { console.log(error); throw error }
 
         if (Settings.Flags.DownloadConfigurationsAndResources) {
             for (let each of items) {
@@ -223,7 +227,9 @@ class ContentDownloader {
             each.toParent_Id = artifact_id;
         };
         await DELETE.from(Entities.extConfigurations).where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into(Entities.extConfigurations);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extConfigurations);
+        } catch (error) { console.log(error); throw error }
 
         return items.length;
     };
@@ -241,7 +247,9 @@ class ContentDownloader {
             each.toParent_Id = artifact_id;
         };
         await DELETE.from(Entities.extResources).where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into(Entities.extResources);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extResources);
+        } catch (error) { console.log(error); throw error }
 
         return items.length;
         // } else {
@@ -262,7 +270,9 @@ class ContentDownloader {
             each.toParent_toParent_ObjectID = this.Tenant.ObjectID;
         };
         await DELETE.from(Entities.extValueMappingDesigntimeArtifacts).where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into(Entities.extValueMappingDesigntimeArtifacts);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extValueMappingDesigntimeArtifacts);
+        } catch (error) { console.log(error); throw error }
 
         for (let each of items) {
             if (each.Version != 'Draft') // API can not download content of Draft items
@@ -296,7 +306,9 @@ class ContentDownloader {
             each.toParent_Version = version_id;
         };
         await DELETE.from(Entities.extValMapSchema).where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into(Entities.extValMapSchema);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extValMapSchema);
+        } catch (error) { console.log(error); throw error }
 
         return items.length;
     };
@@ -312,7 +324,9 @@ class ContentDownloader {
             each.toParent_toParent_ObjectID = this.Tenant.ObjectID;
         };
         await DELETE.from(Entities.extCustomTags).where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into(Entities.extCustomTags);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extCustomTags);
+        } catch (error) { console.log(error); throw error }
 
         return items.length;
     };
@@ -333,7 +347,9 @@ class ContentDownloader {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
         await DELETE.from(Entities.extKeyStoreEntries).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        itemsSupported.length > 0 && await INSERT(itemsSupported).into(Entities.extKeyStoreEntries);
+        try {
+            itemsSupported.length > 0 && await INSERT(itemsSupported).into(Entities.extKeyStoreEntries);
+        } catch (error) { console.log(error); throw error }
 
         return itemsSupported.length;
     };
@@ -348,7 +364,9 @@ class ContentDownloader {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
         await DELETE.from(Entities.extNumberRanges).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into(Entities.extNumberRanges);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extNumberRanges);
+        } catch (error) { console.log(error); throw error }
 
         return items.length;
     };
@@ -364,7 +382,9 @@ class ContentDownloader {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
         await DELETE.from(Entities.extCustomTagConfigurations).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into(Entities.extCustomTagConfigurations);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extCustomTagConfigurations);
+        } catch (error) { console.log(error); throw error }
 
         return items.length;
     };
@@ -384,11 +404,14 @@ class ContentDownloader {
         this.removeInvalidParameters(cds.entities.extUserCredentials, itemsSupported, ['SecurityArtifactDescriptor']);
         for (let each of itemsSupported) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
+            each.SecurityArtifactDescriptor.DeployedOn = this.fixDateFormatIfNeeded(each.SecurityArtifactDescriptor.DeployedOn)
             Object.entries(each.SecurityArtifactDescriptor).forEach(e => each['SecurityArtifactDescriptor_' + e[0]] = e[1]);
             delete each.SecurityArtifactDescriptor;
         };
         await DELETE.from(Entities.extUserCredentials).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        itemsSupported.length > 0 && await INSERT(itemsSupported).into(Entities.extUserCredentials);
+        try {
+            itemsSupported.length > 0 && await INSERT(itemsSupported).into(Entities.extUserCredentials);
+        } catch (error) { console.log(error); throw error }
 
         return itemsSupported.length;
     };
@@ -413,11 +436,14 @@ class ContentDownloader {
         this.removeInvalidParameters(cds.entities.extOAuth2ClientCredentials, items, ['SecurityArtifactDescriptor']);
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
+            each.SecurityArtifactDescriptor.DeployedOn = this.fixDateFormatIfNeeded(each.SecurityArtifactDescriptor.DeployedOn)
             Object.entries(each.SecurityArtifactDescriptor).forEach(e => each['SecurityArtifactDescriptor_' + e[0]] = e[1]);
             delete each.SecurityArtifactDescriptor;
         };
         await DELETE.from(Entities.extOAuth2ClientCredentials).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into(Entities.extOAuth2ClientCredentials);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extOAuth2ClientCredentials);
+        } catch (error) { console.log(error); throw error }
 
         return items.length;
     };
@@ -444,7 +470,9 @@ class ContentDownloader {
             each.ValidUntil = new Date(parseInt(each.ValidUntil));
         };
         await DELETE.from(Entities.extCertificateUserMappings).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into(Entities.extCertificateUserMappings);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extCertificateUserMappings);
+        } catch (error) { console.log(error); throw error }
 
         for (let each of items) {
             await this.getNeoRolesForUser(each);
@@ -468,7 +496,9 @@ class ContentDownloader {
             each.toParent_User = certificateUserMapping.User;
         };
         await DELETE.from(Entities.extCertificateUserMappingRoles).where({ 'toParent_ObjectID': certificateUserMapping.ObjectID });
-        roles.length > 0 && await INSERT(roles).into(Entities.extCertificateUserMappingRoles);
+        try {
+            roles.length > 0 && await INSERT(roles).into(Entities.extCertificateUserMappingRoles);
+        } catch (error) { console.log(error); throw error }
 
         return roles.length;
     };
@@ -494,7 +524,9 @@ class ContentDownloader {
             }
         });
         await DELETE.from(Entities.extCertificateUserMappings).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        userMappings.length > 0 && await INSERT(userMappings).into(Entities.extCertificateUserMappings);
+        try {
+            userMappings.length > 0 && await INSERT(userMappings).into(Entities.extCertificateUserMappings);
+        } catch (error) { console.log(error); throw error }
 
         for (let each of userMappings) {
             await this.getCFCertificateUserMappingBindings(each);
@@ -520,7 +552,9 @@ class ContentDownloader {
             }
         });
         await DELETE.from(Entities.extCertificateUserMappingRoles).where({ 'toParent_ObjectID': instance.ObjectID });
-        credentials.length > 0 && await INSERT(credentials).into(Entities.extCertificateUserMappingRoles);
+        try {
+            credentials.length > 0 && await INSERT(credentials).into(Entities.extCertificateUserMappingRoles);
+        } catch (error) { console.log(error); throw error }
 
         return credentials.length;
     };
@@ -539,7 +573,9 @@ class ContentDownloader {
             this.removeInvalidParameters(cds.entities.extJMSBrokers, item);
 
             item.toParent_ObjectID = this.Tenant.ObjectID;
-            await INSERT(item).into(Entities.extJMSBrokers);
+            try {
+                await INSERT(item).into(Entities.extJMSBrokers);
+            } catch (error) { console.log(error); throw error }
         }
         return item ? 1 : 0;
     };
@@ -557,7 +593,9 @@ class ContentDownloader {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
         await DELETE.from(Entities.extAccessPolicies).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into(Entities.extAccessPolicies);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extAccessPolicies);
+        } catch (error) { console.log(error); throw error }
 
         for (let each of items) {
             await this.getArtifactReferences(each.Id, each.ObjectID).then(n => this.stats.Statistics_numAccessPolicyReferences += n);
@@ -573,7 +611,9 @@ class ContentDownloader {
             each.toParent_ObjectID = parent_id;
         };
         await DELETE.from(Entities.extArtifactReferences).where({ 'toParent_ObjectID': parent_id });
-        items.length > 0 && await INSERT(items).into(Entities.extArtifactReferences);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extArtifactReferences);
+        } catch (error) { console.log(error); throw error }
 
         return items.length;
     };
@@ -590,7 +630,9 @@ class ContentDownloader {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
         await DELETE.from(Entities.extVariables).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into(Entities.extVariables);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extVariables);
+        } catch (error) { console.log(error); throw error }
 
         return items.length;
     };
@@ -607,7 +649,9 @@ class ContentDownloader {
             each.toParent_ObjectID = this.Tenant.ObjectID;
         };
         await DELETE.from(Entities.extDataStores).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
-        items.length > 0 && await INSERT(items).into(Entities.extDataStores);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extDataStores);
+        } catch (error) { console.log(error); throw error }
 
         for (let each of items) {
             await this.getDataStoreEntries(each.ObjectID, each.DataStoreName, each.IntegrationFlow, each.Type);
@@ -629,7 +673,9 @@ class ContentDownloader {
             each.toParent_ObjectID = id;
         };
         await DELETE.from(Entities.extDataStoreEntries).where({ 'toParent_ObjectID': id });
-        items.length > 0 && await INSERT(items).into(Entities.extDataStoreEntries);
+        try {
+            items.length > 0 && await INSERT(items).into(Entities.extDataStoreEntries);
+        } catch (error) { console.log(error); throw error }
 
         return items.length;
     };
@@ -686,7 +732,33 @@ class ContentDownloader {
         }
         const removedText = removed.filter((x, i) => i === removed.indexOf(x)).join(', ');
         removedText.length > 0 && console.log('  the folowing parameters were provided by API, but not stored in database (extend database?): ' + removedText);
+
+        /**
+         * Truncate long strings if needed
+         */
+        try {
+            const truncateMessage = '>> Truncated by CPI Migration Tool!'
+            const entityStrings = Object.entries(entity.elements)
+                .filter(([k, v]) => v.type == 'cds.String')
+                .map(([k, v]) => { return [k, v.length ?? cds.env.cdsc.defaultStringLength] })
+            for (let each of Array.isArray(items) ? items : [items]) {
+                entityStrings.forEach(param => {
+                    if (param[0] in each && each[param[0]]) {
+                        const nEscapedChars = each[param[0]]?.match(/[\n\"\t\r\']/gm)?.length || 0
+                        if (each[param[0]].toString().length > (param[1] - nEscapedChars)) {
+                            each[param[0]] = each[param[0]].toString().slice(0, param[1] - truncateMessage.length - nEscapedChars - 1) + truncateMessage //quick hack for escaped chars for Postgres (which uses \r\n), need better solution.
+                        }
+                    }
+                })
+            }
+        } catch (error) { console.log(error); throw error }
     };
+    fixDateFormatIfNeeded = (value) => {
+        const dateFormat = /\/Date\((\d*)\)\//
+        return dateFormat.test(value)
+            ? (new Date(parseInt(value.match(dateFormat)[1]))).toISOString()
+            : value
+    }
 
     /************************* */
     // searchForEnvVarsInPackage is a function which will analyze the zip file of the package and search for any 
@@ -699,7 +771,7 @@ class ContentDownloader {
         await this.Connector.refreshIntegrationToken();
         const response = await this.Connector.externalAxiosBinary(Settings.Paths.IntegrationPackages.download.replace('{PACKAGE_ID}', item.Id));
         if (response.code >= 400) {
-            req && req.error('Package "' + item.Name + '": Error (' + response.code + ') ' + response.value.error.message.value);
+            req && req.error(400, 'Package "' + item.Name + '": Error (' + response.code + ') ' + response.value.error.message.value);
             return false;
         } else {
             return response.value.data;

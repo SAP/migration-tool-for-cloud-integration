@@ -10,14 +10,14 @@ entity Landscapes : CodeList {};
 entity MigrationTaskPresets : CodeList {};
 
 aspect CodeList {
-    key Code : String(10)  @title: 'Code'  @Common.Text: Value;
+    key Code : String(20)  @title: 'Code'  @Common.Text: Value;
     Value    : String(50)  @title: 'Description';
 }
 
-@cds.persistence.skip
-entity LaunchpadInfo {
-    Script : String;
-};
+// @cds.persistence.skip
+// entity LaunchpadInfo {
+//     Script : String;
+// };
 
 // Errors ----------------------------------------------------------------
 entity Errors {
@@ -135,7 +135,7 @@ entity extIntegrationPackages {
         PartnerContent                    : Boolean;
         UpdateAvailable                   : Boolean;
     key toParent                          : Association to one Tenants;
-        ModifiedDateFormatted             : Date;
+        ModifiedDateFormatted             : DateTime;
         virtual NumberOfErrors            : Integer @Core.Computed;
         virtual Criticality               : Integer @Core.Computed;
         toIntegrationDesigntimeArtifacts  : Composition of many extIntegrationDesigntimeArtifacts
@@ -247,7 +247,7 @@ entity extUserCredentials {
 type extSecurityArtifactDescriptorType {
     Type       : String;
     DeployedBy : String;
-    DeployedOn : Date;
+    DeployedOn : DateTime;
     Status     : String;
 };
 
@@ -272,7 +272,7 @@ entity extNumberRanges {
         CurrentValue : Integer;
         FieldLength  : Integer;
         DeployedBy   : String;
-        DeployedOn   : Date;
+        DeployedOn   : DateTime;
 };
 
 // OAuth2Client Credentials ----------------------------------------------------------------------------
@@ -450,7 +450,7 @@ entity MigrationJobs {
         Status            : String default 'Created';
         StatusCriticality : Integer default 2;
         IsRunning         : Boolean default false;
-        Log               : String default '';
+        Log               : LargeString;
         toErrors          : Composition of many Errors
                                 on toErrors.toParent = ObjectID;
 };

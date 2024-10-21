@@ -60,7 +60,8 @@ sap.ui.define([
             };
             this.refresh = function () {
                 $.ajax({
-                    url: "odata/v4/config/getIntegrationContentStatus()",
+                    // url: "/odata/v4/config/getIntegrationContentStatus()",
+                    url: `${that.getModel().getServiceUrl()}getIntegrationContentStatus()`,
                     type: "GET",
                     success: data => {
                         if (data.Running) {

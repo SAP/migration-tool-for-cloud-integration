@@ -20,7 +20,7 @@ annotate RegistrationService.Tenants with @(UI: {
             $Type      : 'UI.DataFieldForAction',
             Label      : 'Test Connection',
             Action     : 'RegistrationService.Tenant_testConnection',
-            Criticality: 3
+            Criticality: #Positive
         }
     ],
     HeaderInfo                   : {
