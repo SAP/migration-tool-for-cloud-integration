@@ -520,7 +520,7 @@ class MigrationJob {
         await this.addLogEntry(1, 'CUSTOM INTEGRATION PACKAGES:');
         var customSuccessCount = 0;
         // Packages needing full copy:
-        const CustomInScope_FullCopy = items.filter(x => (x.Vendor != 'SAP' && x.PartnerContent != true && this.MigrationContent.IntegrationPackages.includes(x.Id)));
+        const CustomInScope_FullCopy = items.filter(x => (x.Vendor != 'SAP' && this.MigrationContent.IntegrationPackages.includes(x.Id)));
         for (let item of CustomInScope_FullCopy) {
             const exists = await this.validateIfPackageExistsInTarget(itemsInTarget, item);
             const deleteBeforeHand = exists && Settings.Flags.DeletePackagesFromTargetBeforeOverwriting;

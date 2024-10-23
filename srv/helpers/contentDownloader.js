@@ -362,6 +362,7 @@ class ContentDownloader {
         this.removeInvalidParameters(cds.entities.extNumberRanges, items);
         for (let each of items) {
             each.toParent_ObjectID = this.Tenant.ObjectID;
+            each.DeployedOn = this.fixDateFormatIfNeeded(each.DeployedOn)
         };
         await DELETE.from(Entities.extNumberRanges).where({ 'toParent_ObjectID': this.Tenant.ObjectID });
         try {

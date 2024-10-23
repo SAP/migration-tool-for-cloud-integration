@@ -894,7 +894,7 @@ annotate ConfigService.OAuth2ClientCredentials with @(UI : {
 }) {
     Name                 @title : 'Name';
     Description          @title : 'Description';
-    TokenServiceUrl      @title : 'Tokem Service';
+    TokenServiceUrl      @title : 'Token Service';
     ClientId             @title : 'Client ID';
     ClientAuthentication @title : 'Client Authentication';
     Scope                @title : 'Scope';
