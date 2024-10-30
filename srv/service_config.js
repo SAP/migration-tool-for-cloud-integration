@@ -326,4 +326,5 @@ module.exports = async (srv) => {
         await migrationTask.updateExistInTenantFlags();
     });
     srv.on('Task_refreshJobsTable', req => { }); //empty function, but triggers side effect to refresh the table
+    srv.on('Job_RefreshLog', req => { }); //empty function, but triggers side effect to refresh the table
 };

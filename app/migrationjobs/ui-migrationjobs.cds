@@ -16,7 +16,16 @@ annotate ConfigService.MigrationJobs with @(UI : {
         }],
         Visualizations : ['@UI.LineItem#Embedded']
     },
-    Identification                : [{Value : ObjectID}],
+    Identification               : [
+        {Value: ObjectID},
+        {
+            $Type      : 'UI.DataFieldForAction',
+            Label      : 'Refresh',
+            IconUrl    : 'sap-icon://refresh',
+            Action     : 'ConfigService.Job_RefreshLog',
+            Criticality: #Positive
+        }
+    ],
     SelectionFields               : [
         StartTime,
         EndTime

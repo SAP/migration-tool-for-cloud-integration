@@ -442,6 +442,8 @@ class MigrationJob {
                         const keyvaluepair = relevantKeyvaluepairs[0];
                         await this.addLogEntry(4, 'Found variable ' + keyvaluepair.key + ' with value ' + keyvaluepair.value);
                         return keyvaluepair;
+                    } else {
+                        await this.addLogEntry(4, 'This variable has no value so will not be created on target.');
                     }
                 }
             } catch (error) {
@@ -1424,6 +1426,7 @@ class MigrationJob {
             Type: type,
             Component: component,
             ComponentName: item,
+            ComponentId: item,
             Description: text,
             Path: path ? ('https://' + path) : '#',
             Severity: (type === 'Error' ? Settings.CriticalityCodes.Red : (type === 'Warning' ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Blue))

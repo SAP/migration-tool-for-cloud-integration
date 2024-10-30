@@ -270,7 +270,12 @@ service ConfigService {
     entity MigrationTaskPresets            as projection on my.MigrationTaskPresets;
 
     @sap.creatable: false
-    entity MigrationJobs                   as projection on my.MigrationJobs;
+    entity MigrationJobs                   as projection on my.MigrationJobs
+        actions {
+            @cds.odata.bindingparameter.name  : '_it'
+            @Common.SideEffects.TargetEntities: [_it]
+            action Job_RefreshLog();
+        };
 
     entity MigrationTaskNodes              as projection on my.MigrationTaskNodes actions {
 
