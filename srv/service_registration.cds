@@ -1,8 +1,11 @@
 using migrationtool as my from '../db/schema';
 
+@requires: 'MigrationUser'
 service RegistrationService {
     @odata.draft.enabled
-    entity Tenants                         as projection on my.Tenants actions {
+    entity Tenants                         as projection on my.Tenants
+        excluding { toMigrationTasks }
+        actions {
 
         @cds.odata.bindingparameter.name: '_it'
         @Core.OperationAvailable        : _it.IsActiveEntity

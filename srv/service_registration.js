@@ -1,4 +1,4 @@
-const generateUUID = require('@sap/cds-foss')('uuid');
+const generateUUID = require('node:crypto').randomUUID;
 const Connectivity = require('./helpers/externalConnection');
 const Settings = require('./config/settings');
 const fs = require('fs');
@@ -41,7 +41,7 @@ module.exports = async (srv) => {
             tenant.CF_spaceID = null;
             tenant.CF_spaceName = null;
             tenant.CF_servicePlanID = null;
-            req.warn('Your data was saved, but a connection was not successful: Setting the organization and space from the Service instance was not successful.\r\n\r\n' + error);
+            req.warn(400, 'Your data was saved, but a connection was not successful: Setting the organization and space from the Service instance was not successful.<br/><br/>' + error);
         } finally {
             return next();
         }
@@ -71,7 +71,7 @@ module.exports = async (srv) => {
         const tenantCopy = {};
 
         TenantTableFields.forEach(f => tenantCopy[f] = tenantInfo[f]);
-        tenantCopy.ObjectID = generateUUID.v4();;
+        tenantCopy.ObjectID = generateUUID();
         tenantCopy.Name += '_duplicate';
 
         await srv.create(Entities.Tenants, tenantCopy);
@@ -80,25 +80,27 @@ module.exports = async (srv) => {
         return tenantCopy;
     });
     srv.on('Tenant_testConnection', async (req) => {
-        const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
-        const tenant = await srv.read(Entities.Tenants, tenant_id);
+        try {
+            const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];
+            const tenant = await srv.read(Entities.Tenants, tenant_id);
 
-        const caller = new Connectivity.ExternalConnection(tenant);
+            const caller = new Connectivity.ExternalConnection(tenant);
 
-        await caller.refreshIntegrationToken();
-        var success = await caller.pingIntegrationTenant() ? true : false;
-        success ? req.notify(200, 'Integration Tenant Connection test successful for ' + tenant.Name) : req.warn(400, 'Integration Tenant Connection test unsuccessful for ' + tenant.Name);
+            await caller.refreshIntegrationToken();
+            var success = await caller.pingIntegrationTenant() ? true : false;
+            success ? req.notify(200, 'Integration Tenant Connection test successful for ' + tenant.Name) : req.warn(400, 'Integration Tenant Connection test unsuccessful for ' + tenant.Name);
 
-        if (tenant.UseForCertificateUserMappings) {
-            await caller.refreshPlatformToken();
-            success = success && await caller.pingPlatformTenant() ? true : false;
-            success ? req.notify(200, 'Platform Account Connection test successful for ' + tenant.Name) : req.warn(400, 'Platform Account Connection test unsuccessful for ' + tenant.Name);
+            if (tenant.UseForCertificateUserMappings) {
+                await caller.refreshPlatformToken();
+                success = success && await caller.pingPlatformTenant() ? true : false;
+                success ? req.notify(200, 'Platform Account Connection test successful for ' + tenant.Name) : req.warn(400, 'Platform Account Connection test unsuccessful for ' + tenant.Name);
 
-            success = success && await caller.testPlatformSettings() ? true : false;
-            success ? req.notify(200, 'Validating Platform Settings successful for ' + tenant.Name) : req.warn(400, ' Validating Platform Settings unsuccessful for ' + tenant.Name);
-        }
+                success = success && await caller.testPlatformSettings() ? true : false;
+                success ? req.notify(200, 'Validating Platform Settings successful for ' + tenant.Name) : req.warn(400, ' Validating Platform Settings unsuccessful for ' + tenant.Name);
+            }
 
-        return success;
+            return success;
+        } catch (error) { return req.error(400, error) }
     });
     srv.on('Tenant_export', async (req) => {
         const TenantList = await srv.read(Entities.Tenants);

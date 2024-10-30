@@ -11,7 +11,7 @@
         "description": "Register tenants to be used in the migration",
         "dataSources": {
             "mainService": {
-                "uri": "/odata/v4/registration/",
+                "uri": "odata/v4/registration/",
                 "type": "OData",
                 "settings": {
                     "odataVersion": "4.0"
@@ -23,7 +23,27 @@
         "sourceTemplate": {
             "id": "ui5template.fiorielements.v4.lrop",
             "version": "1.0.0"
+        },
+        "crossNavigation": {
+          "inbounds": {
+            "registration-manage": {
+                "semanticObject": "registration",
+                "action": "manage",
+              "title": "Register Tenants",
+              "subTitle": "Create Connections",
+              "icon": "sap-icon://connected",
+              "signature": {
+                "parameters": {},
+                "additionalParameters": "allowed"
+              }
+            }
+          }
         }
+      },
+      "sap.cloud": {
+        "public": true,
+        "service": "sap.btp.cpimigrationtool"
+    
     },
     "sap.ui": {
         "technology": "UI5",
@@ -44,10 +64,14 @@
     "sap.ui5": {
         "resources": {
             "js": [],
-            "css": []
+            "css": [
+                {
+                    "uri": "custom.css"
+                }
+            ]
         },
         "dependencies": {
-            "minUI5Version": "1.95.0",
+            "minUI5Version": "1.129.2",
             "libs": {
                 "sap.ui.core": {},
                 "sap.fe.templates": {}

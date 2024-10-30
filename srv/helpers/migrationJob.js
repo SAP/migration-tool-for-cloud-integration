@@ -94,8 +94,6 @@ class MigrationJob {
         try {
             this.MigrationContent.IntegrationPackages = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Package && x.Included && !x.ConfigureOnly)).map(x => x.Id);
             this.MigrationContent.IntegrationPackagesConfigOnly = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Package && x.Included && x.ConfigureOnly)).map(x => x.Id);
-            this.MigrationContent.DesignTimeArtifacts = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Flow && x.Included)).map(x => x.Id);
-            this.MigrationContent.ValueMappingDesigntimeArtifacts = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.ValMap && x.Included)).map(x => x.Id);
             this.MigrationContent.KeyStoreEntries = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.KeyStoreEntry && x.Included)).map(x => x.Id);
             this.MigrationContent.NumberRanges = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.NumberRange && x.Included)).map(x => x.Id);
             this.MigrationContent.CustomTagConfigurations = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.CustomTags && x.Included)).map(x => x.Id);
@@ -106,6 +104,10 @@ class MigrationJob {
             this.MigrationContent.GlobalVariables = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Variables && x.Included)).map(x => x.Id);
             this.MigrationContent.CertificateUserMappings = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.CertificateUserMappings && x.Included)).map(x => x.Id);
             this.MigrationContent.GlobalDataStores = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.DataStores && x.Included)).map(x => x.Id);
+
+            const packagesInScope = [...this.MigrationContent.IntegrationPackages, ...this.MigrationContent.IntegrationPackagesConfigOnly];
+            this.MigrationContent.DesignTimeArtifacts = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Flow && packagesInScope.includes(x.PackageId))).map(x => x.Id);
+            this.MigrationContent.ValueMappingDesigntimeArtifacts = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.ValMap && packagesInScope.includes(x.PackageId))).map(x => x.Id);
 
             await this.getListOfVariables();
             await this.migrateGlobalVariables();
@@ -431,9 +433,18 @@ class MigrationJob {
                 const content = Buffer.from(unzipped['headers.prop'], 'binary').toString('utf-8');
                 if (content.length > 0) {
                     const keyvaluepairs = Array.from(content.matchAll(Settings.RegEx.keyvaluepair), x => { return { key: x[1], value: x[2] } });
-                    const keyvaluepair = keyvaluepairs[0];
-                    await this.addLogEntry(4, 'Found variable ' + keyvaluepair.key + ' with value ' + keyvaluepair.value);
-                    return keyvaluepair;
+                    const relevantKeyvaluepairs = keyvaluepairs.filter(x => !Settings.Defaults.Variables.discardHeaders.includes(x.key));
+                    if (relevantKeyvaluepairs.length > 1) {
+                        await this.addLogEntry(4, `Warning: More than 1 value was present [${relevantKeyvaluepairs.map(x => x.key).join(', ')}], only the first value has been migrated.`);
+                        await this.generateWarning('Variable', item.VariableName, `More than 1 value was present [${relevantKeyvaluepairs.map(x => x.key).join(', ')}], only the first value has been migrated.`);
+                    }
+                    if (relevantKeyvaluepairs.length > 0) {
+                        const keyvaluepair = relevantKeyvaluepairs[0];
+                        await this.addLogEntry(4, 'Found variable ' + keyvaluepair.key + ' with value ' + keyvaluepair.value);
+                        return keyvaluepair;
+                    } else {
+                        await this.addLogEntry(4, 'This variable has no value so will not be created on target.');
+                    }
                 }
             } catch (error) {
                 await this.addLogEntry(4, 'Error: ' + error);
@@ -511,7 +522,7 @@ class MigrationJob {
         await this.addLogEntry(1, 'CUSTOM INTEGRATION PACKAGES:');
         var customSuccessCount = 0;
         // Packages needing full copy:
-        const CustomInScope_FullCopy = items.filter(x => (x.Vendor != 'SAP' && x.PartnerContent != true && this.MigrationContent.IntegrationPackages.includes(x.Id)));
+        const CustomInScope_FullCopy = items.filter(x => (x.Vendor != 'SAP' && this.MigrationContent.IntegrationPackages.includes(x.Id)));
         for (let item of CustomInScope_FullCopy) {
             const exists = await this.validateIfPackageExistsInTarget(itemsInTarget, item);
             const deleteBeforeHand = exists && Settings.Flags.DeletePackagesFromTargetBeforeOverwriting;
@@ -1415,6 +1426,7 @@ class MigrationJob {
             Type: type,
             Component: component,
             ComponentName: item,
+            ComponentId: item,
             Description: text,
             Path: path ? ('https://' + path) : '#',
             Severity: (type === 'Error' ? Settings.CriticalityCodes.Red : (type === 'Warning' ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Blue))

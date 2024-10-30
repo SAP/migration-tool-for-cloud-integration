@@ -1,0 +1,27 @@
+{
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.MigrationUser",
+      "description": "Migration User"
+    }
+  ],
+  "attributes": [],
+  "role-templates": [
+    {
+      "name": "MigrationUser",
+      "description": "Role to access the application",
+      "scope-references": [
+        "$XSAPPNAME.MigrationUser"
+      ],
+      "attribute-references": []
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "CPI Migration Tool User",
+      "role-template-references": [
+        "$XSAPPNAME.MigrationUser"
+      ]
+    }
+  ]
+}

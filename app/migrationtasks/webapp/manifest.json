@@ -8,10 +8,10 @@
             "version": "1.0.0"
         },
         "title": "Migration Tasks",
-        "description": "{{appDescription}}",
+        "description": "Manage migration task content",
         "dataSources": {
             "mainService": {
-                "uri": "/odata/v4/config/",
+                "uri": "odata/v4/config/",
                 "type": "OData",
                 "settings": {
                     "odataVersion": "4.0"
@@ -23,7 +23,26 @@
         "sourceTemplate": {
             "id": "ui5template.fiorielements.v4.lrop",
             "version": "1.0.0"
+        },
+        "crossNavigation": {
+            "inbounds": {
+                "migrationtasks-manage": {
+                    "semanticObject": "migrationtasks",
+                    "action": "manage",
+                    "title": "Migration Tasks",
+                    "subTitle": "Configure and Run",
+                    "icon": "sap-icon://begin",
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    }
+                }
+            }
         }
+    },
+    "sap.cloud": {
+        "public": true,
+        "service": "sap.btp.cpimigrationtool"
     },
     "sap.ui": {
         "technology": "UI5",
@@ -44,10 +63,14 @@
     "sap.ui5": {
         "resources": {
             "js": [],
-            "css": []
+            "css": [
+                {
+                    "uri": "custom.css"
+                }
+            ]
         },
         "dependencies": {
-            "minUI5Version": "1.95.0",
+            "minUI5Version": "1.129.2",
             "libs": {
                 "sap.ui.core": {},
                 "sap.fe.templates": {}

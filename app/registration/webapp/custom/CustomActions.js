@@ -59,16 +59,16 @@ sap.ui.define([
                         text: "Import",
                         enabled: false,
                         press: function () {
-                            const regexHost = '[^https:\/\/]([^\/]*)';
+                            const regexHost = /^https:\/\/([^\/]*)/;
                             const imported = JSON.parse(Core.byId("inputJSON").getValue());
                             const values = [
                                 {
                                     field: '#registration\\:\\:TenantsObjectPage--fe\\:\\:FormContainer\\:\\:FieldGroup\\:\\:Connection_gen\\:\\:FormElement\\:\\:DataField\\:\\:Host\\:\\:Field-edit-inner',
-                                    value: imported.oauth.url.match(regexHost)[0]
+                                    value: imported.oauth.url.match(regexHost)[1]
                                 },
                                 {
                                     field: '#registration\\:\\:TenantsObjectPage--fe\\:\\:FormContainer\\:\\:FieldGroup\\:\\:Connection_auth\\:\\:FormElement\\:\\:DataField\\:\\:Token_host\\:\\:Field-edit-inner',
-                                    value: imported.oauth.tokenurl.match(regexHost)[0]
+                                    value: imported.oauth.tokenurl.match(regexHost)[1]
                                 },
                                 {
                                     field: '#registration\\:\\:TenantsObjectPage--fe\\:\\:FormContainer\\:\\:FieldGroup\\:\\:Connection_auth\\:\\:FormElement\\:\\:DataField\\:\\:Oauth_clientid\\:\\:Field-edit-inner',

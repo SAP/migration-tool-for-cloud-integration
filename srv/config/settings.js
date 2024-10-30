@@ -184,7 +184,8 @@ module.exports = {
             packageId: 'migrationtoolVariables',
             flowId: 'migrationtoolCreateVariables',
             templateFile: 'srv/config/migrationtoolCreateVariables.zip',
-            iflwFileInZip: 'src/main/resources/scenarioflows/integrationflow/CreateGlobalVariable.iflw'
+            iflwFileInZip: 'src/main/resources/scenarioflows/integrationflow/CreateGlobalVariable.iflw',
+            discardHeaders: ['SAP_MplCorrelationId', 'SAP_PregeneratedMplid']
         },
         DataStores: {
             packageId: 'migrationtoolDatastores',
