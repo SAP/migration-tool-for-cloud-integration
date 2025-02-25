@@ -16,7 +16,8 @@ module.exports = async (srv) => {
             Tenant: IntegrationContentStatus.Tenant,
             Progress: Math.floor(IntegrationContentStatus.Progress),
             Topic: IntegrationContentStatus.Topic,
-            Item: IntegrationContentStatus.Item
+            Item: IntegrationContentStatus.Item,
+            ErrorState: IntegrationContentStatus.ErrorState
         }
     });
     srv.after('READ', srv.entities.Tenants, each => {
@@ -60,7 +61,8 @@ module.exports = async (srv) => {
             Tenant: Tenant.Name,
             Progress: 0,
             Topic: 'Initializing',
-            Item: ''
+            Item: '',
+            ErrorState: false
         };
 
         // assert(req._emitter, 'No EventEmitter present in Request object. Please use Node v14.5 or higher.');
@@ -90,7 +92,12 @@ module.exports = async (srv) => {
                 IntegrationContentStatus.Running = false;
                 console.log('Done.');
             })
-            .catch(e => req.error(400, e));
+            .catch(e => {
+                console.error(e?.message || e)
+                IntegrationContentStatus.ErrorState = true
+                IntegrationContentStatus.Item = e?.message
+                return req.error(400, e)
+            });
     });
     srv.on('Package_analyzeScriptFiles', async (req) => {
         const tenant_id = req.params[0].ObjectID ? req.params[0].ObjectID : req.params[0];

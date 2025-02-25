@@ -716,7 +716,7 @@ class ContentDownloader {
             Type: type,
             Component: component,
             ComponentName: (item && item.Name) || item.toString() || 'Generic',
-            Description: text,
+            Description: text.slice(0, 5000),
             Path: fullPath,
             Severity: (type === 'Error' ? Settings.CriticalityCodes.Red : (type === 'Warning' ? Settings.CriticalityCodes.Orange : Settings.CriticalityCodes.Blue))
         };

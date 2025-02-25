@@ -116,6 +116,7 @@ service ConfigService {
         Progress : Integer;
         Topic : String;
         Item : String;
+        ErrorState : Boolean;
     };
 
     entity IntegrationPackages             as projection on my.extIntegrationPackages {

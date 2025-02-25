@@ -1,8 +1,7 @@
 namespace migrationtool;
 
 using {
-    managed,
-    cuid
+    managed
 } from '@sap/cds/common';
 
 entity SystemRoles : CodeList {};
@@ -26,7 +25,7 @@ entity Errors {
         Type          : String(20);
         Component     : String;
         ComponentName : String;
-        Description   : String;
+        Description   : String(5000);
         Path          : String;
         Severity      : Integer;
 };

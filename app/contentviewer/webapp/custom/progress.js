@@ -64,16 +64,22 @@ sap.ui.define([
                     url: `${that.getModel().getServiceUrl()}getIntegrationContentStatus()`,
                     type: "GET",
                     success: data => {
-                        if (data.Running) {
-                            that.setProgressStatus(data.Progress, `Downloading content for ${data.Tenant} ...`, data.Topic, data.Item);
-                            that.timeout = setTimeout(that.refresh, interval);
+                        if (!data.ErrorState) {
+                            if (data.Running) {
+                                that.setProgressStatus(data.Progress, `Downloading content for ${data.Tenant} ...`, data.Topic, data.Item);
+                                that.timeout = setTimeout(that.refresh, interval);
+                            } else {
+                                that.setProgressStatus(100, `Downloading content for ${data.Tenant} ...`, data.Topic, data.Item);
+                                that.editFlow.invokeAction("ConfigService.Tenant_getIntegrationContentRefresh", { contexts: that.context })
+                                    .then(r => {
+                                        Core.byId("progressPackages").setState('Success');
+                                        Core.byId("btnClose").setVisible(true);
+                                    });
+                            }
                         } else {
-                            that.setProgressStatus(100, `Downloading content for ${data.Tenant} ...`, data.Topic, data.Item);
-                            that.editFlow.invokeAction("ConfigService.Tenant_getIntegrationContentRefresh", { contexts: that.context })
-                                .then(r => {
-                                    Core.byId("progressPackages").setState('Success');
-                                    Core.byId("btnClose").setVisible(true);
-                                });
+                            Core.byId("progressPackages").setState('Error');
+                            Core.byId("textBottom1").setText('Unexpected error: ' + data.Item);
+                            Core.byId("btnClose").setVisible(true);
                         }
                     },
                     error: (request, status, error) => {
