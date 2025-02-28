@@ -123,49 +123,25 @@ annotate RegistrationService.Tenants with @(UI: {
                     $Type        : 'UI.ReferenceFacet',
                     Label        : 'Cloud Foundry Setup',
                     Target       : '@UI.FieldGroup#CF_data',
-                    ![@UI.Hidden]: {$edmJson: {$Not: {$And: [
-                        {$Eq: [
-                            {$Path: 'Environment'},
-                            'Cloud Foundry'
-                        ]},
-                        {$Path: 'UseForCertificateUserMappings'}
-                    ]}}}
+                    ![@UI.Hidden]: ( not ( Environment = 'Cloud Foundry' and UseForCertificateUserMappings ) )
                 },
                 {
                     $Type        : 'UI.ReferenceFacet',
                     Label        : 'Neo Subaccount',
                     Target       : '@UI.FieldGroup#Neo_data',
-                    ![@UI.Hidden]: {$edmJson: {$Not: {$And: [
-                        {$Eq: [
-                            {$Path: 'Environment'},
-                            'Neo'
-                        ]},
-                        {$Path: 'UseForCertificateUserMappings'}
-                    ]}}}
+                    ![@UI.Hidden]: ( not ( Environment = 'Neo' and UseForCertificateUserMappings ) )
                 },
                 {
                     $Type        : 'UI.ReferenceFacet',
                     Label        : 'Technical User',
                     Target       : '@UI.FieldGroup#CF_Platform_user',
-                    ![@UI.Hidden]: {$edmJson: {$Not: {$And: [
-                        {$Eq: [
-                            {$Path: 'Environment'},
-                            'Cloud Foundry'
-                        ]},
-                        {$Path: 'UseForCertificateUserMappings'}
-                    ]}}}
+                    ![@UI.Hidden]: ( not ( Environment = 'Cloud Foundry' and UseForCertificateUserMappings ) )
                 },
                 {
                     $Type        : 'UI.ReferenceFacet',
                     Label        : 'Platform oAuth Client',
                     Target       : '@UI.FieldGroup#Neo_Platform_user',
-                    ![@UI.Hidden]: {$edmJson: {$Not: {$And: [
-                        {$Eq: [
-                            {$Path: 'Environment'},
-                            'Neo'
-                        ]},
-                        {$Path: 'UseForCertificateUserMappings'}
-                    ]}}}
+                    ![@UI.Hidden]: ( not ( Environment = 'Neo' and UseForCertificateUserMappings ) )
                 }
             ]
         },
@@ -196,40 +172,25 @@ annotate RegistrationService.Tenants with @(UI: {
     FieldGroup #PlatformDomain   : {Data: [
         {
             Value        : CF_Platform_domain,
-            ![@UI.Hidden]: {$edmJson: {$Eq: [
-                {$Path: 'Environment'},
-                'Neo'
-            ]}}
+            ![@UI.Hidden]: ( Environment = 'Neo' )
         },
         {
             Value        : Neo_Platform_domain,
-            ![@UI.Hidden]: {$edmJson: {$Eq: [
-                {$Path: 'Environment'},
-                'Cloud Foundry'
-            ]}}
+            ![@UI.Hidden]: ( Environment = 'Cloud Foundry' )
         }
     ]},
     FieldGroup #PlatformAccount  : {Data: [
         {
             Value        : CF_organizationName,
-            ![@UI.Hidden]: {$edmJson: {$Eq: [
-                {$Path: 'Environment'},
-                'Neo'
-            ]}}
+            ![@UI.Hidden]: ( Environment = 'Neo' )
         },
         {
             Value        : CF_spaceName,
-            ![@UI.Hidden]: {$edmJson: {$Eq: [
-                {$Path: 'Environment'},
-                'Neo'
-            ]}}
+            ![@UI.Hidden]: ( Environment = 'Neo' )
         },
         {
             Value        : Neo_accountid,
-            ![@UI.Hidden]: {$edmJson: {$Eq: [
-                {$Path: 'Environment'},
-                'Cloud Foundry'
-            ]}}
+            ![@UI.Hidden]: ( Environment = 'Cloud Foundry' )
         }
     ]},
     FieldGroup #Basic_type       : {Data: [

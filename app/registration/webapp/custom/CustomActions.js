@@ -1,17 +1,12 @@
 sap.ui.define([
     "sap/ui/core/Core",
-    "sap/m/Dialog",
-    "sap/m/DialogType",
-    "sap/m/Button",
-    "sap/m/ButtonType",
-    "sap/m/Label",
     "sap/m/MessageToast",
-    "sap/m/TextArea",
-    "sap/m/MessageBox"
-], function (Core, Dialog, DialogType, Button, ButtonType, Label, MessageToast, TextArea, MessageBox) {
+    "sap/m/MessageBox",
+    "sap/m/library"
+], function (Core, MessageToast, MessageBox, library) {
     return {
         isEditing: function (oBindingContext) {
-            return oBindingContext.sPath.match(/(IsActiveEntity=false)/) != null;
+            return oBindingContext?.sPath?.match(/(IsActiveEntity=false)/) != null ?? false;
         },
         setValues: function () {
             const requireValidJSON = (text, required = []) => {
@@ -29,15 +24,15 @@ sap.ui.define([
             if (document.querySelector(environmentField).value == 'Neo') {
                 MessageBox.warning('Importing JSON configuration is only possible for Cloud Foundry tenants. Please set Environment to \'Cloud Foundry\' first');
             } else {
-                this.oInputJSONDialog = new Dialog({
-                    type: DialogType.Message,
+                this.oInputJSONDialog = new library.Dialog({
+                    type: library.DialogType.Message,
                     title: "Import Settings",
                     content: [
-                        new Label({
+                        new library.Label({
                             text: "Paste here the JSON configuration of your Service Key",
                             labelFor: "inputJSON"
                         }),
-                        new TextArea("inputJSON", {
+                        new library.TextArea("inputJSON", {
                             width: "100%",
                             rows: 10,
                             placeholder: "\\{\n  \"oauth\": \\{\n     \"clientid\":     \"...\",\n     \"clientsecret\": \"...\",\n     \"tokenurl\":     \"...\",\n     \"url\":          \"...\"\n  \\}\n\\}",
@@ -54,8 +49,8 @@ sap.ui.define([
                             }.bind(this)
                         })
                     ],
-                    beginButton: new Button({
-                        type: ButtonType.Emphasized,
+                    beginButton: new library.Button({
+                        type: library.ButtonType.Emphasized,
                         text: "Import",
                         enabled: false,
                         press: function () {
@@ -93,7 +88,7 @@ sap.ui.define([
                             this.oInputJSONDialog.close();
                         }.bind(this)
                     }),
-                    endButton: new Button({
+                    endButton: new library.Button({
                         text: "Cancel",
                         press: function () {
                             this.oInputJSONDialog.close();
@@ -109,5 +104,4 @@ sap.ui.define([
         downloadTenants: function () { return window.open('/downloadTenants', 'blank') },
         downloadDatabase: function () { return window.open('/downloadDatabase', 'blank') }
     };
-}
-);
+});

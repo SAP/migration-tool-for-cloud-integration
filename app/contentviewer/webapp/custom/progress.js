@@ -1,12 +1,8 @@
 sap.ui.define([
     "sap/ui/core/Core",
-    "sap/m/Dialog",
-    "sap/m/DialogType",
-    "sap/m/Button",
-    "sap/m/Text",
-    "sap/m/ProgressIndicator",
-    "sap/ui/layout/VerticalLayout"
-], function (Core, Dialog, DialogType, Button, Text, ProgressIndicator, VerticalLayout) {
+    "sap/ui/layout/VerticalLayout",
+    "sap/m/library"
+], function (Core, VerticalLayout, library) {
     const interval = 1500;
     return {
         enabledForSingleSelect: function (oBindingContext, aSelectedContexts) {
@@ -16,8 +12,8 @@ sap.ui.define([
             this.context = oEvent || aSelectedContexts[0];
             const that = this;
 
-            this.progressDialog = new Dialog({
-                type: DialogType.Message,
+            this.progressDialog = new library.Dialog({
+                type: library.DialogType.Message,
                 title: "Progress",
                 contentWidth: "600px",
                 contentHeight: "200px",
@@ -25,18 +21,18 @@ sap.ui.define([
                     new VerticalLayout("vl", {
                         width: "100%",
                         content: [
-                            new Text("textTop", { text: "Initializing ..." }),
-                            new ProgressIndicator("progressPackages", {
+                            new library.Text("textTop", { text: "Initializing ..." }),
+                            new library.ProgressIndicator("progressPackages", {
                                 displayValue: "0%",
                                 displayOnly: true,
                                 percentValue: 0
                             }),
-                            new Text("textBottom1", { text: "" }),
-                            new Text("textBottom2", { text: "" })
+                            new library.Text("textBottom1", { text: "" }),
+                            new library.Text("textBottom2", { text: "" })
                         ]
                     }).addStyleClass('sapUiContentPadding')
                 ],
-                endButton: new Button("btnClose", {
+                endButton: new library.Button("btnClose", {
                     text: "Close",
                     visible: false,
                     press: function () {

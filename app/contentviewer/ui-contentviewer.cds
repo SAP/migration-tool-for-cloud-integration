@@ -349,11 +349,9 @@ annotate ConfigService.IntegrationPackages with @(UI : {
         {
             $Type                 : 'UI.DataFieldForAnnotation',
             Target                : '@UI.DataPoint#Alerts',
+            Label                 : 'Alerts',
             ![@HTML5.CssDefaults] : {width : '3rem'},
-            ![@UI.Hidden]         : {$edmJson : {$Eq : [
-                {$Path : 'NumberOfErrors'},
-                0
-            ]}}
+            ![@UI.Hidden] : ( NumberOfErrors = 0 )
         },
         {
             Value                 : Name,
@@ -405,10 +403,7 @@ annotate ConfigService.IntegrationPackages with @(UI : {
             ]
         },
         {
-            ![@UI.Hidden] : {$edmJson : {$Eq : [
-                {$Path : 'NumberOfErrors'},
-                0
-            ]}},
+            ![@UI.Hidden] : ( NumberOfErrors = 0 ),
             $Type         : 'UI.CollectionFacet',
             ID            : 'errors',
             Label         : 'Errors',
@@ -459,11 +454,9 @@ annotate ConfigService.IntegrationDesigntimeArtifacts with @(UI : {
         {
             $Type                 : 'UI.DataFieldForAnnotation',
             Target                : '@UI.DataPoint#Alerts',
+            Label                 : 'Alerts',
             ![@HTML5.CssDefaults] : {width : '3rem'},
-            ![@UI.Hidden]         : {$edmJson : {$Eq : [
-                {$Path : 'NumberOfErrors'},
-                0
-            ]}}
+            ![@UI.Hidden] : ( NumberOfErrors = 0 )
         },
         {
             Value                 : Name,
@@ -507,10 +500,7 @@ annotate ConfigService.IntegrationDesigntimeArtifacts with @(UI : {
             ]
         },
         {
-            ![@UI.Hidden] : {$edmJson : {$Eq : [
-                {$Path : 'NumberOfErrors'},
-                0
-            ]}},
+            ![@UI.Hidden] : ( NumberOfErrors = 0 ),
             $Type         : 'UI.CollectionFacet',
             ID            : 'errors',
             Label         : 'Errors',
