@@ -45,7 +45,7 @@ You can use the provided Dockerfile to install and run the application:
 In Terminal or Command Prompt, run:
 1. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git --depth 1`
 2. Navigate into the root project folder: `cd migration-tool-for-cloud-integration`
-3. Install this tool: `npm install`
+3. Install this tool: run `npm install && mbt build`
 4. Prepare/rebuild the SQLite database: `cds deploy --to sqlite`
 5. Build this tool: `docker build -t migrationtool .` (in case you receive an error on the Sqlite3 package, delete the package-lock.json file and try the build again)
 
@@ -65,7 +65,7 @@ To install, in Terminal or Command Prompt, run:
 1. Install the SAP CAP SDK 'CDS-DK': `npm i -g @sap/cds-dk`
 2. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git --depth 1`
 3. Navigate into the root project folder: `cd migration-tool-for-cloud-integration`
-4. Install this tool: `npm install`
+4. Install this tool: run `npm install && mbt build`
 5. Prepare/rebuild the SQLite database: `cds deploy --to sqlite`
 
 Now the tool is installed and can be started:
@@ -77,11 +77,14 @@ To stop the tool, in Terminal or Command Prompt, press `control-C`
 
 ### Natively on BTP using Cloud Foundry, HANA Cloud/PostgresSQL and Work Zone
 
-This option requires you to have a HANA Cloud database (or you can use Postgres), and a subscription to SAP Work Zone (standard edition)
+This option requires you to have a HANA Cloud database or PostgresSQL, and a subscription to SAP Work Zone Standard edition.
 
-*Optional: The default MTA.yaml configuration specifies HANA Cloud. To switch to Postgres, do the following:*
-*1. Change package.json hybrid > db > kind to 'postgres'*
-*2. Change mta.yaml and change the 'requires' section of the srv module + disable the db-deployer in favor of the postgres-deployer, as well as the postgres db resource.*
+*Note*: The default `mta.yaml` configuration specifies HANA Cloud as database. To switch to PostgresSQL, do the following:
+1. Change `package.json`: Set cds > requires > [production] > db > kind to 'postgres'
+2. Change `mta.yaml`:
+   - Disable the `migrationtool-db` **line** in the 'requires' section of the `migrationtool-srv` module in favor of the `migrationtool-postgres` line.
+   - Disable the `migrationtool-db-deployer` **module** in favor of the `migrationtool-postgres-deployer` module.
+   - Disable the `migrationtool-db` **resource** in favor of the `migrationtool-postgres` resource.
 
 To install, in Terminal or Command Prompt, run:
 
@@ -89,13 +92,13 @@ To install, in Terminal or Command Prompt, run:
 2. Download this tool from git: `git clone https://github.com/SAP/migration-tool-for-cloud-integration.git --depth 1`
 3. Navigate into the root project folder: `cd migration-tool-for-cloud-integration`
 4. Install this tool: `npm install`
-5. Build the project: `mbt build`
-6. Deploy the project: `cf deploy ./mta_archives/migrationtool_1.3.0.mtar`
+5. Build the project: `mbt build --mtar migrationtool`
+6. Deploy the project: `cf deploy ./mta_archives/migrationtool.mtar`
 
 Now you can add the Fiori applications to your Work Zone site via the Work Zone Admin site:
 1. Sync your HTML5 repository
 2. Add the HTML5 apps to your content
-3. Assign the apps to a Group and Role
+3. Assign the apps to a Group and Role (or use Spaces and Pages)
 4. Create a Site containing the Role
 
 Now you can grant users access to the application via the BTP Cockpit Role Collections
@@ -103,9 +106,27 @@ Now you can grant users access to the application via the BTP Cockpit Role Colle
 2. Assign the front-end role created by you in the previous step
 
 Now the tool can be accessed via Work Zone:
-To locally monitor the application logs, run the following command in Terminal: `cf logs migrationtool-srv | grep -v RTR`
+To locally monitor the application logs, run the following command in Terminal: `cf logs migrationtool-srv | egrep -o '\[APP\/PROC\/WEB\/\d\] OUT .*'`
 
-To enable Hybrid mode, excute `cds bind -2 migrationtool-db` to use the HANA database and run your local application via `cds watch --profile hybrid`.
+### Quick steps to enable hybrid testing
+
+#### With HANA Cloud
+To enable Hybrid mode, excute `cds bind -2 migrationtool-db --for hana-hybrid` to fetch the HANA database credentials.
+Run your local application via `cds-ts watch --profile hana-hybrid`.
+
+#### With PostgresSQL
+Enable SSH (once) and open an SSH tunnel to your local machine:
+```
+cf enable-ssh migrationtool-srv
+cf restage migrationtool-srv
+cf service-key migrationtool-postgres migrationtool-db-key
+
+cf ssh -L 12345:<hostname>:<port> migrationtool-srv -N
+(example: cf ssh -L 12345:postgres-e9593b14-8ab5-474f-bbc7-25d01b8fbffb.crkc3ulytfr9.eu-central-1.rds.amazonaws.com:8232 migrationtool-srv -N )
+```
+
+Add the credentials of the `migrationtool-db-key` service key to the `pg-hybrid` section of package.json.
+Run your local application via `cds-ts watch --profile pg-hybrid`.
 
 ## Documentation
 
@@ -124,8 +145,9 @@ To learn how to use the tool, please refer to the [user documentation](/docs).
 - **1.129.2**: Issue: empty message boxes
 - **1.130.7**: Stable
 - **1.133.0**: Issue: dynamically hidden fields still visible
+- **1.136.1**: Issue: iFlows not visualized (wait for 1.136.2 fix)
 
-Specify the version to be used in [/app/home.html](./app/home.html)
+Specify the version to be used in [/app/home.html](./app/home.html) as well as other places (you can do a replace-all across the `/app` folder)
 
 Version availability: https://ui5.sap.com/versionoverview.html
 
@@ -141,6 +163,7 @@ Version availability: https://ui5.sap.com/versionoverview.html
 - **7.9.3**: Stable
 - **8.3.1**: Stable
 - **8.5.1**: Stable
+- **9.0.3**: Stable
 
 More information on changelog: https://cap.cloud.sap/docs/releases
 

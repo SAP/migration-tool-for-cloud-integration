@@ -1,0 +1,11 @@
+List;Context;Code;Value
+Landscapes;default;Neo;Neo
+Landscapes;default;CF;Cloud Foundry
+SystemRoles;default;DEV;Development
+SystemRoles;default;TEST;Testing
+SystemRoles;default;QA;Quality
+SystemRoles;default;STAG;Staging
+SystemRoles;default;PROD;Production
+MigrationTaskPresets;default;Optimal;Selected if not in target
+MigrationTaskPresets;default;Skip All;None of the items selected
+MigrationTaskPresets;default;Include All;All items selected

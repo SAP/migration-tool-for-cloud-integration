@@ -1,9 +1,7 @@
 _schema-version: 3.3.0
 ID: migrationtool
-description:
-  Assistant to support content migration from SAP Integration Services
-  (Neo) to SAP Integration Suite (Multi-cloud)
-version: 1.3.0
+description: Assistant to support content migration from SAP Integration Services (Neo) to SAP Integration Suite (Multi-cloud)
+version: 1.3.1
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true
@@ -11,7 +9,8 @@ build-parameters:
   before-all:
     - builder: custom
       commands:
-        - npm run build:cf
+        - npm run lint
+        - npm run build
 
 modules:
   - name: migrationtool-srv
@@ -28,7 +27,7 @@ modules:
     build-parameters:
       builder: npm
       ignore:
-        - node_modules/
+        - node_modules
     provides:
       - name: srv-api
         properties:
@@ -44,7 +43,7 @@ modules:
     build-parameters:
       builder: npm
       ignore:
-        - node_modules/
+        - node_modules
     requires:
       - name: migrationtool-db
 
@@ -69,35 +68,35 @@ modules:
 
   - name: migrationtool-app-deployer
     type: com.sap.application.content
-    path: gen
+    path: .
     requires:
       - name: migrationtool-html5-repo-host
         parameters:
           content-target: true
     build-parameters:
-      build-result: app/
+      build-result: resources
       requires:
-        - artifacts:
+        - name: migrationtoolcontentviewer
+          target-path: resources
+          artifacts:
             - contentviewer.zip
-          name: migrationtoolcontentviewer
-          target-path: app/
-        - artifacts:
+        - name: migrationtoolmigrationjobs
+          target-path: resources
+          artifacts:
             - migrationjobs.zip
-          name: migrationtoolmigrationjobs
-          target-path: app/
-        - artifacts:
+        - name: migrationtoolmigrationtasks
+          target-path: resources
+          artifacts:
             - migrationtasks.zip
-          name: migrationtoolmigrationtasks
-          target-path: app/
-        - artifacts:
+        - name: migrationtoolregistration
+          target-path: resources
+          artifacts:
             - registration.zip
-          name: migrationtoolregistration
-          target-path: app/
 
   - name: migrationtool-dest-content
     type: com.sap.application.content
     requires:
-      - name: migrationtool-destination-service
+      - name: migrationtool-dest
         parameters:
           content-target: true
       - name: srv-api
@@ -112,6 +111,7 @@ modules:
     parameters:
       content:
         instance:
+          existing_destinations_policy: update
           destinations:
             - Name: srv-api
               Authentication: OAuth2UserTokenExchange
@@ -124,7 +124,6 @@ modules:
               ServiceInstanceName: migrationtool-html5-repo-host
               ServiceKeyName: migrationtool-html5-repo-host-key
               sap.cloud.service: sap.btp.cpimigrationtool
-          existing_destinations_policy: update
     build-parameters:
       no-source: true
 
@@ -135,8 +134,9 @@ modules:
       build-result: dist
       builder: custom
       commands:
-        - npm install
-        - npm run build:cf
+        - npm ci
+        - npm run validate
+        - npm run build
       supported-platforms: []
 
   - name: migrationtoolmigrationjobs
@@ -146,8 +146,9 @@ modules:
       build-result: dist
       builder: custom
       commands:
-        - npm install
-        - npm run build:cf
+        - npm ci
+        - npm run validate
+        - npm run build
       supported-platforms: []
 
   - name: migrationtoolmigrationtasks
@@ -157,8 +158,9 @@ modules:
       build-result: dist
       builder: custom
       commands:
-        - npm install
-        - npm run build:cf
+        - npm ci
+        - npm run validate
+        - npm run build
       supported-platforms: []
 
   - name: migrationtoolregistration
@@ -168,8 +170,9 @@ modules:
       build-result: dist
       builder: custom
       commands:
-        - npm install
-        - npm run build:cf
+        - npm ci
+        - npm run validate
+        - npm run build
       supported-platforms: []
 
 resources:
@@ -178,12 +181,16 @@ resources:
     parameters:
       service: hana
       service-plan: hdi-shared
-
+      service-keys:
+        - name: migrationtool-db-key
+   
   # - name: migrationtool-postgres
   #   type: org.cloudfoundry.managed-service
   #   parameters:
   #     service: postgresql-db
   #     service-plan: development
+  #     service-keys:
+  #       - name: migrationtool-db-key
 
   - name: migrationtool-auth
     type: org.cloudfoundry.managed-service
@@ -205,21 +212,20 @@ resources:
       service-keys:
         - name: migrationtool-html5-repo-host-key
 
-  - name: migrationtool-destination-service
+  - name: migrationtool-dest
     type: org.cloudfoundry.managed-service
     parameters:
       service: destination
-      service-name: migrationtool-destination-service
       service-plan: lite
       config:
         HTML5Runtime_enabled: true
         init_data:
           instance:
+            existing_destinations_policy: update
             destinations:
               - Authentication: NoAuthentication
                 Name: ui5
                 ProxyType: Internet
                 Type: HTTP
                 URL: https://ui5.sap.com
-            existing_destinations_policy: update
         version: 1.0.0

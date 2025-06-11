@@ -5,9 +5,11 @@ metadata:
 type: application
 builder:
   customTasks:
-  - name: ui5-task-zipper
-    afterTask: generateCachebusterInfo
-    configuration:
-      archiveName: migrationjobs
-      additionalFiles:
-      - xs-app.json
+    - name: ui5-tooling-transpile-task
+      afterTask: replaceVersion
+    - name: ui5-task-zipper
+      afterTask: generateCachebusterInfo
+      configuration:
+        archiveName: migrationjobs
+        additionalFiles:
+          - xs-app.json
