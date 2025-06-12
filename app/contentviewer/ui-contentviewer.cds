@@ -21,12 +21,7 @@ annotate ConfigService.Tenants with @(UI : {
         {
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Test Connection',
-            Action : 'ConfigService.Tenant_testConnection'
-        // },
-        // {
-        //     $Type  : 'UI.DataFieldForAction',
-        //     Label  : 'Get Integration Content',
-        //     Action : 'ConfigService.Tenant_getIntegrationContent'
+            Action : 'ConfigService.testConnection'
         }
     ],
     HeaderInfo           : {
@@ -81,12 +76,7 @@ annotate ConfigService.Tenants with @(UI : {
         {
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Test Connection',
-            Action : 'ConfigService.Tenant_testConnection'
-        // },
-        // {
-        //     $Type  : 'UI.DataFieldForAction',
-        //     Label  : 'Get Integration Content',
-        //     Action : 'ConfigService.Tenant_getIntegrationContent'
+            Action : 'ConfigService.testConnection'
         }
     ],
     Facets               : [
@@ -183,15 +173,6 @@ annotate ConfigService.Tenants with @(UI : {
                 },
                 {
                     $Type  : 'UI.CollectionFacet',
-                    ID     : 'customtagcontent',
-                    Label  : 'Custom Tags',
-                    Facets : [{
-                        $Type  : 'UI.ReferenceFacet',
-                        Target : 'toCustomTagConfigurations/@UI.PresentationVariant'
-                    }]
-                },
-                {
-                    $Type  : 'UI.CollectionFacet',
                     ID     : 'variablescontent',
                     Label  : 'Variables',
                     Facets : [{
@@ -206,6 +187,15 @@ annotate ConfigService.Tenants with @(UI : {
                     Facets : [{
                         $Type  : 'UI.ReferenceFacet',
                         Target : 'toDataStores/@UI.PresentationVariant'
+                    }]
+                },
+                {
+                    $Type  : 'UI.CollectionFacet',
+                    ID     : 'customtagcontent',
+                    Label  : 'Custom Tags',
+                    Facets : [{
+                        $Type  : 'UI.ReferenceFacet',
+                        Target : 'toCustomTagConfigurations/@UI.PresentationVariant'
                     }]
                 }
             ]
@@ -233,29 +223,24 @@ annotate ConfigService.Tenants with @(UI : {
         {Value : RefreshedDate}
     ]},
     FieldGroup #Overview : {Data : [
-        {Value : Statistics_numIntegrationPackages},
-        {Value : Statistics_numIntegrationDesigntimeArtifacts},
-        {Value : Statistics_numConfigurations},
-        {Value : Statistics_numResources},
-        {Value : Statistics_numValueMappingDesigntimeArtifacts},
-        {Value : Statistics_numValMapSchema},
-        {Value : Statistics_numCustomTags},
-        {Value : Statistics_numKeyStoreEntries},
-        {Value : Statistics_numUserCredentials},
-        {Value : Statistics_numCustomTagConfigurations},
-        {Value : Statistics_numNumberRanges},
-        {Value : Statistics_numAccessPolicies},
-        {Value : Statistics_numAccessPolicyReferences},
-        {Value : Statistics_numOAuth2ClientCredentials},
-        {Value : Statistics_numJMSBrokers},
-        {Value : Statistics_numVariables},
-        {Value : Statistics_numCertificateUserMappings},
-        {Value : Statistics_numDataStores}
+        {Value: numIntegrationPackages},
+        {Value: numIntegrationDesigntimeArtifacts},
+        {Value: numValueMappingDesigntimeArtifacts},
+        {Value: numUserCredentials},
+        {Value: numKeyStoreEntries},
+        {Value: numOAuth2ClientCredentials},
+        {Value: numCertificateUserMappings},
+        {Value: numAccessPolicies},
+        {Value: numCustomTagConfigurations},
+        {Value: numVariables},
+        {Value: numDataStores},
+        {Value: numNumberRanges},
+        {Value: numJMSBrokers}
     ]},
     FieldGroup #Tasks    : {Data : [{
         $Type  : 'UI.DataFieldForAction',
         Label  : 'Create Migration Task',
-        Action : 'ConfigService.Tenant_createNewMigrationTask'
+        Action : 'ConfigService.createNewMigrationTask'
     }]}
 }) {
     ObjectID                               @title : 'Object ID';
@@ -268,26 +253,19 @@ annotate ConfigService.Tenants with @(UI : {
     Environment                            @title : 'Environment';
     RefreshedDate                          @title : 'Last Content Refresh';
     ErrorsText                             @title : 'Errors';
-    Statistics {
-        numIntegrationPackages             @title : 'Integration Packages';
-        numIntegrationDesigntimeArtifacts  @title : 'Integration Designtime Artifacts';
-        numConfigurations                  @title : 'Configurations';
-        numResources                       @title : 'Resources';
-        numValueMappingDesigntimeArtifacts @title : 'Value Mapping Designtime Artifacts';
-        numValMapSchema                    @title : 'Value Mapping Schemas';
-        numCustomTags                      @title : 'Custom Tags';
-        numKeyStoreEntries                 @title : 'Key Store Entries';
-        numUserCredentials                 @title : 'User Credentials';
-        numCustomTagConfigurations         @title : 'Custom Tag Configurations';
-        numNumberRanges                    @title : 'Number Ranges';
-        numAccessPolicies                  @title : 'Access Policies';
-        numAccessPolicyReferences          @title : 'Artifact References';
-        numOAuth2ClientCredentials         @title : 'OAuth2 Client Credentials';
-        numJMSBrokers                      @title : 'JMS Brokers';
-        numVariables                       @title : 'Variables';
-        numCertificateUserMappings         @title : 'Certificate-to-User Mappings';
-        numDataStores                      @title : 'Data Stores';
-    }
+    numIntegrationPackages                 @title : 'Integration Packages';
+    numIntegrationDesigntimeArtifacts      @title : 'Integration Designtime Artifacts';
+    numValueMappingDesigntimeArtifacts     @title : 'Value Mapping Designtime Artifacts';
+    numKeyStoreEntries                     @title : 'Key Store Entries';
+    numUserCredentials                     @title : 'User Credentials';
+    numCustomTagConfigurations             @title : 'Custom Tag Configurations';
+    numNumberRanges                        @title : 'Number Ranges';
+    numAccessPolicies                      @title : 'Access Policies';
+    numOAuth2ClientCredentials             @title : 'OAuth2 Client Credentials';
+    numJMSBrokers                          @title : 'JMS Brokers';
+    numVariables                           @title : 'Variables';
+    numCertificateUserMappings             @title : 'Certificate-to-User Mappings';
+    numDataStores                          @title : 'Data Stores';
 };
 
 annotate ConfigService.Tenants with {
@@ -336,7 +314,7 @@ annotate ConfigService.IntegrationPackages with @(UI : {
         {
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Analyze Scripts for Env Vars',
-            Action : 'ConfigService.Package_analyzeScriptFiles'
+            Action : 'ConfigService.analyzeScriptFiles'
         }
     ],
     HeaderInfo          : {
@@ -363,7 +341,7 @@ annotate ConfigService.IntegrationPackages with @(UI : {
         {
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Analyze Scripts for Env Vars',
-            Action : 'ConfigService.Package_analyzeScriptFiles',
+            Action : 'ConfigService.analyzeScriptFiles',
             Inline : false
         }
     ],
@@ -644,7 +622,7 @@ annotate ConfigService.ValueMappingDesigntimeArtifacts with @(UI : {
             Label  : 'Content',
             Facets : [{
                 $Type  : 'UI.ReferenceFacet',
-                Target : 'toValMapSchema/@UI.PresentationVariant',
+                Target : 'toValMapSchemas/@UI.PresentationVariant',
             }]
         }
     ],
@@ -664,7 +642,7 @@ annotate ConfigService.ValueMappingDesigntimeArtifacts with @(UI : {
     ArtifactContent @title : 'Artifact Content';
 };
 
-annotate ConfigService.ValMapSchema with @(UI : {
+annotate ConfigService.ValMapSchemas with @(UI : {
     PresentationVariant : {
         SortOrder      : [{Property : SrcAgency}],
         Visualizations : ['@UI.LineItem']
@@ -1208,7 +1186,6 @@ annotate ConfigService.CustomTagConfigurations with @(UI : {
         {Value : isMandatory}
     ]}
 }) {
-    toTenant        @title : 'Tenant';
     tagName         @title : 'Tag Name';
     permittedValues @title : 'Permitted';
     isMandatory     @title : 'Mandatory';
@@ -1231,8 +1208,14 @@ annotate ConfigService.Variables with @(UI : {
             Value                 : VariableName,
             ![@HTML5.CssDefaults] : {width : '20rem'}
         },
-        {Value : Visibility},
-        {Value : IntegrationFlow},
+        {
+            Value                 : Visibility,
+            ![@HTML5.CssDefaults] : {width : '10rem'}
+        },
+        {
+            Value                 : IntegrationFlow,
+            ![@HTML5.CssDefaults] : {width : '30rem'}
+        },
         {Value : UpdatedAt},
         {Value : RetainUntil}
     ],
@@ -1254,7 +1237,7 @@ annotate ConfigService.Variables with @(UI : {
     ]}
 }) {
     VariableName    @title : 'Name';
-    IntegrationFlow @title : 'Flow';
+    IntegrationFlow @title : 'Integration Flow';
     Visibility      @title : 'Visibility';
     UpdatedAt       @title : 'Updated at';
     RetainUntil     @title : 'Retain until';
@@ -1279,16 +1262,16 @@ annotate ConfigService.DataStores with @(UI : {
             ![@HTML5.CssDefaults] : {width : '20rem'}
         },
         {
-            Value                 : Type,
-            ![@HTML5.CssDefaults] : {width : '8rem'}
-        },
-        {
             Value                 : Visibility,
             ![@HTML5.CssDefaults] : {width : '10rem'}
         },
         {
             Value                 : IntegrationFlow,
             ![@HTML5.CssDefaults] : {width : '30rem'}
+        },
+        {
+            Value                 : Type,
+            ![@HTML5.CssDefaults] : {width : '8rem'}
         },
         {
             Value                 : NumberOfMessages,

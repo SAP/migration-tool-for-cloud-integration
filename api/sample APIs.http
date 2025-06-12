@@ -1,57 +1,56 @@
+@server=http://localhost:4004
+@tenantId=20466922-7d57-4e76-b14c-e53fd97dcb14
 
+
+###
 # Sample API call to retrieve all registered tenants:
-GET     http://localhost:4004/odata/v4/config/Tenants HTTP/1.1
-###
+GET     {{server}}/odata/v4/config/Tenants HTTP/1.1
 
+
+###
 # Sample API call to test the connection to a tenant (change the ObjectID to an existing entity):
-POST    http://localhost:4004/odata/v4/config/Tenants(20466922-7d57-4e76-b14c-e53fd97dcb14)/ConfigService.Tenant_testConnection HTTP/1.1
-Accept:application/json;odata.metadata=minimal;IEEE754Compatible=true
-Accept-Language:en-US
-Content-Type:application/json;charset=UTF-8;IEEE754Compatible=true
+POST    {{server}}/odata/v4/config/Tenants({{tenantId}})/ConfigService.testConnection HTTP/1.1
+Content-Type: application/json
 
 {}
-###
 
+
+###
 # Sample API call to refresh the integration content of a tenant (change the ObjectID to an existing entity):
-POST    http://localhost:4004/odata/v4/config/Tenants(20466922-7d57-4e76-b14c-e53fd97dcb14)/ConfigService.Tenant_getIntegrationContent HTTP/1.1
-Accept:application/json;odata.metadata=minimal;IEEE754Compatible=true
-Accept-Language:en-US
-Content-Type:application/json;charset=UTF-8;IEEE754Compatible=true
+POST    {{server}}/odata/v4/config/Tenants({{tenantId}})/ConfigService.getIntegrationContent HTTP/1.1
+Content-Type: application/json
 
 {}
-###
 
+
+###
 # Sample API call to create a migration task (change the ObjectID to an existing entity):
-POST    http://localhost:4004/odata/v4/config/Tenants(20466922-7d57-4e76-b14c-e53fd97dcb14)/ConfigService.Tenant_createNewMigrationTask HTTP/1.1
-Accept:application/json;odata.metadata=minimal;IEEE754Compatible=true
-Accept-Language:en-US
-Content-Type:application/json;charset=UTF-8;IEEE754Compatible=true
+POST    {{server}}/odata/v4/config/Tenants({{tenantId}})/ConfigService.createNewMigrationTask HTTP/1.1
+Content-Type: application/json
 
 {
     "Name":"My new migration task via API",
     "Description":"created via API",
     "TargetTenant":"20466922-7d57-4e76-b14c-e53fd97dcb10"
 }
-###
 
+
+###
 # Sample API call to run a migration task (change the ObjectID to an existing entity):
-POST    http://localhost:4004/odata/v4/config/MigrationTasks(ObjectID=da325fa7-dfc7-4347-828c-764e9a045c36,IsActiveEntity=true)/ConfigService.Task_startMigration HTTP/1.1
-Accept:application/json;odata.metadata=minimal;IEEE754Compatible=true
-Accept-Language:en-US
-Content-Type:application/json;charset=UTF-8;IEEE754Compatible=true
+POST    {{server}}/odata/v4/config/MigrationTasks(ObjectID=da325fa7-dfc7-4347-828c-764e9a045c36,IsActiveEntity=true)/ConfigService.startMigration HTTP/1.1
+Content-Type: application/json
 
 {}
-###
 
+
+###
 # Sample API call to query the status of a job run (change the ObjectID to the returned value from the previous call):
-GET     http://localhost:4004/odata/v4/config/MigrationJobs(ObjectID=435f559d-9f6c-4730-a4e9-9fbe140046e7,IsActiveEntity=true) HTTP/1.1
-###
+GET     {{server}}/odata/v4/config/MigrationJobs(ObjectID=435f559d-9f6c-4730-a4e9-9fbe140046e7,IsActiveEntity=true) HTTP/1.1
 
+
+###
 # Sample API call to analyze a package for System.getEnv() (change the ObjectID and PackageID to an existing entity):
-POST    http://localhost:4004/odata/v4/config/Tenants(20466922-7d57-4e76-b14c-e53fd97dcb14)/toIntegrationPackages(Id='DEV165Handson',ObjectID=cee765a9-faff-4e12-b2ed-5113ed8107ca)/ConfigService.Package_analyzeScriptFiles HTTP/1.1
-Accept:application/json;odata.metadata=minimal;IEEE754Compatible=true
-Accept-Language:en-US
-Content-Type:application/json;charset=UTF-8;IEEE754Compatible=true
+POST    {{server}}/odata/v4/config/Tenants({{tenantId}})/toIntegrationPackages(Id='DEV165Handson',ObjectID=cee765a9-faff-4e12-b2ed-5113ed8107ca)/ConfigService.analyzeScriptFiles HTTP/1.1
+Content-Type: application/json
 
 {}
-###

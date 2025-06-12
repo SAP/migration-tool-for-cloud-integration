@@ -3,7 +3,12 @@
     "sap.app": {
         "id": "registration",
         "type": "application",
-        "i18n": "i18n/i18n.properties",
+        "i18n": {
+            "bundleName": "contentviewer.i18n.i18n",
+            "supportedLocales": [
+                "en"
+            ]
+        },
         "applicationVersion": {
             "version": "1.0.0"
         },
@@ -25,25 +30,24 @@
             "version": "1.0.0"
         },
         "crossNavigation": {
-          "inbounds": {
-            "registration-manage": {
-                "semanticObject": "registration",
-                "action": "manage",
-              "title": "Register Tenants",
-              "subTitle": "Create Connections",
-              "icon": "sap-icon://connected",
-              "signature": {
-                "parameters": {},
-                "additionalParameters": "allowed"
-              }
+            "inbounds": {
+                "registration-manage": {
+                    "semanticObject": "registration",
+                    "action": "manage",
+                    "title": "Register Tenants",
+                    "subTitle": "Create Connections",
+                    "icon": "sap-icon://connected",
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    }
+                }
             }
-          }
         }
-      },
-      "sap.cloud": {
+    },
+    "sap.cloud": {
         "public": true,
         "service": "sap.btp.cpimigrationtool"
-    
     },
     "sap.ui": {
         "technology": "UI5",
@@ -61,9 +65,11 @@
             "phone": true
         }
     },
+    "sap.platform.cf": {
+	   "ui5VersionNumber": "1.136.1"
+    },
     "sap.ui5": {
         "resources": {
-            "js": [],
             "css": [
                 {
                     "uri": "custom.css"
@@ -71,7 +77,7 @@
             ]
         },
         "dependencies": {
-            "minUI5Version": "1.130.7",
+            "minUI5Version": "1.136.1",
             "libs": {
                 "sap.ui.core": {},
                 "sap.fe.templates": {}
@@ -80,13 +86,17 @@
         "models": {
             "i18n": {
                 "type": "sap.ui.model.resource.ResourceModel",
-                "uri": "i18n/i18n.properties"
+                "settings": {
+                    "bundleName": "contentviewer.i18n.i18n",
+                    "supportedLocales": [
+                        "en"
+                    ]
+                }
             },
             "": {
                 "dataSource": "mainService",
                 "preload": true,
                 "settings": {
-                    "synchronizationMode": "None",
                     "operationMode": "Server",
                     "autoExpandSelect": true,
                     "earlyRequests": true
@@ -131,13 +141,22 @@
                                         "selectionMode": "Multi"
                                     },
                                     "actions": {
+                                        "DataActions": {
+                                            "text": "Dev Tools",
+                                            "menu": [
+                                                "DataFieldForAction::RegistrationService.EntityContainer::exportTenants",
+                                                "downloadDatabase",
+                                                "downloadTenants"
+                                            ],
+                                            "enabled": ".extension.registration.ext.customActions.isLocalDeployment"
+                                        },
                                         "downloadDatabase": {
-                                            "press": "registration.custom.CustomActions.downloadDatabase",
+                                            "press": ".extension.registration.ext.customActions.downloadDatabase",
                                             "enabled": true,
                                             "text": "Download db.sqlite file"
                                         },
                                         "downloadTenants": {
-                                            "press": "registration.custom.CustomActions.downloadTenants",
+                                            "press": ".extension.registration.ext.customActions.downloadTenants",
                                             "enabled": true,
                                             "text": "Download Tenants.csv file"
                                         }
@@ -161,9 +180,9 @@
                                 "header": {
                                     "actions": {
                                         "importSettings": {
-                                            "press": "registration.custom.CustomActions.setValues",
+                                            "press": ".extension.registration.ext.customActions.setValues",
                                             "text": "Import oAuth Service Key",
-                                            "enabled": "registration.custom.CustomActions.isEditing",
+                                            "enabled": ".extension.registration.ext.customActions.isEditing",
                                             "visible": true
                                         }
                                     }
@@ -175,18 +194,22 @@
                 }
             }
         },
+        "extends": {
+            "extensions": {
+                "sap.ui.controllerExtensions": {
+                    "sap.fe.templates.ListReport.ListReportController": {
+                        "controllerName": "registration.ext.customActions"
+                    },
+                    "sap.fe.templates.ObjectPage.ObjectPageController": {
+                        "controllerName": "registration.ext.customActions"
+                    }
+                }
+            }
+        },
         "contentDensities": {
             "compact": true,
             "cozy": true
         }
-    },
-    "sap.platform.abap": {
-        "_version": "1.1.0",
-        "uri": ""
-    },
-    "sap.platform.hcp": {
-        "_version": "1.1.0",
-        "uri": ""
     },
     "sap.fiori": {
         "_version": "1.1.0",

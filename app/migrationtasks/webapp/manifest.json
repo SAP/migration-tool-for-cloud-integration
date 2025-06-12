@@ -3,7 +3,12 @@
     "sap.app": {
         "id": "migrationtasks",
         "type": "application",
-        "i18n": "i18n/i18n.properties",
+        "i18n": {
+            "bundleName": "contentviewer.i18n.i18n",
+            "supportedLocales": [
+                "en"
+            ]
+        },
         "applicationVersion": {
             "version": "1.0.0"
         },
@@ -44,6 +49,9 @@
         "public": true,
         "service": "sap.btp.cpimigrationtool"
     },
+    "sap.platform.cf": {
+	   "ui5VersionNumber": "1.136.1"
+    },
     "sap.ui": {
         "technology": "UI5",
         "icons": {
@@ -62,7 +70,6 @@
     },
     "sap.ui5": {
         "resources": {
-            "js": [],
             "css": [
                 {
                     "uri": "custom.css"
@@ -70,7 +77,7 @@
             ]
         },
         "dependencies": {
-            "minUI5Version": "1.130.7",
+            "minUI5Version": "1.136.1",
             "libs": {
                 "sap.ui.core": {},
                 "sap.fe.templates": {}
@@ -79,13 +86,17 @@
         "models": {
             "i18n": {
                 "type": "sap.ui.model.resource.ResourceModel",
-                "uri": "i18n/i18n.properties"
+                "settings": {
+                    "bundleName": "contentviewer.i18n.i18n",
+                    "supportedLocales": [
+                        "en"
+                    ]
+                }
             },
             "": {
                 "dataSource": "mainService",
                 "preload": true,
                 "settings": {
-                    "synchronizationMode": "None",
                     "operationMode": "Server",
                     "autoExpandSelect": true,
                     "earlyRequests": true
@@ -201,7 +212,7 @@
                                     "sections": {
                                         "logPage": {
                                             "type": "XMLFragment",
-                                            "name": "migrationtasks/custom/logPage",
+                                            "name": "migrationtasks/ext/logPage",
                                             "title": "Log"
                                         }
                                     }
@@ -216,14 +227,6 @@
             "compact": true,
             "cozy": true
         }
-    },
-    "sap.platform.abap": {
-        "_version": "1.1.0",
-        "uri": ""
-    },
-    "sap.platform.hcp": {
-        "_version": "1.1.0",
-        "uri": ""
     },
     "sap.fiori": {
         "_version": "1.1.0",

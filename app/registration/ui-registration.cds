@@ -19,7 +19,7 @@ annotate RegistrationService.Tenants with @(UI: {
         {
             $Type      : 'UI.DataFieldForAction',
             Label      : 'Test Connection',
-            Action     : 'RegistrationService.Tenant_testConnection',
+            Action     : 'RegistrationService.testConnection',
             Criticality: #Positive
         }
     ],
@@ -74,17 +74,17 @@ annotate RegistrationService.Tenants with @(UI: {
         {
             $Type : 'UI.DataFieldForAction',
             Label : 'Duplicate',
-            Action: 'RegistrationService.Tenant_duplicate'
+            Action: 'RegistrationService.duplicate'
         },
         {
             $Type : 'UI.DataFieldForAction',
             Label : 'Test Connection',
-            Action: 'RegistrationService.Tenant_testConnection'
+            Action: 'RegistrationService.testConnection'
         },
         {
             $Type : 'UI.DataFieldForAction',
             Label : 'Save to Tenants.csv file',
-            Action: 'RegistrationService.EntityContainer/Tenant_export'
+            Action: 'RegistrationService.EntityContainer/exportTenants'
         }
     ],
     HeaderFacets                 : [{
@@ -238,7 +238,7 @@ annotate RegistrationService.Tenants with @(UI: {
     Host                          @title: 'Integration Host'           @UI.Placeholder       : 'subdomain.environment.cfapps.eu10-001.hana.ondemand.com'  @mandatory;
     Token_host                    @title: 'Token Host'                 @UI.Placeholder       : 'subdomain.authentication.eu10.hana.ondemand.com'          @mandatory;
     Oauth_clientid                @title: 'oAuth Client ID'            @UI.Placeholder       : 'See OAuth Client credentials'                             @mandatory;
-    Oauth_secret                  @title: 'oAuth Secret'               @UI.Placeholder       : 'See OAuth Client credentials'                             @mandatory;
+    Oauth_secret                  @title: 'oAuth Secret'               @UI.Placeholder       : 'See OAuth Client credentials'                             @mandatory        @Common.Masked;
     Oauth_servicekeyid            @title: 'oAuth Service Instance ID'  @UI.Placeholder       : 'ID of the service instance';
     Role                          @title: 'System Role'                @UI.Placeholder       : 'Select role'                                              @mandatory;
     Environment                   @title: 'Environment'                @UI.Placeholder       : 'Select environment'                                       @mandatory;
@@ -249,10 +249,10 @@ annotate RegistrationService.Tenants with @(UI: {
     Neo_accountid                 @title: 'Subaccount Technical Name'  @UI.Placeholder       : 'Cockpit > Overview > Technical Name';
     CF_Platform_domain            @title: 'Platform Host'              @UI.Placeholder       : 'eu10.hana.ondemand.com';
     CF_Platform_user              @title: 'Email'                      @UI.Placeholder       : 'platform.user@domain.com';
-    CF_Platform_password          @title: 'Password'                   @UI.Placeholder       : 'Password';
+    CF_Platform_password          @title: 'Password'                   @UI.Placeholder       : 'Password'                                                 @Common.Masked;
     Neo_Platform_domain           @title: 'Platform Host'              @UI.Placeholder       : 'hana.ondemand.com';
     Neo_Platform_user             @title: 'oAuth Client ID'            @UI.Placeholder       : 'See OAuth Client credentials';
-    Neo_Platform_password         @title: 'oAuth Secret'               @UI.Placeholder       : 'See OAuth Client credentials';
+    Neo_Platform_password         @title: 'oAuth Secret'               @UI.Placeholder       : 'See OAuth Client credentials'                             @Common.Masked;
     UseForCertificateUserMappings @title: 'Enable migration of Certificate to User Mappings (source or target)';
 };
 

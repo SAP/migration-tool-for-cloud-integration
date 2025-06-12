@@ -19,13 +19,13 @@ annotate ConfigService.MigrationTasks with @(UI : {
             ![@UI.Hidden] : {$edmJson : {$Not : [{$Path : 'IsActiveEntity'}]}},
             $Type         : 'UI.DataFieldForAction',
             Label         : 'Change Target ...',
-            Action        : 'ConfigService.Task_setTargetTenant'
+            Action        : 'ConfigService.setTargetTenant'
         },
         {
             ![@UI.Hidden] : {$edmJson : {$Not : [{$Path : 'IsActiveEntity'}]}},
             $Type         : 'UI.DataFieldForAction',
             Label         : 'Run Now',
-            Action        : 'ConfigService.Task_startMigration'
+            Action        : 'ConfigService.startMigration'
         }
     ],
     CreateHidden             : true,
@@ -129,16 +129,16 @@ annotate ConfigService.MigrationTasks with @(UI : {
     FieldGroup #RefreshJobs  : {Data : [{
         $Type  : 'UI.DataFieldForAction',
         Label  : 'Refresh Table',
-        Action : 'ConfigService.Task_refreshJobsTable'
+        Action : 'ConfigService.refreshJobsTable'
     }]},
     FieldGroup #NodesHeader  : {Data : [
-        {Value : Statistics_numIntegrationPackages},
-        {Value : Statistics_numSecurityArtifacts},
-        {Value : Statistics_numOtherArtifacts},
+        {Value : numIntegrationPackages},
+        {Value : numSecurityArtifacts},
+        {Value : numOtherArtifacts},
         {
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Reset / Regenerate Task Items',
-            Action : 'ConfigService.Task_resetTaskNodes'
+            Action : 'ConfigService.resetTaskNodes'
         }
     ]},
     FieldGroup #HeaderSource : {Data : [
@@ -175,11 +175,9 @@ annotate ConfigService.MigrationTasks with @(UI : {
     LastStatus                 @title : 'Last Run Status';
     CustomConfig               @title : 'Custom Configuration'  @UI.MultiLineText : true;
     modifiedAt                 @title : 'Last Modified';
-    Statistics {
-        numIntegrationPackages @title : 'Integration Packages';
-        numSecurityArtifacts   @title : 'Security Artifacts';
-        numOtherArtifacts      @title : 'Other Artifacts';
-    }
+    numIntegrationPackages     @title : 'Integration Packages';
+    numSecurityArtifacts       @title : 'Security Artifacts';
+    numOtherArtifacts          @title : 'Other Artifacts';
 };
 
 
@@ -327,12 +325,12 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
             {
                 $Type  : 'UI.DataFieldForAction',
                 Label  : 'Include selection',
-                Action : 'ConfigService.Nodes_IncludeSelected'
+                Action : 'ConfigService.includeSelected'
             },
             {
                 $Type  : 'UI.DataFieldForAction',
                 Label  : 'Skip selection',
-                Action : 'ConfigService.Nodes_SkipSelected'
+                Action : 'ConfigService.skipSelected'
             },
             {
                 Value                     : Name,
@@ -377,7 +375,7 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
             {
                 $Type             : 'UI.DataFieldForAction',
                 Label             : 'Configure ...',
-                Action            : 'ConfigService.Nodes_ConfigurePackage',
+                Action            : 'ConfigService.configurePackage',
                 Inline            : true,
                 Criticality       : ConfigureOnlyCriticality,
                 ![@UI.Importance] : #High
