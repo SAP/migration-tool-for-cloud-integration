@@ -147,7 +147,7 @@ To learn how to use the tool, please refer to the [user documentation](/docs).
 - **1.133.0**: Issue: dynamically hidden fields still visible
 - **1.136.1**: Issue: iFlows not visualized (wait for 1.136.2 fix)
 
-Specify the version to be used in [/app/home.html](./app/home.html) as well as other places (you can do a replace-all across the `/app` folder)
+Specify the version to be used in [/app/home.html](./app/home.html) (when running locally), or in each of the 4 application's `manifest.json` files in the `sap.platform.cf.ui5versionNumber` setting (when deployed to Work Zone).
 
 Version availability: https://ui5.sap.com/versionoverview.html
 
