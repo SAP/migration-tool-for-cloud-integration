@@ -12,15 +12,15 @@
         "build": "ui5 build preload --clean-dest --config ui5-deploy.yaml --include-task=generateCachebusterInfo"
     },
     "devDependencies": {
-        "@sapui5/types": "^1.136",
+        "@sapui5/types": "^1.138",
         "@types/jquery": "^3.5",
-        "@types/node": "^24.0",
-        "@ui5/linter": "^1.13",
-        "eslint": "^9.28",
+        "@types/node": "^24.1",
+        "@ui5/linter": "^1.17",
+        "eslint": "^9.32",
         "typescript": "^5.8",
-        "typescript-eslint": "^8.34",
+        "typescript-eslint": "^8.38",
         "ui5-task-zipper": "^3.4",
-        "ui5-tooling-transpile": "^3.8"
+        "ui5-tooling-transpile": "^3.9"
     },
     "peerDependencies": {
         "@ui5/cli": ">=4",
