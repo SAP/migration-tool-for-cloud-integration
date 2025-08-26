@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "sourceMap": true,
+    "types": [
+      "@sapui5/types",
+      "@types/jquery"
+    ],
+    "paths": {
+      "#cds-models/*": [
+        "./../../@cds-models/*"
+      ]
+    }
+  },
+  "include": [
+    "webapp"
+  ]
+}

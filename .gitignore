@@ -36,3 +36,6 @@ dist/
 
 # added by cds
 .cdsrc-private.json
+
+@cds-models
+resources

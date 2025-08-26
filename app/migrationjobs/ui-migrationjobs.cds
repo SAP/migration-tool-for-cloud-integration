@@ -22,7 +22,7 @@ annotate ConfigService.MigrationJobs with @(UI : {
             $Type      : 'UI.DataFieldForAction',
             Label      : 'Refresh',
             IconUrl    : 'sap-icon://refresh',
-            Action     : 'ConfigService.Job_RefreshLog',
+            Action     : 'ConfigService.refreshLog',
             Criticality: #Positive
         }
     ],

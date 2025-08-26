@@ -82,7 +82,7 @@
                             "resolutionResult": {
                                 "applicationType": "SAPUI5",
                                 "additionalInformation": "SAPUI5.Component=registration",
-                                "url": "/registration/webapp"
+                                "url": "/registration/dist"
                             }
                         },
                         "tenants-manage": {
@@ -95,7 +95,7 @@
                             "resolutionResult": {
                                 "applicationType": "SAPUI5",
                                 "additionalInformation": "SAPUI5.Component=contentviewer",
-                                "url": "/contentviewer/webapp"
+                                "url": "/contentviewer/dist"
                             }
                         },
                         "migrationtasks-manage": {
@@ -108,7 +108,7 @@
                             "resolutionResult": {
                                 "applicationType": "SAPUI5",
                                 "additionalInformation": "SAPUI5.Component=migrationtasks",
-                                "url": "/migrationtasks/webapp"
+                                "url": "/migrationtasks/dist"
                             }
                         },
                         "migrationjobs-manage": {
@@ -121,7 +121,7 @@
                             "resolutionResult": {
                                 "applicationType": "SAPUI5",
                                 "additionalInformation": "SAPUI5.Component=migrationjobs",
-                                "url": "/migrationjobs/webapp"
+                                "url": "/migrationjobs/dist"
                             }
                         },
                         "documentation-view": {

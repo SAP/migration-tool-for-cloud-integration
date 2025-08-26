@@ -1,0 +1,197 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <Dialog title="Select content to synchronize">
+        <VBox class="sapUiMediumMargin">
+
+            <HBox>
+                <Title text="Select Content" width="120px" />
+                <Label text="(" width="5px"/>
+                <Link text="All" press=".onClickAll"/>
+                <Label text="" width="5px" />
+                <Label text="|" width="7px" />
+                <Link text="New" press=".onClickNew"/>
+                <Label text="" width="5px" />
+                <Label text="|" width="7px" />
+                <Link text="None" press=".onClickNone"/>
+                <Label text="" width="5px" />
+                <Label text=")" width="30px" />
+                <Title text="Filter" width="50px" />
+                <Label text="(Optional: leave empty for a full refresh)" width="355px" />
+                <Title text="Look for new items" />
+            </HBox>
+
+            <!-- getIntegrationPackages -->
+            <HBox>
+                <CheckBox text="Integration Packages" width="220px"
+                    selected="{selection>/getIntegrationPackages_include}" />
+                <MultiComboBox width="400px"
+                    enabled="{= %{selection>/getIntegrationPackages_include} === true &amp;&amp; %{selection>/getIntegrationPackages_discover} === false }"
+                    items="{ path: 'toIntegrationPackages', sorter: { path: 'Name' }, length: 9999 }"
+                    showSecondaryValues="true" showSelectAll="true"
+                    selectedKeys="{selection>/getIntegrationPackages_filter}">
+                    <core:ListItem key="{Id}" text="{Name}" additionalText="{Id}" />
+                </MultiComboBox>
+                <CheckBox text="Discover new items" 
+                    enabled="{= %{selection>/getIntegrationPackages_include} === true }"
+                    selected="{selection>/getIntegrationPackages_discover}" />
+            </HBox>
+
+            <!-- getUserCredentials -->
+            <HBox>
+                <CheckBox text="User Credentials" width="220px"
+                    selected="{selection>/getUserCredentials_include}" />
+                <MultiComboBox width="400px"
+                    enabled="{= %{selection>/getUserCredentials_include} === true &amp;&amp; %{selection>/getUserCredentials_discover} === false }"
+                    items="{ path: 'toUserCredentials', sorter: { path: 'Name' }, length: 9999 }"
+                    showSecondaryValues="true" showSelectAll="true"
+                    selectedKeys="{selection>/getUserCredentials_filter}">
+                    <core:ListItem key="{Name}" text="{Name}" />
+                </MultiComboBox>
+                <CheckBox text="Discover new items" 
+                    enabled="{= %{selection>/getUserCredentials_include} === true }"
+                    selected="{selection>/getUserCredentials_discover}" />
+            </HBox>
+
+            <!-- getKeyStoreEntries -->
+            <HBox>
+                <CheckBox text="Keystore Entries" width="220px"
+                    selected="{selection>/getKeyStoreEntries_include}" />
+                <MultiComboBox width="400px"
+                    enabled="{= %{selection>/getKeyStoreEntries_include} === true &amp;&amp; %{selection>/getKeyStoreEntries_discover} === false }"
+                    items="{ path: 'toKeyStoreEntries', sorter: { path: 'Alias' }, length: 9999 }"
+                    showSecondaryValues="true" showSelectAll="true"
+                    selectedKeys="{selection>/getKeyStoreEntries_filter}">
+                    <core:ListItem key="{Alias}" text="{Alias}" />
+                </MultiComboBox>
+                <CheckBox text="Discover new items" 
+                    enabled="{= %{selection>/getKeyStoreEntries_include} === true }"
+                    selected="{selection>/getKeyStoreEntries_discover}" />
+            </HBox>
+
+            <!-- getOAuth2ClientCredentials -->
+            <HBox>
+                <CheckBox text="OAuth2 Client Credentials" width="220px"
+                    selected="{selection>/getOAuth2ClientCredentials_include}" />
+                <MultiComboBox width="400px"
+                    enabled="{= %{selection>/getOAuth2ClientCredentials_include} === true &amp;&amp; %{selection>/getOAuth2ClientCredentials_discover} === false }"
+                    items="{ path: 'toOAuth2ClientCredentials', sorter: { path: 'Name' }, length: 9999 }"
+                    showSecondaryValues="true" showSelectAll="true"
+                    selectedKeys="{selection>/getOAuth2ClientCredentials_filter}">
+                    <core:ListItem key="{Name}" text="{Name}" />
+                </MultiComboBox>
+                <CheckBox text="Discover new items" 
+                    enabled="{= %{selection>/getOAuth2ClientCredentials_include} === true }"
+                    selected="{selection>/getOAuth2ClientCredentials_discover}" />
+            </HBox>
+
+            <!-- getCertificateUserMappings -->
+            <HBox>
+                <CheckBox text="Certificate to User Mappings" width="220px"
+                    selected="{selection>/getCertificateUserMappings_include}" />
+                <MultiComboBox width="400px"
+                    enabled="{= %{selection>/getCertificateUserMappings_include} === true &amp;&amp; %{selection>/getCertificateUserMappings_discover} === false }"
+                    items="{ path: 'toCertificateUserMappings', sorter: { path: 'User' }, length: 9999 }"
+                    showSecondaryValues="true" showSelectAll="true"
+                    selectedKeys="{selection>/getCertificateUserMappings_filter}">
+                    <core:ListItem key="{Id}" text="{User}" additionalText="{Id}" />
+                </MultiComboBox>
+                <CheckBox text="Discover new items" 
+                    enabled="{= %{selection>/getCertificateUserMappings_include} === true }"
+                    selected="{selection>/getCertificateUserMappings_discover}" />
+            </HBox>
+
+            <!-- getNumberRanges -->
+            <HBox>
+                <CheckBox text="Number Ranges" width="220px"
+                    selected="{selection>/getNumberRanges_include}" />
+                <MultiComboBox width="400px"
+                    enabled="{= %{selection>/getNumberRanges_include} === true &amp;&amp; %{selection>/getNumberRanges_discover} === false }"
+                    items="{ path: 'toNumberRanges', sorter: { path: 'Name' }, length: 9999 }"
+                    showSecondaryValues="true" showSelectAll="true"
+                    selectedKeys="{selection>/getNumberRanges_filter}">
+                    <core:ListItem key="{Name}" text="{Name}" />
+                </MultiComboBox>
+                <CheckBox text="Discover new items" 
+                    enabled="{= %{selection>/getNumberRanges_include} === true }"
+                    selected="{selection>/getNumberRanges_discover}" />
+            </HBox>
+
+            <!-- getAccessPolicies -->
+            <HBox>
+                <CheckBox text="Access Policies" width="220px"
+                    selected="{selection>/getAccessPolicies_include}" />
+                <MultiComboBox width="400px"
+                    enabled="{= %{selection>/getAccessPolicies_include} === true &amp;&amp; %{selection>/getAccessPolicies_discover} === false }"
+                    items="{ path: 'toAccessPolicies', sorter: { path: 'Id' }, length: 9999 }"
+                    showSecondaryValues="true" showSelectAll="true"
+                    selectedKeys="{selection>/getAccessPolicies_filter}">
+                    <core:ListItem key="{Id}" text="{Id}" />
+                </MultiComboBox>
+                <CheckBox text="Discover new items" 
+                    enabled="{= %{selection>/getAccessPolicies_include} === true }"
+                    selected="{selection>/getAccessPolicies_discover}" />
+            </HBox>
+
+            <!-- getVariables -->
+            <HBox>
+                <CheckBox text="Variables" width="220px"
+                    selected="{selection>/getVariables_include}" />
+                <MultiComboBox width="400px"
+                    enabled="{= %{selection>/getVariables_include} === true &amp;&amp; %{selection>/getVariables_discover} === false }"
+                    items="{ path: 'toVariables', sorter: { path: 'VariableName' }, length: 9999 }"
+                    showSecondaryValues="true" showSelectAll="true"
+                    selectedKeys="{selection>/getVariables_filter}">
+                    <core:ListItem key="{VariableName}" text="{VariableName}" additionalText="{IntegrationFlow}" />
+                </MultiComboBox>
+                <CheckBox text="Discover new items" 
+                    enabled="{= %{selection>/getVariables_include} === true }"
+                    selected="{selection>/getVariables_discover}" />
+            </HBox>
+
+            <!-- getDataStores -->
+            <HBox>
+                <CheckBox text="Data Stores" width="220px"
+                    selected="{selection>/getDataStores_include}" />
+                <MultiComboBox width="400px"
+                    enabled="{= %{selection>/getDataStores_include} === true &amp;&amp; %{selection>/getDataStores_discover} === false }"
+                    items="{ path: 'toDataStores', sorter: { path: 'DataStoreName' }, length: 9999 }"
+                    showSecondaryValues="true" showSelectAll="true"
+                    selectedKeys="{selection>/getDataStores_filter}">
+                    <core:ListItem key="{DataStoreName}" text="{DataStoreName}" additionalText="{IntegrationFlow}" />
+                </MultiComboBox>
+                <CheckBox text="Discover new items" 
+                    enabled="{= %{selection>/getDataStores_include} === true }"
+                    selected="{selection>/getDataStores_discover}" />
+            </HBox>
+
+            <!-- getCustomTagConfigurations -->
+            <HBox>
+                <CheckBox text="Custom Tag Configurations" width="220px"
+                    selected="{selection>/getCustomTagConfigurations_include}" />
+                <MultiComboBox width="400px"
+                    enabled="{= %{selection>/getCustomTagConfigurations_include} === true &amp;&amp; %{selection>/getCustomTagConfigurations_discover} === false }"
+                    items="{ path: 'toCustomTagConfigurations', sorter: { path: 'tagName' }, length: 9999 }"
+                    showSecondaryValues="true" showSelectAll="true"
+                    selectedKeys="{selection>/getCustomTagConfigurations_filter}">
+                    <core:ListItem key="{tagName}" text="{tagName}" />
+                </MultiComboBox>
+                <CheckBox text="Discover new items" 
+                    enabled="{= %{selection>/getCustomTagConfigurations_include} === true }"
+                    selected="{selection>/getCustomTagConfigurations_discover}" />
+            </HBox>
+
+            <!-- getJMSBrokers -->
+            <HBox>
+                <CheckBox text="JMS Brokers"
+                    selected="{selection>/getJMSBrokers_include}" />
+            </HBox>
+
+        </VBox>
+        <buttons>
+            <Button id="bSubmit" text="Submit" press=".submitSelectionDialog" type="Emphasized" />
+            <Button id="bClose" text="Cancel" press=".closeSelectionDialog" />
+        </buttons>
+    </Dialog>
+</core:FragmentDefinition>
