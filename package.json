@@ -24,7 +24,7 @@
     "@sap-cloud-sdk/http-client": "^4.1",
     "@sap/cds": "~9.2",
     "@sap/xssec": "^4",
-    "axios": "^1.11",
+    "axios": "^1.12",
     "express": "^4",
     "qs": "^6.14",
     "xml2js": "^0.6",
@@ -46,6 +46,7 @@
     "typescript": "^5.9"
   },
   "scripts": {
+    "npmu:apps": "npm update --prefix ./app/contentviewer && npm update --prefix ./app/migrationjobs && npm update --prefix ./app/migrationtasks && npm update --prefix ./app/registration",
     "build": "rimraf resources mta_archives && cds build --production",
     "lint": "eslint",
     "start": "cds-serve",
