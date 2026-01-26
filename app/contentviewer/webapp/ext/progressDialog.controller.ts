@@ -155,8 +155,8 @@ export default class progressDialog extends ControllerExtension {
         if (data.getCustomTagConfigurations_discover)
             data.getCustomTagConfigurations_filter = await this.getExpandedDataIdentifiers('toCustomTagConfigurations', 'tagName')
 
-        this.createProgressDialog()
-        this.base.getExtensionAPI()
+        this.createProgressDialog();
+        (this.base.getExtensionAPI()
             .getEditFlow()
             .invokeAction(`ConfigService.getSelectedIntegrationContent`, {
                 contexts: this.context,
@@ -164,7 +164,7 @@ export default class progressDialog extends ControllerExtension {
                     { name: 'filter', value: data }
                 ],
                 skipParameterDialog: true
-            })
+            }) as Promise<void>)
             .then((): void => {
                 this.progressDialog?.open()
                 this.refreshProgressStatus()
@@ -196,10 +196,10 @@ export default class progressDialog extends ControllerExtension {
         this.context = aSelectedContexts[0] || oEvent
         this.serviceUrl = (this.getView()?.getModel() as ODataModel)?.getServiceUrl()
 
-        this.createProgressDialog()
-        this.base.getExtensionAPI()
+        this.createProgressDialog();
+        (this.base.getExtensionAPI()
             .getEditFlow()
-            .invokeAction(`ConfigService.getIntegrationContent`, { contexts: this.context })
+            .invokeAction(`ConfigService.getIntegrationContent`, { contexts: this.context }) as Promise<void>)
             .then((): void => {
                 this.progressDialog?.open()
                 this.refreshProgressStatus()
@@ -289,10 +289,10 @@ export default class progressDialog extends ControllerExtension {
                         this.setProgressStatus(data.Progress!, `Downloading content for ${data.Tenant} ...`, data.Topic!, data.Item!)
                         this.timeout = setTimeout(this.refreshProgressStatus.bind(this), interval)
                     } else {
-                        this.setProgressStatus(100, `Downloading content for ${data.Tenant} ...`, data.Topic!, data.Item!)
-                        this.base.getExtensionAPI()
+                        this.setProgressStatus(100, `Downloading content for ${data.Tenant} ...`, data.Topic!, data.Item!);
+                        (this.base.getExtensionAPI()
                             .getEditFlow()
-                            .invokeAction('ConfigService.getIntegrationContentRefresh', { contexts: this.context })
+                            .invokeAction('ConfigService.getIntegrationContentRefresh', { contexts: this.context }) as Promise<void>)
                             .then((): void => {
                                 this.coreById<ProgressIndicator>('progressPackages').setState('Success')
                                 this.coreById<Button>('btnClose').setVisible(true)

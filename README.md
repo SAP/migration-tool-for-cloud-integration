@@ -70,7 +70,7 @@ To install, in Terminal or Command Prompt, run:
 
 Now the tool is installed and can be started:
 
-1. Start the tool: `npm start`
+1. Start the tool: `npm run start-local`
 2. Open your local browser to: `http://localhost:4004/home.html`
 
 To stop the tool, in Terminal or Command Prompt, press `control-C`
@@ -147,6 +147,7 @@ To learn how to use the tool, please refer to the [user documentation](/docs).
 - **1.133.0**: Issue: dynamically hidden fields still visible
 - **1.136.1**: Issue: iFlows not visualized (wait for 1.136.2 fix)
 - **1.138.1**: Stable
+- **1.142.2**: Stable
 
 Specify the version to be used in [/app/home.html](./app/home.html) (when running locally), or in each of the 4 application's `manifest.json` files in the `sap.platform.cf.ui5versionNumber` setting (when deployed to Work Zone).
 
@@ -166,6 +167,7 @@ Version availability: https://ui5.sap.com/versionoverview.html
 - **8.5.1**: Stable
 - **9.0.3**: Stable
 - **9.1.3**: Stable
+- **9.6.4**: Stable
 
 More information on changelog: https://cap.cloud.sap/docs/releases
 
