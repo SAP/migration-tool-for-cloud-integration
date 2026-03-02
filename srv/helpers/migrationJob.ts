@@ -1351,7 +1351,7 @@ export default class MigrationJobHelper {
         const securityContentTransportsPayload = {
             TaskId: 'dummyId',
             Type: type,
-            TargetCertificateAlias: this.Task?.TargetTenant?.CF_target_certificate_alias,
+            TargetCertificateAlias: this.Task?.TargetTenant?.NEO_target_certificate_alias,
             Mode : "merge"
         } as TSecurityContentTransportPayload;
         

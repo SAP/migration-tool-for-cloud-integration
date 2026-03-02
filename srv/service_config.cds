@@ -92,7 +92,7 @@ service ConfigService {
             Oauth_clientid,
             Oauth_secret,
             Oauth_servicekeyid,
-            CF_target_certificate_alias,
+            NEO_target_certificate_alias,
             CF_organizationID,
             CF_organizationName,
             CF_spaceID,

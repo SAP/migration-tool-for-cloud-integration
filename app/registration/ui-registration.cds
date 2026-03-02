@@ -216,8 +216,8 @@ annotate RegistrationService.Tenants with @(UI: {
         }
     ]},
     FieldGroup #Security_artifact_transport : { Data: [{
-        Value: CF_target_certificate_alias,
-        ![@UI.Hidden]: ( not ( Environment = 'Cloud Foundry' ) )
+        Value: NEO_target_certificate_alias,
+        ![@UI.Hidden]: ( not ( Environment = 'Neo' ) )
     }]},
     FieldGroup #CF_data          : {Data: [
         {Value: CF_organizationName},
@@ -249,7 +249,7 @@ annotate RegistrationService.Tenants with @(UI: {
     Oauth_clientid                @title: 'oAuth Client ID'            @UI.Placeholder       : 'See OAuth Client credentials'                             @mandatory;
     Oauth_secret                  @title: 'oAuth Secret'               @UI.Placeholder       : 'See OAuth Client credentials'                             @mandatory        @Common.Masked;
     Oauth_servicekeyid            @title: 'oAuth Service Instance ID'  @UI.Placeholder       : 'ID of the service instance';
-    CF_target_certificate_alias   @title: 'Target Certificate Alias';
+    NEO_target_certificate_alias  @title: 'Target Certificate Alias';
     Role                          @title: 'System Role'                @UI.Placeholder       : 'Select role'                                              @mandatory;
     Environment                   @title: 'Environment'                @UI.Placeholder       : 'Select environment'                                       @mandatory;
     ReadOnly                      @title: 'Source-only system';

@@ -4,7 +4,7 @@ import qs from 'qs'
 import axios, { AxiosRequestConfig } from 'axios'
 
 import { Settings } from '../config/settings'
-import { Tenant } from '#cds-models/migrationtool'
+import { extKeyStoreEntry, Tenant } from '#cds-models/migrationtool'
 
 const { info, warn } = cds.log('ExternalConnection')
 
@@ -72,6 +72,10 @@ export default class ExternalConnection {
             ? Settings.Paths.NeoPlatform.TestSettings.replace('{ACCOUNT_ID}', this.Tenant.Neo_accountid ?? '')
             : Settings.Paths.CFPlatform.TestSettings.replace('{INSTANCE_ID}', this.Tenant.Oauth_servicekeyid ?? '')
         ))
+    }
+
+    public pingTargetCertificateAlias = async (): Promise<extKeyStoreEntry[]> => {
+        return await this.externalCall(Settings.Paths.KeyStoreEntries.path) as extKeyStoreEntry[]
     }
 
     private openConnection = async (url: string): Promise<cds.Transaction> => {
