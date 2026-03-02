@@ -62,7 +62,16 @@ export default class MigrationTaskHelper {
                     x.toJMSBrokers('*'),
                     x.toVariables('*'),
                     x.toCertificateUserMappings('*'),
-                    x.toDataStores('*')
+                    x.toDataStores('*'),
+                    x.toSharedUserCredentials('*'),            // new security artifact
+                    x.toSharedSecureParameters('*'),           // new security artifact
+                    x.toSharedOAuth2ClientCredentials('*'),    // new security artifact
+                    x.toSharedOAuth2SAMLBearerAssertions('*'), // new security artifact
+                    x.toSharedKeystores('*'),                  // new security artifact
+                    x.toSharedPgpKeys('*'),                    // new security artifact
+                    x.toSharedJdbcDatasources('*'),            // new security artifact
+                    x.toSharedOAuth2AuthorizationCodes('*'),   // new security artifact
+                    x.toSharedKnownHosts('*')                  // new security artifact
             }) as Tenant
     }
     private buildNodesFromContent = async (): Promise<MigrationTaskNode[]> => {
@@ -191,6 +200,96 @@ export default class MigrationTaskHelper {
             })
         }
 
+        for (let item of Tenant.toSharedUserCredentials!) {
+            nodes.push({
+                ObjectID: item.ObjectID,
+                Id: item.Name,
+                Name: item.Name,
+                Component: Settings.ComponentNames.SharedUserCredentials,
+                toMigrationTask_ObjectID: this.Task.ObjectID
+            })
+        }
+
+        for (let item of Tenant.toSharedSecureParameters!) {
+            nodes.push({
+                ObjectID: item.ObjectID,
+                Id: item.Name,
+                Name: item.Name,
+                Component: Settings.ComponentNames.SharedSecureParameters,
+                toMigrationTask_ObjectID: this.Task.ObjectID
+            })
+        }
+
+        for (let item of Tenant.toSharedOAuth2ClientCredentials!) {
+            nodes.push({
+                ObjectID: item.ObjectID,
+                Id: item.Name,
+                Name: item.Name,
+                Component: Settings.ComponentNames.SharedOAuth2ClientCredentials,
+                toMigrationTask_ObjectID: this.Task.ObjectID
+            })
+        }
+
+        for (let item of Tenant.toSharedOAuth2SAMLBearerAssertions!) {
+            nodes.push({
+                ObjectID: item.ObjectID,
+                Id: item.Name,
+                Name: item.Name,
+                Component: Settings.ComponentNames.SharedOAuth2SAMLBearerAssertions,
+                toMigrationTask_ObjectID: this.Task.ObjectID
+            })
+        }
+
+        for (let item of Tenant.toSharedKeystores!) {
+            nodes.push({
+                ObjectID: item.ObjectID,
+                Id: item.Name,
+                Name: item.Name,
+                Component: Settings.ComponentNames.SharedKeystores,
+                toMigrationTask_ObjectID: this.Task.ObjectID
+            })
+        }
+
+        for (let item of Tenant.toSharedPgpKeys!) {
+            nodes.push({
+                ObjectID: item.ObjectID,
+                Id: item.Name,
+                Name: item.Name,
+                Component: Settings.ComponentNames.SharedPgpKeys,
+                toMigrationTask_ObjectID: this.Task.ObjectID
+            })
+        }
+
+        for (let item of Tenant.toSharedJdbcDatasources!) {
+            nodes.push({
+                ObjectID: item.ObjectID,
+                Id: item.Name,
+                Name: item.Name,
+                Component: Settings.ComponentNames.SharedJdbcDatasources,
+                toMigrationTask_ObjectID: this.Task.ObjectID
+            })
+        }
+
+        for (let item of Tenant.toSharedOAuth2AuthorizationCodes!) {
+            nodes.push({
+                ObjectID: item.ObjectID,
+                Id: item.Name,
+                Name: item.Name,
+                Component: Settings.ComponentNames.SharedOAuth2AuthorizationCodes,
+                toMigrationTask_ObjectID: this.Task.ObjectID
+            })
+        }
+
+        for (let item of Tenant.toSharedKnownHosts!) {
+            nodes.push({
+                ObjectID: item.ObjectID,
+                Id: item.Name,
+                Name: item.Name,
+                Component: Settings.ComponentNames.SharedKnownHosts,
+                toMigrationTask_ObjectID: this.Task.ObjectID
+            })
+        }
+
         info(`${nodes.length} migration task nodes generated`)
         return nodes
     }
@@ -248,6 +347,42 @@ export default class MigrationTaskHelper {
                         node.ExistInSource = SourceTenant.toDataStores!.findIndex(x => x.DataStoreName == node.Id) >= 0
                         node.ExistInTarget = TargetTenant.toDataStores!.findIndex(x => x.DataStoreName == node.Id) >= 0
                         break
+                    case Settings.ComponentNames.SharedUserCredentials: // new security artifact
+                        node.ExistInSource = true
+                        node.ExistInTarget = false
+                        break
+                    case Settings.ComponentNames.SharedSecureParameters: // new security artifact
+                        node.ExistInSource = true
+                        node.ExistInTarget = false
+                        break
+                    case Settings.ComponentNames.SharedOAuth2ClientCredentials: // new security artifact
+                        node.ExistInSource = true
+                        node.ExistInTarget = false
+                        break
+                    case Settings.ComponentNames.SharedOAuth2SAMLBearerAssertions: // new security artifact
+                        node.ExistInSource = true
+                        node.ExistInTarget = false
+                        break
+                    case Settings.ComponentNames.SharedKeystores: // new security artifact
+                        node.ExistInSource = true
+                        node.ExistInTarget = false
+                        break
+                    case Settings.ComponentNames.SharedPgpKeys: // new security artifact
+                        node.ExistInSource = true
+                        node.ExistInTarget = false
+                        break
+                    case Settings.ComponentNames.SharedJdbcDatasources: // new security artifact
+                        node.ExistInSource = true
+                        node.ExistInTarget = false
+                        break
+                    case Settings.ComponentNames.SharedOAuth2AuthorizationCodes: // new security artifact
+                        node.ExistInSource = true
+                        node.ExistInTarget = false
+                        break
+                    case Settings.ComponentNames.SharedKnownHosts: // new security artifact
+                        node.ExistInSource = true
+                        node.ExistInTarget = false
+                        break
                     default:
                         break
                 }
@@ -259,6 +394,46 @@ export default class MigrationTaskHelper {
             warn(`This task contains ${includedItemsNoLongerInSource} items which do not exist in the source tenant anymore. Refresh needed.`)
         }
         return includedItemsNoLongerInSource
+    }
+
+    public checkSecurityArtifactsCompatibility = () => {
+        const warnings: string[] = [];
+
+        const checks: Array<{ individual: string; shared: string; message: string }> = [
+            {
+                individual: Settings.ComponentNames.KeyStoreEntry,
+                shared: Settings.ComponentNames.SharedKeystores,
+                message: `Individual Keystore items and Shared Keystores are included at the same time. Please select either individual items or 'All Keystores' item.`
+            },
+            {
+                individual: Settings.ComponentNames.OAuthCredential,
+                shared: Settings.ComponentNames.SharedOAuth2ClientCredentials,
+                message: `Individual OAuth2 Client Credential items and Shared OAuth2 Client Credentials are included at the same time. Please select either individual items or 'All OAuth Client Credentials' item.`
+            },
+            {
+                individual: Settings.ComponentNames.Credentials,
+                shared: Settings.ComponentNames.SharedUserCredentials,
+                message: `Individual User Credential items and Shared User Credentials are included at the same time. Please select either individual items or 'All User Credentials' item.`
+            }
+        ]
+
+        for (const check of checks) {
+            const warning = this.checkCompatibility(check.individual, check.shared, check.message);
+            warning && warnings.push(warning);
+        }
+
+        return warnings;
+    }
+
+    private checkCompatibility = (individualComponent: string, sharedComponent: string, message: string): string | undefined => {
+        if (!this.Task.toTaskNodes) return;
+
+        const individualIncluded = this.Task.toTaskNodes.some(task => task.Component === individualComponent);
+        const sharedIncluded = this.Task.toTaskNodes.some(task => task.Component === sharedComponent);
+
+        if (individualIncluded && sharedIncluded) {
+            return message;
+        }
     }
 
 }

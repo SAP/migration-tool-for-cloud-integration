@@ -92,6 +92,7 @@ service ConfigService {
             Oauth_clientid,
             Oauth_secret,
             Oauth_servicekeyid,
+            CF_target_certificate_alias,
             CF_organizationID,
             CF_organizationName,
             CF_spaceID,
@@ -256,9 +257,19 @@ service ConfigService {
             ValidUntil,
             ValidUntilCriticality;
 
-    entity CertificateUserMappingRoles     as projection on db.extCertificateUserMappingRoles;
-    entity DataStores                      as projection on db.extDataStores;
-    entity DataStoreEntries                as projection on db.extDataStoreEntries;
+    entity CertificateUserMappingRoles      as projection on db.extCertificateUserMappingRoles;
+    entity DataStores                       as projection on db.extDataStores;
+    entity DataStoreEntries                 as projection on db.extDataStoreEntries;
+    entity SharedUserCredentials            as projection on db.extSharedUserCredentials;            //new security artifact
+    entity SharedSecureParameters           as projection on db.extSharedSecureParameters;           //new security artifact
+    entity SharedOAuth2ClientCredentials    as projection on db.extSharedOAuth2ClientCredentials;    //new security artifact
+    entity SharedOAuth2SAMLBearerAssertions as projection on db.extSharedOAuth2SAMLBearerAssertions; //new security artifact
+    entity SharedKeystores                  as projection on db.extSharedKeystores;                  //new security artifact
+    entity SharedPgpKeys                    as projection on db.extSharedPgpKeys;                    //new security artifact
+    entity SharedJdbcDatasource             as projection on db.extSharedJdbcDatasources;            //new security artifact
+    entity SharedOAuth2AuthorizationCodes   as projection on db.extSharedOAuth2AuthorizationCodes;   //new security artifact
+    entity SharedKnownHosts                 as projection on db.extSharedKnownHosts;                 //new security artifact
+
 
     @sap.deletable: false
     entity Errors                          as projection on db.Errors;
@@ -284,7 +295,7 @@ service ConfigService {
                     (
                             n.Included  =  true
                         and n.Component in (
-                            'Keystore', 'User Credential', 'oAuth Credential', 'Access Policy', 'Certificate User Mapping'
+                            'Keystore', 'User Credential', 'oAuth Credential', 'Access Policy', 'Certificate User Mapping', 'Secure Parameters', 'oAuth SAMLBearerAssertions', 'PGP Keys', 'JDBC Datasources', 'oAuth AuthorizationCodes', 'Known Hosts'
                         )
                         and t.ObjectID  =  n.toMigrationTask.ObjectID
                     )

@@ -54,6 +54,15 @@ import {
     extValueMappingDesigntimeArtifacts,
     extVariable,
     extVariables,
+    extSharedUserCredentials,            //new security artifact
+    extSharedSecureParameters,           //new security artifact
+    extSharedOAuth2ClientCredentials,    //new security artifact
+    extSharedOAuth2SAMLBearerAssertions, //new security artifact
+    extSharedKeystores,                  //new security artifact
+    extSharedPgpKeys,                    //new security artifact
+    extSharedJdbcDatasources,            //new security artifact
+    extSharedOAuth2AuthorizationCodes,   //new security artifact
+    extSharedKnownHosts,                 //new security artifact
     Errors,
     Tenant,
     Tenants
@@ -168,6 +177,16 @@ export default class ContentDownloader {
             await this.getJMSBrokers().then(n => this.NumberOfItems += n)
             this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem) // 10
         }
+
+        await this.getSharedUserCredentials()            // new security artifact 
+        await this.getSharedSecureParameters()           // new security artifact
+        await this.getSharedOAuth2ClientCredentials()    // new security artifact 
+        await this.getSharedOAuth2SAMLBearerAssertions() // new security artifact 
+        await this.getSharedKeystores()                  // new security artifact 
+        await this.getSharedPgpKeys()                    // new security artifact 
+        await this.getSharedJdbcDatasources()            // new security artifact 
+        await this.getSharedOAuth2AuthorizationCodes()   // new security artifact 
+        await this.getSharedKnownHosts()                 // new security artifact 
 
         await this.generateLimitationNotices()
         this.setIntegrationContentStatusProgressIncrease(IntegrationContentStatusProgressPerItem) // 11
@@ -444,7 +463,7 @@ export default class ContentDownloader {
         const itemsSupported = items.filter(x => x.Type == 'Certificate')
         if (items.length > itemsSupported.length) {
             const notSupported = items.filter(x => !itemsSupported.includes(x)).map(x => x.Alias)
-            await this.createError(TErrorComponentName.KeystoreEntry, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + notSupported.length + ' keystore entries which are not supported for migration: ' + notSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument)
+            await this.createError(TErrorComponentName.KeystoreEntry, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + notSupported.length + ' keystore entries which are not supported for individual migration: ' + notSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument + ' Migration of shared artifacts is still possible')
         }
 
         this.removeInvalidParameters(Entities.extKeyStoreEntries, itemsSupported)
@@ -528,7 +547,7 @@ export default class ContentDownloader {
         const itemsSupported = items.filter(x => (x.Kind == 'default' || x.Kind == 'successfactors'))
         const itemsNotSupported = items.filter(x => (!itemsSupported.includes(x) && (!OAuth2ClientCredentialsList.includes(x.Name!)))).map(x => x.Name)
         if (itemsNotSupported.length > 0) {
-            await this.createError(TErrorComponentName.UserCredential, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + itemsNotSupported.length + ' user credential(s) which are not supported for migration: ' + itemsNotSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument)
+            await this.createError(TErrorComponentName.UserCredential, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + itemsNotSupported.length + ' user credential(s) which are not supported for individual migration: ' + itemsNotSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument + ' Migration of shared artifacts is still possible')
         }
         itemsSupported.forEach(x => ContentDownloader.fixSecurityArtifactDescriptor(x))
         await this.checkUserCredentials(itemsSupported)
@@ -735,6 +754,159 @@ export default class ContentDownloader {
     }
     private checkJMSBrokers = async (item: extJMSBroker) => {
         // await this.createError('JMS Broker', 'Prototype Limitation', item, 'This tenant contains a JMS Broker which is not supported in this prototype. Usage = ' + item.QueueNumber + '/' + item.MaxQueueNumber)
+    }
+
+    private getSharedUserCredentials = async (): Promise<number> => {
+        info('getSharedUserCredentials ' + this.Tenant.ObjectID)
+        try {
+            await DELETE.from(extSharedUserCredentials).where({ 'toParent_ObjectID': this.Tenant.ObjectID })
+            const item = {
+                Name: 'All User Credentials',
+                Description: 'This component represents the common User Credentials, indicating that the source tenant contains one or more (1-n) User Credential artifacts',
+                toParent_ObjectID: this.Tenant.ObjectID
+            };
+            await INSERT(item).into(extSharedUserCredentials)
+            return 1;
+        } catch (error) {
+            info(error); 
+            throw error
+        }
+    }
+
+    private getSharedSecureParameters = async (): Promise<number> => {
+        info('getSharedSecureParameters ' + this.Tenant.ObjectID)
+        try {
+            await DELETE.from(extSharedSecureParameters).where({ 'toParent_ObjectID': this.Tenant.ObjectID })
+            const item = {
+                Name: 'All Secure Parameters',
+                Description: 'This component represents the common Secure Parameters, indicating that the source tenant contains one or more (1-n) Secure Parameter artifacts',
+                toParent_ObjectID: this.Tenant.ObjectID
+            };
+            await INSERT(item).into(extSharedSecureParameters)
+            return 1;
+        } catch (error) {
+            info(error); 
+            throw error
+        }
+    }
+    
+    private getSharedOAuth2ClientCredentials = async (): Promise<number> => {
+        info('getSharedOAuth2ClientCredentials ' + this.Tenant.ObjectID)
+        try {
+            await DELETE.from(extSharedOAuth2ClientCredentials).where({ 'toParent_ObjectID': this.Tenant.ObjectID })
+            const item = {
+                Name: 'All OAuth Client Credentials',
+                Description: 'This component represents the common OAuth2 Client Credentials, indicating that the source tenant contains one or more (1-n) OAuth2 Client Credential artifacts',
+                toParent_ObjectID: this.Tenant.ObjectID
+            };
+            await INSERT(item).into(extSharedOAuth2ClientCredentials)
+            return 1;
+        } catch (error) {
+            info(error); 
+            throw error
+        }
+    }
+
+    private getSharedOAuth2SAMLBearerAssertions = async (): Promise<number> => {
+        info('getSharedOAuth2SAMLBearerAssertions ' + this.Tenant.ObjectID)
+        try {
+            await DELETE.from(extSharedOAuth2SAMLBearerAssertions).where({ 'toParent_ObjectID': this.Tenant.ObjectID })
+            const item = {
+                Name: 'All OAuth SAMLBearerAssertions',
+                Description: 'This component represents the common OAuth2 SAML Bearer Assertions, indicating that the source tenant contains one or more (1-n) OAuth2 SAML Bearer Assertion artifacts',
+                toParent_ObjectID: this.Tenant.ObjectID
+            };
+            await INSERT(item).into(extSharedOAuth2SAMLBearerAssertions)
+            return 1;
+        } catch (error) {
+            info(error); 
+            throw error
+        }
+    }
+
+    private getSharedKeystores = async (): Promise<number> => {
+        info('getSharedKeystores ' + this.Tenant.ObjectID)
+        try {
+            await DELETE.from(extSharedKeystores).where({ 'toParent_ObjectID': this.Tenant.ObjectID })
+            const item = {
+                Name: 'All Keystores',
+                Description: 'This component represents the common Keystores, indicating that the source tenant contains one or more (1-n) Keystore artifacts',
+                toParent_ObjectID: this.Tenant.ObjectID
+            };
+            await INSERT(item).into(extSharedKeystores)
+            return 1;
+        } catch (error) {
+            info(error); 
+            throw error
+        }
+    }
+
+    private getSharedPgpKeys = async (): Promise<number> => {
+        info('getSharedPgpKeys ' + this.Tenant.ObjectID)
+        try {
+            await DELETE.from(extSharedPgpKeys).where({ 'toParent_ObjectID': this.Tenant.ObjectID })
+            const item = {
+                Name: 'All PGP Keys',
+                Description: 'This component represents the common PGP Keys, indicating that the source tenant contains one or more (1-n) PGP Key artifacts',
+                toParent_ObjectID: this.Tenant.ObjectID
+            };
+            await INSERT(item).into(extSharedPgpKeys)
+            return 1;
+        } catch (error) {
+            info(error); 
+            throw error
+        }
+    }
+
+    private getSharedJdbcDatasources = async (): Promise<number> => {
+        info('getSharedJdbcDatasources ' + this.Tenant.ObjectID)
+        try {
+            await DELETE.from(extSharedJdbcDatasources).where({ 'toParent_ObjectID': this.Tenant.ObjectID })
+            const item = {
+                Name: 'All JDBC Datasources',
+                Description: 'This component represents the common JDBC Datasources, indicating that the source tenant contains one or more (1-n) JDBC Datasource artifacts',
+                toParent_ObjectID: this.Tenant.ObjectID
+            };
+            await INSERT(item).into(extSharedJdbcDatasources)
+            return 1;
+        } catch (error) {
+            info(error); 
+            throw error
+        }
+    }
+
+    private getSharedOAuth2AuthorizationCodes = async (): Promise<number> => {
+        info('getSharedOAuth2AuthorizationCodes ' + this.Tenant.ObjectID)
+        try {
+            await DELETE.from(extSharedOAuth2AuthorizationCodes).where({ 'toParent_ObjectID': this.Tenant.ObjectID })
+            const item = {
+                Name: 'All oAuth AuthorizationCodes',
+                Description: 'This component represents the common OAuth2 AuthorizationCodes, indicating that the source tenant contains one or more (1-n) OAuth2 Authorization Code artifacts',
+                toParent_ObjectID: this.Tenant.ObjectID
+            };
+            await INSERT(item).into(extSharedOAuth2AuthorizationCodes)
+            return 1;
+        } catch (error) {
+            info(error); 
+            throw error
+        }
+    }
+
+    private getSharedKnownHosts = async (): Promise<number> => {
+        info('getSharedKnownHosts ' + this.Tenant.ObjectID)
+        try {
+            await DELETE.from(extSharedKnownHosts).where({ 'toParent_ObjectID': this.Tenant.ObjectID })
+            const item = {
+                Name: 'All Known Hosts',
+                Description: 'This component represents the common Known Hosts, indicating that the source tenant contains one or more (1-n) Known Host artifacts',
+                toParent_ObjectID: this.Tenant.ObjectID
+            };
+            await INSERT(item).into(extSharedKnownHosts)
+            return 1;
+        } catch (error) {
+            info(error); 
+            throw error
+        }
     }
 
     private getAccessPolicies = async (filter?: string[], oppositeFilter?: boolean): Promise<number> => {

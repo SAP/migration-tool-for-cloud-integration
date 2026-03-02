@@ -268,6 +268,96 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
                     Sign   : #I,
                     Option : #EQ,
                     Low    : 'Certificate User Mapping'
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Secure Parameters'
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'oAuth SAMLBearerAssertions'
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'PGP Keys'
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'JDBC Datasources'
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'oAuth AuthorizationCodes'
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Known Hosts'
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Shared User Credentials' // new security artifact
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Shared Secure Parameters' // new security artifact
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Shared oAuth Client Credentials' // new security artifact
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Shared oAuth SAMLBearerAssertions' // new security artifact
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Shared Keystores' // new security artifact
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Shared PGP Keys' // new security artifact
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Shared JDBC Datasources' // new security artifact
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Shared oAuth AuthorizationCodes' // new security artifact
+                },
+                {
+                    $Type  : 'UI.SelectionRangeType',
+                    Sign   : #I,
+                    Option : #EQ,
+                    Low    : 'Shared Known Hosts' // new security artifact
                 }
             ]
         }]

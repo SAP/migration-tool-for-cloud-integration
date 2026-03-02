@@ -100,60 +100,79 @@ entity Errors {
 
 // Tenants ---------------------------------------------------------------
 entity Tenants : managed {
-    key     ObjectID                      : UUID        @Core.Computed  @Common.Text: Name;
-            Name                          : String(255);
-            Host                          : String(255);
-            Token_host                    : String(255);
-            Oauth_clientid                : String(255);
-            Oauth_secret                  : String(255);
-            Oauth_servicekeyid            : String(255);
-            CF_organizationID             : String(255);
-            CF_organizationName           : String(255);
-            CF_spaceID                    : String(255);
-            CF_spaceName                  : String(255);
-            CF_servicePlanID              : String(255);
-            Neo_accountid                 : String(255);
-            Neo_Platform_domain           : String(255);
-            Neo_Platform_user             : String(255);
-            Neo_Platform_password         : String(255);
-            CF_Platform_domain            : String(255);
-            CF_Platform_user              : String(255);
-            CF_Platform_password          : String(255);
-            UseForCertificateUserMappings : Boolean;
-            Role                          : String(255);
-            Environment                   : String(255);
-            RefreshedDate                 : DateTime;
-            ReadOnly                      : Boolean default false;
-    virtual ReadOnlyText                  : String(255);
-    virtual ErrorsText                    : String(255) @Core.Computed;
-    virtual ErrorsCriticality             : CriticalityType;
-    virtual NumberOfErrors                : Integer     @Core.Computed;
-            toMigrationTasks              : Association to many MigrationTasks
-                                                on toMigrationTasks.SourceTenant = $self;
-            toErrors                      : Composition of many Errors
-                                                on toErrors.toParent = ObjectID;
-            toIntegrationPackages         : Composition of many extIntegrationPackages
-                                                on toIntegrationPackages.toParent = $self;
-            toKeyStoreEntries             : Composition of many extKeyStoreEntries
-                                                on toKeyStoreEntries.toParent = $self;
-            toUserCredentials             : Composition of many extUserCredentials
-                                                on toUserCredentials.toParent = $self;
-            toCustomTagConfigurations     : Composition of many extCustomTagConfigurations
-                                                on toCustomTagConfigurations.toParent = $self;
-            toNumberRanges                : Composition of many extNumberRanges
-                                                on toNumberRanges.toParent = $self;
-            toOAuth2ClientCredentials     : Composition of many extOAuth2ClientCredentials
-                                                on toOAuth2ClientCredentials.toParent = $self;
-            toAccessPolicies              : Composition of many extAccessPolicies
-                                                on toAccessPolicies.toParent = $self;
-            toJMSBrokers                  : Composition of many extJMSBrokers
-                                                on toJMSBrokers.toParent = $self;
-            toVariables                   : Composition of many extVariables
-                                                on toVariables.toParent = $self;
-            toCertificateUserMappings     : Composition of many extCertificateUserMappings
-                                                on toCertificateUserMappings.toParent = $self;
-            toDataStores                  : Composition of many extDataStores
-                                                on toDataStores.toParent = $self;
+    key     ObjectID                            : UUID        @Core.Computed  @Common.Text: Name;
+            Name                                : String(255);
+            Host                                : String(255);
+            Token_host                          : String(255);
+            Oauth_clientid                      : String(255);
+            Oauth_secret                        : String(255);
+            Oauth_servicekeyid                  : String(255);
+            CF_target_certificate_alias         : String(255);
+            CF_organizationID                   : String(255);
+            CF_organizationName                 : String(255);
+            CF_spaceID                          : String(255);
+            CF_spaceName                        : String(255);
+            CF_servicePlanID                    : String(255);
+            Neo_accountid                       : String(255);
+            Neo_Platform_domain                 : String(255);
+            Neo_Platform_user                   : String(255);
+            Neo_Platform_password               : String(255);
+            CF_Platform_domain                  : String(255);
+            CF_Platform_user                    : String(255);
+            CF_Platform_password                : String(255);
+            UseForCertificateUserMappings       : Boolean;
+            Role                                : String(255);
+            Environment                         : String(255);
+            RefreshedDate                       : DateTime;
+            ReadOnly                            : Boolean default false;
+    virtual ReadOnlyText                        : String(255);
+    virtual ErrorsText                          : String(255) @Core.Computed;
+    virtual ErrorsCriticality                   : CriticalityType;
+    virtual NumberOfErrors                      : Integer     @Core.Computed;
+            toMigrationTasks                    : Association to many MigrationTasks
+                                                        on toMigrationTasks.SourceTenant = $self;
+            toErrors                            : Composition of many Errors
+                                                        on toErrors.toParent = ObjectID;
+            toIntegrationPackages               : Composition of many extIntegrationPackages
+                                                        on toIntegrationPackages.toParent = $self;
+            toKeyStoreEntries                   : Composition of many extKeyStoreEntries
+                                                        on toKeyStoreEntries.toParent = $self;
+            toUserCredentials                   : Composition of many extUserCredentials
+                                                        on toUserCredentials.toParent = $self;
+            toCustomTagConfigurations           : Composition of many extCustomTagConfigurations
+                                                        on toCustomTagConfigurations.toParent = $self;
+            toNumberRanges                      : Composition of many extNumberRanges
+                                                        on toNumberRanges.toParent = $self;
+            toOAuth2ClientCredentials           : Composition of many extOAuth2ClientCredentials
+                                                        on toOAuth2ClientCredentials.toParent = $self;
+            toAccessPolicies                    : Composition of many extAccessPolicies
+                                                        on toAccessPolicies.toParent = $self;
+            toJMSBrokers                        : Composition of many extJMSBrokers
+                                                        on toJMSBrokers.toParent = $self;
+            toVariables                         : Composition of many extVariables
+                                                    on toVariables.toParent = $self;
+            toCertificateUserMappings           : Composition of many extCertificateUserMappings
+                                                    on toCertificateUserMappings.toParent = $self;
+            toDataStores                        : Composition of many extDataStores
+                                                    on toDataStores.toParent = $self;
+            toSharedUserCredentials             : Composition of many extSharedUserCredentials            // new security artifact
+                                                    on toSharedUserCredentials.toParent = $self;
+            toSharedSecureParameters            : Composition of many extSharedSecureParameters           // new security artifact
+                                                    on toSharedSecureParameters.toParent = $self;
+            toSharedOAuth2ClientCredentials     : Composition of many extSharedOAuth2ClientCredentials    // new security artifact
+                                                    on toSharedOAuth2ClientCredentials.toParent = $self;
+            toSharedOAuth2SAMLBearerAssertions  : Composition of many extSharedOAuth2SAMLBearerAssertions // new security artifact
+                                                    on toSharedOAuth2SAMLBearerAssertions.toParent = $self;
+            toSharedKeystores                   : Composition of many extSharedKeystores                  // new security artifact
+                                                    on toSharedKeystores.toParent = $self;
+            toSharedPgpKeys                     : Composition of many extSharedPgpKeys                    // new security artifact
+                                                    on toSharedPgpKeys.toParent = $self;
+            toSharedJdbcDatasources             : Composition of many extSharedJdbcDatasources            // new security artifact
+                                                    on toSharedJdbcDatasources.toParent = $self;
+            toSharedOAuth2AuthorizationCodes    : Composition of many extSharedOAuth2AuthorizationCodes   // new security artifact
+                                                    on toSharedOAuth2AuthorizationCodes.toParent = $self;
+            toSharedKnownHosts                  : Composition of many extSharedKnownHosts                 // new security artifact
+                                                    on toSharedKnownHosts.toParent = $self;
 }
 
 // Integration Packages -----------------------------------------------------
@@ -440,6 +459,79 @@ entity extDataStoreEntries {
         CreatedAt   : DateTime;
         RetainUntil : DateTime;
 }
+
+// Shared User Credentials --------------------------------------------------------------------------
+entity extSharedUserCredentials {
+    key ObjectID : UUID @Core.Computed;
+        toParent: Association to one Tenants;
+        Name: String(255);
+        Description: String(255);
+}
+
+// Shared Secure Parameters --------------------------------------------------------------------------
+entity extSharedSecureParameters {
+    key ObjectID : UUID @Core.Computed;
+        toParent: Association to one Tenants;
+        Name: String(255);
+        Description: String(255);
+}
+
+// Shared OAuth2ClientCredentials --------------------------------------------------------------------------
+entity extSharedOAuth2ClientCredentials {
+    key ObjectID : UUID @Core.Computed;
+        toParent: Association to one Tenants;
+        Name: String(255);
+        Description: String(255);
+}
+
+// Shared OAuth2SAMLBearerAssertions -----------------------------------------------------------------
+entity extSharedOAuth2SAMLBearerAssertions {
+    key ObjectID : UUID @Core.Computed;
+        toParent: Association to one Tenants;
+        Name: String(255);
+        Description: String(255);
+}
+
+// Shared Keystores -----------------------------------------------------------------
+entity extSharedKeystores {
+    key ObjectID : UUID @Core.Computed;
+        toParent: Association to one Tenants;
+        Name: String(255);
+        Description: String(255);
+}
+
+// Shared PGP Keys -----------------------------------------------------------------------------------
+entity extSharedPgpKeys {
+    key ObjectID : UUID @Core.Computed;
+        toParent: Association to one Tenants;
+        Name: String(255);
+        Description: String(255);
+}
+
+// Shared JDBC Datasources ----------------------------------------------------------------------------
+entity extSharedJdbcDatasources {
+    key ObjectID : UUID @Core.Computed;
+        toParent: Association to one Tenants;
+        Name: String(255);
+        Description: String(255);
+}
+
+// Shared OAuth2AuthorizationCodes --------------------------------------------------------------------
+entity extSharedOAuth2AuthorizationCodes {
+    key ObjectID : UUID @Core.Computed;
+        toParent: Association to one Tenants;
+        Name: String(255);
+        Description: String(255);
+}
+
+// Shared Known Hosts ---------------------------------------------------------------------------------
+entity extSharedKnownHosts {
+    key ObjectID : UUID @Core.Computed;
+        toParent: Association to one Tenants;
+        Name: String(255);
+        Description: String(255);
+}
+
 
 
 // Migration Tasks ------------------------------------------------------------------------------------

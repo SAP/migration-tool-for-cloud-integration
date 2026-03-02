@@ -63,6 +63,23 @@ type TMigrationContent = {
     GlobalDataStores?: string[]
     DesignTimeArtifacts?: string[]
     ValueMappingDesigntimeArtifacts?: string[]
+    SharedUserCredentials?: string[]            //new security artifact
+    SharedSecureParameters?: string[]           //new security artifact
+    SharedOAuth2ClientCredentials?: string[]    //new security artifact
+    SharedOAuth2SAMLBearerAssertions?: string[] //new security artifact
+    SharedKeystores?: string[]                  //new security artifact
+    SharedPgpKeys?: string[]                    //new security artifact
+    SharedJdbcDatasources?: string[]            //new security artifact
+    SharedOAuth2AuthorizationCodes?: string[]   //new security artifact
+    SharedKnownHosts?: string[]                 //new security artifact
+
+}
+
+type TSecurityContentTransportPayload = {
+    TaskId: string
+    Type: string
+    TargetCertificateAlias: string
+    Mode: string
 }
 
 export default class MigrationJobHelper {
@@ -175,6 +192,16 @@ export default class MigrationJobHelper {
             this.MigrationContent.GlobalVariables = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Variables && x.Included)).map(x => x.Id!)
             this.MigrationContent.CertificateUserMappings = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.CertificateUserMappings && x.Included)).map(x => x.Id!)
             this.MigrationContent.GlobalDataStores = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.DataStores && x.Included)).map(x => x.Id!)
+            this.MigrationContent.SharedUserCredentials = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedUserCredentials && x.Included)).map(x => x.Id!)                       // new security artifact
+            this.MigrationContent.SharedSecureParameters = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedSecureParameters && x.Included)).map(x => x.Id!)                     // new security artifact
+            this.MigrationContent.SharedOAuth2ClientCredentials = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedOAuth2ClientCredentials && x.Included)).map(x => x.Id!)   // new security artifact
+            this.MigrationContent.SharedOAuth2SAMLBearerAssertions = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedOAuth2SAMLBearerAssertions && x.Included)).map(x => x.Id!) // new security artifact
+            this.MigrationContent.SharedKeystores = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedKeystores && x.Included)).map(x => x.Id!)                                   // new security artifact
+            this.MigrationContent.SharedPgpKeys = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedPgpKeys && x.Included)).map(x => x.Id!)                                       // new security artifact
+            this.MigrationContent.SharedJdbcDatasources = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedJdbcDatasources && x.Included)).map(x => x.Id!)                       // new security artifact
+            this.MigrationContent.SharedOAuth2AuthorizationCodes = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedOAuth2AuthorizationCodes && x.Included)).map(x => x.Id!)     // new security artifact
+            this.MigrationContent.SharedKnownHosts = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedKnownHosts && x.Included)).map(x => x.Id!)                                 // new security artifact
+
 
             const packagesInScope = [...this.MigrationContent.IntegrationPackages, ...this.MigrationContent.IntegrationPackagesConfigOnly]
             this.MigrationContent.DesignTimeArtifacts = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Flow && packagesInScope.includes(x.PackageId!))).map(x => x.Id!)
@@ -200,6 +227,13 @@ export default class MigrationJobHelper {
             await this.migrateAccessPolicies()
 
             await this.migrateJMSBrokers()
+
+            await this.migrateSharedSecurityContent()         // new security artifact
+            await this.migrateSharedKeyStore()                // new security artifact
+            await this.migrateSharedPgpKeys()                 // new security artifact
+            await this.migrateSharedJdbcDatasource()          // new security artifact
+            await this.migrateSharedOAuth2AuthorizationCode() // new security artifact
+            await this.migrateSharedKnownHosts()              // new security artifact
 
             return true
         } catch (error: any) {
@@ -1233,6 +1267,173 @@ export default class MigrationJobHelper {
         }
         return deployStatus
     }
+
+    private migrateSharedSecurityContent = async (): Promise<void> => {
+        await this.addLogEntry(1, 'SHARED SECURITY CONTENT:');
+        const securityArtifactTypes = [];
+
+        if (this.MigrationContent.SharedUserCredentials!.length > 0) {
+            securityArtifactTypes.push('userCredentials')
+        }
+
+        if (this.MigrationContent.SharedSecureParameters!.length > 0) {
+            securityArtifactTypes.push('secureParameter')
+        }
+
+        if (this.MigrationContent.SharedOAuth2ClientCredentials!.length > 0) {
+            securityArtifactTypes.push('oAuth2ClientCredentials')
+        }
+
+        if (this.MigrationContent.SharedOAuth2SAMLBearerAssertions!.length > 0) {
+            securityArtifactTypes.push('oAuth2SAMLBearerAssertion')
+        }
+
+        if (securityArtifactTypes.length > 0) {
+            const type = securityArtifactTypes.join(', ');
+            await this.migrateSecurityArtifacts(type);
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateSharedKeyStore = async (): Promise<void> => {
+        await this.addLogEntry(1, 'SHARED KEYSTORES:');
+        if (this.MigrationContent.SharedKeystores!.length > 0) {
+            const type = 'keystore'
+            await this.migrateSecurityArtifacts(type);
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateSharedPgpKeys = async (): Promise<void> => {
+        await this.addLogEntry(1, 'SHARED PGP KEYS:');
+        if (this.MigrationContent.SharedPgpKeys!.length > 0) {
+            const type = 'pgpKeys'
+            await this.migrateSecurityArtifacts(type);
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateSharedJdbcDatasource = async (): Promise<void> => {
+        await this.addLogEntry(1, 'SHARED JDBC DATASOURCES:');
+        if (this.MigrationContent.SharedJdbcDatasources!.length > 0) {
+            const type = 'jdbcDatasource'
+            await this.migrateSecurityArtifacts(type);
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateSharedOAuth2AuthorizationCode = async (): Promise<void> => {
+        await this.addLogEntry(1, 'SHARED OAUTH2 AUTHORIZATION CODES:');
+        if (this.MigrationContent.SharedOAuth2AuthorizationCodes!.length > 0) {
+            const type = 'oAuth2AuthorizationCode'
+            await this.migrateSecurityArtifacts(type);
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateSharedKnownHosts = async (): Promise<void> => {
+        await this.addLogEntry(1, 'SHARED KNOWN HOSTS:');
+        if (this.MigrationContent.SharedKnownHosts!.length > 0) {
+            const type = 'knownHosts'
+            await this.migrateSecurityArtifacts(type);
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateSecurityArtifacts = async (type: string) => {
+        await this.addLogEntry(2, 'Migrate Security Artifacts:')
+        const securityContentTransportsPayload = {
+            TaskId: 'dummyId',
+            Type: type,
+            TargetCertificateAlias: this.Task?.TargetTenant?.CF_target_certificate_alias,
+            Mode : "merge"
+        } as TSecurityContentTransportPayload;
+        
+        await this.ConnectorSource?.refreshAuthorizationDetails()
+        const response = await this.ConnectorSource?.externalPostWithCSRF(Settings.Paths.SecurityArtifactsTransport.path, securityContentTransportsPayload);
+
+        const isResponseSuccess = await this.validateMigrateSecurityArtifactsResponse(response, type);
+        if (!isResponseSuccess) {
+            return false
+        }
+
+        const taskId = response?.value?.data?.taskId;
+        await this.pollTaskStatus(taskId, type);
+        return true
+    }
+
+    private validateMigrateSecurityArtifactsResponse = async (response: TResponse | undefined, type: string): Promise<boolean> => {
+        if (!response) {
+            await this.addLogEntry(3, `Task for type '${type}' was not created`)
+            await this.generateError('Security Artifacts', 'Security Artifacts', 'An internal error occured. Please try again')
+            return false
+        }
+        if (response?.code !== 200) {
+            const item = this.getItemFromSecurityArtifactsType(type)
+
+            await this.addLogEntry(3, `Migration task for type '${type}' was not created`)
+
+            if (response?.code === 403) {
+                await this.generateError('Security Artifacts', item, `Operation Forbidden: Security Artifacts migration is not permitted with the current configuration. Ensure all configuration steps have been completed correctly.`)
+            } else {
+                await this.generateError('Security Artifacts', item, `${response.value?.error?.message?.value}`)
+            }
+
+            return false
+        } else {
+            await this.addLogEntry(3, `Migration task for type '${type}' was created`)
+            return true;
+        }
+    }
+
+    private pollTaskStatus = async (taskId: string, type: string): Promise<void> => {
+        return new Promise((res, rej) => {
+            const interval = setInterval(async () => {
+                const response = await this.ConnectorSource?.externalGet(Settings.Paths.SecurityArtifactsTransport.task.replace('{TASK_ID}', taskId))
+                
+                // status code 400 means that the task is still running
+                if (response?.code !== 400) {
+                    const taskState = response?.value?.data?.d.TaskState;
+                    
+                    if (taskState === "ERROR" || taskState === "FAILED") {
+                        const item = this.getItemFromSecurityArtifactsType(type)
+
+                        await this.addLogEntry(3, `Migration task finished with status: ${taskState}`)
+                        await this.generateError('Security Artifacts', item, `Migration task Exception: ${response?.value?.data?.d?.ExceptionThrown}`)
+                        rej()
+                    } else if (taskState === "PARTIAL_SUCCESS") {
+                        const item = this.getItemFromSecurityArtifactsType(type)
+
+                        await this.addLogEntry(3, `Migration task finished with status: ${taskState}`)
+                        await this.generateWarning('Security Artifacts', item, `Artifact Errors: ${response?.value?.data?.d?.ArtifactErrors}. ${response?.value?.data?.d?.Erroneous} artifact(s) were not migrated.`)
+                        rej()
+                    } else {
+                        await this.addLogEntry(3, `Migration task finished with status ${taskState}`)
+                    }
+                    
+                    if(taskState !== 'RUNNING') {
+                        clearInterval(interval);
+                        res()
+                    }
+                }
+            }, 10000);
+        }); 
+    }
+
+    private getItemFromSecurityArtifactsType = (type: string): string => {
+        const securityArtifactTypes = type.split(', ');
+        const securityArtifactItem = securityArtifactTypes[0] as keyof typeof Settings.SharedSecurityArtifactTypeNames;
+        const item = this.Task?.toTaskNodes?.filter(x => (x.Component == Settings.SharedSecurityArtifactTypeNames[securityArtifactItem]))[0]?.Component || 'Security Artifacts'
+        return item
+    }
+
+
     private createCFServiceInstance = async (mapping: extCertificateUserMapping, roles: string[]): Promise<void> => {
         await this.addLogEntry(3, 'Creating service instance for roles: ' + roles.join(', '))
         const body = {

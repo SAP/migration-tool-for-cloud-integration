@@ -2,6 +2,8 @@
 // https://api.hana.ondemand.com/authorization/v1/documentation
 // https://v3-apidocs.cloudfoundry.org/version/3.192.0/index.html#resources
 
+import { SharedUserCredentials } from "#cds-models/ConfigService";
+
 export const Settings = {
     Paths: {
         DeepLinks: {
@@ -116,6 +118,10 @@ export const Settings = {
             CFPath: '/oauth/token?grant_type=client_credentials',
             NeoPath: '/oauth2/api/v1/token?grant_type=client_credentials'
         },
+        CSRFToken: {
+            CFPath: '/api/v1',
+            NeoPath: '/api/v1'
+        },
         CFPlatform: {
             TokenHost: 'uaa.cf.{HOST}',
             GetToken: '/oauth/token',
@@ -133,6 +139,10 @@ export const Settings = {
             Host: 'api.{HOST}',
             Ping: '/',
             TestSettings: '/authorization/v1/accounts/{ACCOUNT_ID}/groups'
+        },
+        SecurityArtifactsTransport: {
+           path: '/api/v1/SecurityContentTransports',
+           task: `/api/v1/SecurityContentTransports('{TASK_ID}')`
         }
     },
 
@@ -149,7 +159,28 @@ export const Settings = {
         JMSBrokers: 'JMS Broker',
         Variables: 'Global Variable',
         CertificateUserMappings: 'Certificate User Mapping',
-        DataStores: 'Global Data Store'
+        DataStores: 'Global Data Store',
+        SharedUserCredentials: 'Shared User Credentials',                      //new security artifact
+        SharedSecureParameters: 'Shared Secure Parameters',                    //new security artifact
+        SharedOAuth2ClientCredentials: 'Shared oAuth Client Credentials',      //new security artifact
+        SharedOAuth2SAMLBearerAssertions: 'Shared oAuth SAMLBearerAssertions', //new security artifact
+        SharedKeystores: 'Shared Keystores',                                   //new security artifact
+        SharedPgpKeys: 'Shared PGP Keys',                                      //new security artifact
+        SharedJdbcDatasources: 'Shared JDBC Datasources',                      //new security artifact
+        SharedOAuth2AuthorizationCodes: 'Shared oAuth AuthorizationCodes',     //new security artifact
+        SharedKnownHosts: 'Shared Known Hosts'                                 //new security artifact
+    },
+
+    SharedSecurityArtifactTypeNames: {
+        userCredentials: 'Shared User Credentials',
+        secureParameter: 'Shared Secure Parameters',
+        oAuth2ClientCredentials: 'Shared oAuth Credentials',
+        oAuth2SAMLBearerAssertion: 'Shared oAuth SAMLBearerAssertions',
+        keystore: 'Shared Keystores',
+        pgpKeys: 'Shared PGP Keys',
+        jdbcDatasource: 'Shared JDBC Datasources',      
+        oAuth2AuthorizationCode: 'Shared oAuth AuthorizationCodes',
+        knownHosts: 'Shared Known Hosts'
     },
 
     DefaultPassword: 'default',

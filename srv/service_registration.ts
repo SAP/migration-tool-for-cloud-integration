@@ -24,6 +24,7 @@ const TenantTableFields = [
     'Token_host',
     'Oauth_clientid',
     'Oauth_secret',
+    'CF_target_certificate_alias',
     'Role',
     'Environment',
     'ReadOnly',

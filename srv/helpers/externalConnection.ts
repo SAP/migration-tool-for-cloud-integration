@@ -16,6 +16,8 @@ export type TResponse = {
 export default class ExternalConnection {
     Tenant: Tenant
     Token: string
+    CSRFToken: string
+    Cookie: string[]
     PlatformToken: string
     Connection: { HostTx: cds.Transaction | null; TokenTx: cds.Transaction | null }
     PlatformConnection: { HostTx: cds.Transaction | null; TokenTx: cds.Transaction | null }
@@ -23,6 +25,8 @@ export default class ExternalConnection {
     constructor(tenant: Tenant) {
         this.Tenant = tenant
         this.Token = ''
+        this.CSRFToken = ''
+        this.Cookie = []
         this.PlatformToken = ''
 
         this.Connection = {
@@ -39,6 +43,12 @@ export default class ExternalConnection {
 
     public refreshIntegrationToken = async (): Promise<void> => {
         this.Token = await this.getOAuthToken()
+    }
+    public refreshAuthorizationDetails = async (): Promise<void> => {
+        const authorizationDetails = await this.getAuthorizationDetailsForSecurityArtifacts()
+        this.CSRFToken = authorizationDetails.csrfToken!
+        this.Cookie = authorizationDetails.cookie!
+        
     }
     public refreshPlatformToken = async (): Promise<void> => {
         if (this.Tenant.Environment == 'Neo') {
@@ -89,6 +99,29 @@ export default class ExternalConnection {
             return response.access_token
         } catch (error: any) {
             throw new Error('Integration Tenant token authentication:<br/><br/>' + error.message.replace(/\{/g, '[').replace(/\}/g, ']'))
+        }
+    }
+    private getAuthorizationDetailsForSecurityArtifacts = async (): Promise<{
+        csrfToken: string | undefined;
+        cookie: string[] | undefined;
+    }> => {
+        const tokenPath = this.Tenant.Environment == 'Neo' ? Settings.Paths.CSRFToken.NeoPath : Settings.Paths.CSRFToken.CFPath
+        try {
+            const request = {
+                baseURL: 'https://' + this.Tenant.Host,
+                method: 'GET',
+                url: tokenPath,
+                headers: {
+                    'Authorization': 'Bearer ' + this.Token,
+                    'x-csrf-token': 'fetch',
+                }
+            }
+            const response =  await this.doAxiosCall(request)
+            const csrfToken = response?.value.headers['x-csrf-token']
+            const cookie = response?.value.headers['set-cookie']
+            return { csrfToken, cookie}
+        } catch (error: any) {
+            throw new Error('Integration CSRF Tenant token:<br/><br/>' + error.message.replace(/\{/g, '[').replace(/\}/g, ']'))
         }
     }
     private getCFPlatformToken = async (): Promise<string> => {
@@ -238,7 +271,19 @@ export default class ExternalConnection {
 
 
     // Generic Axios Calls
-
+    public externalGet = async (query: string): Promise<TResponse> => {
+        const request = {
+            baseURL: 'https://' + this.Tenant.Host,
+            method: 'GET',
+            url: query,
+            headers: {
+                'Authorization': 'Bearer ' + this.Token,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            }
+        }
+        return await this.doAxiosCall(request)
+    }
     public externalDelete = async (query: string): Promise<TResponse> => {
         const request = {
             baseURL: 'https://' + this.Tenant.Host,
@@ -261,7 +306,23 @@ export default class ExternalConnection {
             headers: {
                 'Authorization': 'Bearer ' + this.Token,
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        }
+        return await this.doAxiosCall(request)
+    }
+    public externalPostWithCSRF = async (query: string, body?: any): Promise<TResponse> => {
+        const request = {
+            baseURL: 'https://' + this.Tenant.Host,
+            method: 'POST',
+            url: query,
+            data: body,
+            headers: {
+                'Authorization': 'Bearer ' + this.Token,
+                'Content-Type': 'application/json',
                 'Accept': 'application/json',
+                'X-CSRF-Token': this.CSRFToken,
+                'Cookie': this.Cookie
             }
         }
         return await this.doAxiosCall(request)
