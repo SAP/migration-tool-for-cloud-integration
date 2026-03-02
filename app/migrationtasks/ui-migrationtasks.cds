@@ -273,42 +273,6 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
                     $Type  : 'UI.SelectionRangeType',
                     Sign   : #I,
                     Option : #EQ,
-                    Low    : 'Secure Parameters'
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'oAuth SAMLBearerAssertions'
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'PGP Keys'
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'JDBC Datasources'
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'oAuth AuthorizationCodes'
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'Known Hosts'
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
                     Low    : 'Shared User Credentials' // new security artifact
                 },
                 {
