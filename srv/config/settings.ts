@@ -2,8 +2,6 @@
 // https://api.hana.ondemand.com/authorization/v1/documentation
 // https://v3-apidocs.cloudfoundry.org/version/3.192.0/index.html#resources
 
-import { SharedUserCredentials } from "#cds-models/ConfigService";
-
 export const Settings = {
     Paths: {
         DeepLinks: {

@@ -74,7 +74,7 @@ export default class ExternalConnection {
         ))
     }
 
-    public pingTargetCertificateAlias = async (): Promise<extKeyStoreEntry[]> => {
+    public getNeoKeystoreEntries = async (): Promise<extKeyStoreEntry[]> => {
         return await this.externalCall(Settings.Paths.KeyStoreEntries.path) as extKeyStoreEntry[]
     }
 

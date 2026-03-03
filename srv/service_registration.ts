@@ -158,7 +158,7 @@ export default class RegistrationService extends cds.ApplicationService {
                 }
                 
                 if (Tenant.NEO_target_certificate_alias) {
-                    const keystores = await caller.pingTargetCertificateAlias()
+                    const keystores = await caller.getNeoKeystoreEntries()
                     const success_target_certificate_alias = !!keystores.find(keystore => keystore.Alias === Tenant.NEO_target_certificate_alias)
                     success_target_certificate_alias || req.warn(400, 'Target Certificate Alias ' + Tenant.NEO_target_certificate_alias + ' is missing in ' + Tenant.Name)
                     success &&= success_target_certificate_alias
