@@ -148,9 +148,11 @@ export default class RegistrationService extends cds.ApplicationService {
                 if (Tenant.UseForCertificateUserMappings) {
                     await caller.refreshPlatformToken()
 
-                    const success_pingPlatform = await caller.pingPlatformTenant()
-                    success_pingPlatform ? req.notify(200, 'Platform Account Ping test successful for ' + Tenant.Name) : req.warn(400, 'Platform Account Ping test unsuccessful for ' + Tenant.Name)
-                    success &&= success_pingPlatform
+                    if (Tenant.Environment !== 'Neo') { //Neo API no longer supports a ping on the '/' endpoint
+                        const success_pingPlatform = await caller.pingPlatformTenant()
+                        success_pingPlatform ? req.notify(200, 'Platform Account Ping test successful for ' + Tenant.Name) : req.warn(400, 'Platform Account Ping test unsuccessful for ' + Tenant.Name)
+                        success &&= success_pingPlatform
+                    }
 
                     const success_testPlatform = await caller.testPlatformSettings()
                     success_testPlatform ? req.notify(200, 'Validating Platform Settings successful for ' + Tenant.Name) : req.warn(400, ' Validating Platform Settings unsuccessful for ' + Tenant.Name)
