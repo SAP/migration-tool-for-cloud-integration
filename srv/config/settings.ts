@@ -158,28 +158,68 @@ export const Settings = {
         Variables: 'Global Variable',
         CertificateUserMappings: 'Certificate User Mapping',
         DataStores: 'Global Data Store',
-        SharedUserCredentials: 'Shared User Credentials',                      //new security artifact
-        SharedSecureParameters: 'Shared Secure Parameters',                    //new security artifact
-        SharedOAuth2ClientCredentials: 'Shared oAuth Client Credentials',      //new security artifact
-        SharedOAuth2SAMLBearerAssertions: 'Shared oAuth SAMLBearerAssertions', //new security artifact
-        SharedKeystores: 'Shared Keystores',                                   //new security artifact
-        SharedPgpKeys: 'Shared PGP Keys',                                      //new security artifact
-        SharedJdbcDatasources: 'Shared JDBC Datasources',                      //new security artifact
-        SharedOAuth2AuthorizationCodes: 'Shared oAuth AuthorizationCodes',     //new security artifact
-        SharedKnownHosts: 'Shared Known Hosts'                                 //new security artifact
+        MassSecurityContent: '# Bulk Content'
+        // SharedUserCredentials: 'Shared User Credentials',                      //new security artifact
+        // SharedSecureParameters: 'Shared Secure Parameters',                    //new security artifact
+        // SharedOAuth2ClientCredentials: 'Shared oAuth Client Credentials',      //new security artifact
+        // SharedOAuth2SAMLBearerAssertions: 'Shared oAuth SAMLBearerAssertions', //new security artifact
+        // SharedKeystores: 'Shared Keystores',                                   //new security artifact
+        // SharedPgpKeys: 'Shared PGP Keys',                                      //new security artifact
+        // SharedJdbcDatasources: 'Shared JDBC Datasources',                      //new security artifact
+        // SharedOAuth2AuthorizationCodes: 'Shared oAuth AuthorizationCodes',     //new security artifact
+        // SharedKnownHosts: 'Shared Known Hosts'                                 //new security artifact
     },
 
-    SharedSecurityArtifactTypeNames: {
-        userCredentials: 'Shared User Credentials',
-        secureParameter: 'Shared Secure Parameters',
-        oAuth2ClientCredentials: 'Shared oAuth Credentials',
-        oAuth2SAMLBearerAssertion: 'Shared oAuth SAMLBearerAssertions',
-        keystore: 'Shared Keystores',
-        pgpKeys: 'Shared PGP Keys',
-        jdbcDatasource: 'Shared JDBC Datasources',      
-        oAuth2AuthorizationCode: 'Shared oAuth AuthorizationCodes',
-        knownHosts: 'Shared Known Hosts'
+    MassSecurityContentItems: {
+        AllUserCredentials: {
+            Name: 'All User Credentials',
+            Type: 'userCredentials'
+        },
+        AllSecureParameters: {
+            Name: 'All Secure Parameters',
+            Type: 'secureParameter'
+        },
+        AllOAuth2ClientCredentials: {
+            Name: 'All OAuth Client Credentials',
+            Type: 'oAuth2ClientCredentials'
+        },
+        AllOAuth2SAMLBearerAssertions: {
+            Name: 'All OAuth SAMLBearerAssertions',
+            Type: 'oAuth2SAMLBearerAssertion'
+        },
+        AllKeystores: {
+            Name: 'All Keystores',
+            Type: 'keystore'
+        },
+        AllPGPKeys: {
+            Name: 'All PGP Keys',
+            Type: 'pgpKeys'
+        },
+        AllJDBCDatasources: {
+            Name: 'All JDBC Datasources',
+            Type: 'jdbcDatasource'
+        },
+        AllOAuth2AuthorizationCodes: {
+            Name: 'All OAuth AuthorizationCodes',
+            Type: 'oAuth2AuthorizationCode'
+        },
+        AllKnownHosts: {
+            Name: 'All Known Hosts',
+            Type: 'knownHost'
+        }
     },
+
+    // SharedSecurityArtifactTypeNames: {
+    //     userCredentials: 'Shared User Credentials',
+    //     secureParameter: 'Shared Secure Parameters',
+    //     oAuth2ClientCredentials: 'Shared oAuth Credentials',
+    //     oAuth2SAMLBearerAssertion: 'Shared oAuth SAMLBearerAssertions',
+    //     keystore: 'Shared Keystores',
+    //     pgpKeys: 'Shared PGP Keys',
+    //     jdbcDatasource: 'Shared JDBC Datasources',      
+    //     oAuth2AuthorizationCode: 'Shared oAuth AuthorizationCodes',
+    //     knownHosts: 'Shared Known Hosts'
+    // },
 
     DefaultPassword: 'default',
     Flags: {

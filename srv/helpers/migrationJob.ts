@@ -63,16 +63,15 @@ type TMigrationContent = {
     GlobalDataStores?: string[]
     DesignTimeArtifacts?: string[]
     ValueMappingDesigntimeArtifacts?: string[]
-    SharedUserCredentials?: string[]            //new security artifact
-    SharedSecureParameters?: string[]           //new security artifact
-    SharedOAuth2ClientCredentials?: string[]    //new security artifact
-    SharedOAuth2SAMLBearerAssertions?: string[] //new security artifact
-    SharedKeystores?: string[]                  //new security artifact
-    SharedPgpKeys?: string[]                    //new security artifact
-    SharedJdbcDatasources?: string[]            //new security artifact
-    SharedOAuth2AuthorizationCodes?: string[]   //new security artifact
-    SharedKnownHosts?: string[]                 //new security artifact
-
+    AllUserCredentials?: boolean            //new security artifact
+    AllSecureParameters?: boolean           //new security artifact
+    AllOAuth2ClientCredentials?: boolean    //new security artifact
+    AllOAuth2SAMLBearerAssertions?: boolean //new security artifact
+    AllKeystores?: boolean                  //new security artifact
+    AllPGPKeys?: boolean                    //new security artifact
+    AllJDBCDatasources?: boolean            //new security artifact
+    AllOAuth2AuthorizationCodes?: boolean   //new security artifact
+    AllKnownHosts?: boolean                 //new security artifact
 }
 
 type TSecurityContentTransportPayload = {
@@ -192,15 +191,15 @@ export default class MigrationJobHelper {
             this.MigrationContent.GlobalVariables = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Variables && x.Included)).map(x => x.Id!)
             this.MigrationContent.CertificateUserMappings = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.CertificateUserMappings && x.Included)).map(x => x.Id!)
             this.MigrationContent.GlobalDataStores = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.DataStores && x.Included)).map(x => x.Id!)
-            this.MigrationContent.SharedUserCredentials = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedUserCredentials && x.Included)).map(x => x.Id!)                       // new security artifact
-            this.MigrationContent.SharedSecureParameters = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedSecureParameters && x.Included)).map(x => x.Id!)                     // new security artifact
-            this.MigrationContent.SharedOAuth2ClientCredentials = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedOAuth2ClientCredentials && x.Included)).map(x => x.Id!)   // new security artifact
-            this.MigrationContent.SharedOAuth2SAMLBearerAssertions = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedOAuth2SAMLBearerAssertions && x.Included)).map(x => x.Id!) // new security artifact
-            this.MigrationContent.SharedKeystores = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedKeystores && x.Included)).map(x => x.Id!)                                   // new security artifact
-            this.MigrationContent.SharedPgpKeys = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedPgpKeys && x.Included)).map(x => x.Id!)                                       // new security artifact
-            this.MigrationContent.SharedJdbcDatasources = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedJdbcDatasources && x.Included)).map(x => x.Id!)                       // new security artifact
-            this.MigrationContent.SharedOAuth2AuthorizationCodes = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedOAuth2AuthorizationCodes && x.Included)).map(x => x.Id!)     // new security artifact
-            this.MigrationContent.SharedKnownHosts = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.SharedKnownHosts && x.Included)).map(x => x.Id!)                                 // new security artifact
+            this.MigrationContent.AllUserCredentials = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllUserCredentials.Name && x.Included))
+            this.MigrationContent.AllSecureParameters = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllSecureParameters.Name && x.Included))
+            this.MigrationContent.AllOAuth2ClientCredentials = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllOAuth2ClientCredentials.Name && x.Included))
+            this.MigrationContent.AllOAuth2SAMLBearerAssertions = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllOAuth2SAMLBearerAssertions.Name && x.Included))
+            this.MigrationContent.AllKeystores = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllKeystores.Name && x.Included))
+            this.MigrationContent.AllPGPKeys = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllPGPKeys.Name && x.Included))
+            this.MigrationContent.AllJDBCDatasources = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllJDBCDatasources.Name && x.Included))
+            this.MigrationContent.AllOAuth2AuthorizationCodes = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllOAuth2AuthorizationCodes.Name && x.Included))
+            this.MigrationContent.AllKnownHosts = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllKnownHosts.Name && x.Included))
 
 
             const packagesInScope = [...this.MigrationContent.IntegrationPackages, ...this.MigrationContent.IntegrationPackagesConfigOnly]
@@ -1269,23 +1268,23 @@ export default class MigrationJobHelper {
     }
 
     private migrateSharedSecurityContent = async (): Promise<void> => {
-        await this.addLogEntry(1, 'SHARED SECURITY CONTENT:');
+        await this.addLogEntry(1, 'ALL SECURITY CONTENT:');
         const securityArtifactTypes = [];
 
-        if (this.MigrationContent.SharedUserCredentials!.length > 0) {
-            securityArtifactTypes.push('userCredentials')
+        if (this.MigrationContent.AllUserCredentials) {
+            securityArtifactTypes.push(Settings.MassSecurityContentItems.AllUserCredentials.Type)
         }
 
-        if (this.MigrationContent.SharedSecureParameters!.length > 0) {
-            securityArtifactTypes.push('secureParameter')
+        if (this.MigrationContent.AllSecureParameters) {
+            securityArtifactTypes.push(Settings.MassSecurityContentItems.AllSecureParameters.Type)
         }
 
-        if (this.MigrationContent.SharedOAuth2ClientCredentials!.length > 0) {
-            securityArtifactTypes.push('oAuth2ClientCredentials')
+        if (this.MigrationContent.AllOAuth2ClientCredentials) {
+            securityArtifactTypes.push(Settings.MassSecurityContentItems.AllOAuth2ClientCredentials.Type)
         }
 
-        if (this.MigrationContent.SharedOAuth2SAMLBearerAssertions!.length > 0) {
-            securityArtifactTypes.push('oAuth2SAMLBearerAssertion')
+        if (this.MigrationContent.AllOAuth2SAMLBearerAssertions) {
+            securityArtifactTypes.push(Settings.MassSecurityContentItems.AllOAuth2SAMLBearerAssertions.Type)
         }
 
         if (securityArtifactTypes.length > 0) {
@@ -1297,9 +1296,9 @@ export default class MigrationJobHelper {
     }
 
     private migrateSharedKeyStore = async (): Promise<void> => {
-        await this.addLogEntry(1, 'SHARED KEYSTORES:');
-        if (this.MigrationContent.SharedKeystores!.length > 0) {
-            const type = 'keystore'
+        await this.addLogEntry(1, 'ALL KEYSTORES:');
+        if (this.MigrationContent.AllKeystores) {
+            const type = Settings.MassSecurityContentItems.AllKeystores.Type
             await this.migrateSecurityArtifacts(type);
         } else {
             await this.addLogEntry(2, 'No items to migrate.')
@@ -1307,9 +1306,9 @@ export default class MigrationJobHelper {
     }
 
     private migrateSharedPgpKeys = async (): Promise<void> => {
-        await this.addLogEntry(1, 'SHARED PGP KEYS:');
-        if (this.MigrationContent.SharedPgpKeys!.length > 0) {
-            const type = 'pgpKeys'
+        await this.addLogEntry(1, 'ALL PGP KEYS:');
+        if (this.MigrationContent.AllPGPKeys) {
+            const type = Settings.MassSecurityContentItems.AllPGPKeys.Type
             await this.migrateSecurityArtifacts(type);
         } else {
             await this.addLogEntry(2, 'No items to migrate.')
@@ -1317,9 +1316,9 @@ export default class MigrationJobHelper {
     }
 
     private migrateSharedJdbcDatasource = async (): Promise<void> => {
-        await this.addLogEntry(1, 'SHARED JDBC DATASOURCES:');
-        if (this.MigrationContent.SharedJdbcDatasources!.length > 0) {
-            const type = 'jdbcDatasource'
+        await this.addLogEntry(1, 'ALL JDBC DATASOURCES:');
+        if (this.MigrationContent.AllJDBCDatasources) {
+            const type = Settings.MassSecurityContentItems.AllJDBCDatasources.Type
             await this.migrateSecurityArtifacts(type);
         } else {
             await this.addLogEntry(2, 'No items to migrate.')
@@ -1327,9 +1326,9 @@ export default class MigrationJobHelper {
     }
 
     private migrateSharedOAuth2AuthorizationCode = async (): Promise<void> => {
-        await this.addLogEntry(1, 'SHARED OAUTH2 AUTHORIZATION CODES:');
-        if (this.MigrationContent.SharedOAuth2AuthorizationCodes!.length > 0) {
-            const type = 'oAuth2AuthorizationCode'
+        await this.addLogEntry(1, 'ALL OAUTH2 AUTHORIZATION CODES:');
+        if (this.MigrationContent.AllOAuth2AuthorizationCodes) {
+            const type = Settings.MassSecurityContentItems.AllOAuth2AuthorizationCodes.Type
             await this.migrateSecurityArtifacts(type);
         } else {
             await this.addLogEntry(2, 'No items to migrate.')
@@ -1337,9 +1336,9 @@ export default class MigrationJobHelper {
     }
 
     private migrateSharedKnownHosts = async (): Promise<void> => {
-        await this.addLogEntry(1, 'SHARED KNOWN HOSTS:');
-        if (this.MigrationContent.SharedKnownHosts!.length > 0) {
-            const type = 'knownHosts'
+        await this.addLogEntry(1, 'ALL KNOWN HOSTS:');
+        if (this.MigrationContent.AllKnownHosts) {
+            const type = Settings.MassSecurityContentItems.AllKnownHosts.Type
             await this.migrateSecurityArtifacts(type);
         } else {
             await this.addLogEntry(2, 'No items to migrate.')
@@ -1351,7 +1350,7 @@ export default class MigrationJobHelper {
         const securityContentTransportsPayload = {
             TaskId: 'dummyId',
             Type: type,
-            TargetCertificateAlias: this.Task?.TargetTenant?.NEO_target_certificate_alias,
+            TargetCertificateAlias: this.Task?.TargetTenant?.Neo_target_certificate_alias,
             Mode : "merge"
         } as TSecurityContentTransportPayload;
         
@@ -1427,10 +1426,11 @@ export default class MigrationJobHelper {
     }
 
     private getItemFromSecurityArtifactsType = (type: string): string => {
-        const securityArtifactTypes = type.split(', ');
-        const securityArtifactItem = securityArtifactTypes[0] as keyof typeof Settings.SharedSecurityArtifactTypeNames;
-        const item = this.Task?.toTaskNodes?.filter(x => (x.Component == Settings.SharedSecurityArtifactTypeNames[securityArtifactItem]))[0]?.Component || 'Security Artifacts'
-        return item
+        const securityArtifactTypes = type.split(', ')
+        // const securityArtifactItem = securityArtifactTypes[0] as keyof typeof Settings.SharedSecurityArtifactTypeNames;
+        // const item = this.Task?.toTaskNodes?.filter(x => (x.Component == Settings.SharedSecurityArtifactTypeNames[securityArtifactItem]))[0]?.Component || 'Security Artifacts'
+        // return item
+        return Object.values(Settings.MassSecurityContentItems).find(x => x.Type == securityArtifactTypes[0])?.Name || 'Security Artifacts'
     }
 
 

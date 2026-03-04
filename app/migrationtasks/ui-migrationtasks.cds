@@ -273,55 +273,61 @@ annotate ConfigService.MigrationTaskNodes with @(UI : {
                     $Type  : 'UI.SelectionRangeType',
                     Sign   : #I,
                     Option : #EQ,
-                    Low    : 'Shared User Credentials' // new security artifact
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'Shared Secure Parameters' // new security artifact
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'Shared oAuth Client Credentials' // new security artifact
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'Shared oAuth SAMLBearerAssertions' // new security artifact
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'Shared Keystores' // new security artifact
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'Shared PGP Keys' // new security artifact
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'Shared JDBC Datasources' // new security artifact
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'Shared oAuth AuthorizationCodes' // new security artifact
-                },
-                {
-                    $Type  : 'UI.SelectionRangeType',
-                    Sign   : #I,
-                    Option : #EQ,
-                    Low    : 'Shared Known Hosts' // new security artifact
+                    Low    : '# Bulk Content'
+                // },
+                // {
+                //     $Type  : 'UI.SelectionRangeType',
+                //     Sign   : #I,
+                //     Option : #EQ,
+                //     Low    : 'Shared User Credentials' // new security artifact
+                // },
+                // {
+                //     $Type  : 'UI.SelectionRangeType',
+                //     Sign   : #I,
+                //     Option : #EQ,
+                //     Low    : 'Shared Secure Parameters' // new security artifact
+                // },
+                // {
+                //     $Type  : 'UI.SelectionRangeType',
+                //     Sign   : #I,
+                //     Option : #EQ,
+                //     Low    : 'Shared oAuth Client Credentials' // new security artifact
+                // },
+                // {
+                //     $Type  : 'UI.SelectionRangeType',
+                //     Sign   : #I,
+                //     Option : #EQ,
+                //     Low    : 'Shared oAuth SAMLBearerAssertions' // new security artifact
+                // },
+                // {
+                //     $Type  : 'UI.SelectionRangeType',
+                //     Sign   : #I,
+                //     Option : #EQ,
+                //     Low    : 'Shared Keystores' // new security artifact
+                // },
+                // {
+                //     $Type  : 'UI.SelectionRangeType',
+                //     Sign   : #I,
+                //     Option : #EQ,
+                //     Low    : 'Shared PGP Keys' // new security artifact
+                // },
+                // {
+                //     $Type  : 'UI.SelectionRangeType',
+                //     Sign   : #I,
+                //     Option : #EQ,
+                //     Low    : 'Shared JDBC Datasources' // new security artifact
+                // },
+                // {
+                //     $Type  : 'UI.SelectionRangeType',
+                //     Sign   : #I,
+                //     Option : #EQ,
+                //     Low    : 'Shared oAuth AuthorizationCodes' // new security artifact
+                // },
+                // {
+                //     $Type  : 'UI.SelectionRangeType',
+                //     Sign   : #I,
+                //     Option : #EQ,
+                //     Low    : 'Shared Known Hosts' // new security artifact
                 }
             ]
         }]

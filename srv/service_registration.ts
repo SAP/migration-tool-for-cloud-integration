@@ -24,7 +24,7 @@ const TenantTableFields = [
     'Token_host',
     'Oauth_clientid',
     'Oauth_secret',
-    'NEO_target_certificate_alias',
+    'Neo_target_certificate_alias',
     'Role',
     'Environment',
     'ReadOnly',
@@ -145,6 +145,13 @@ export default class RegistrationService extends cds.ApplicationService {
                 success_pingTenant ? req.notify(200, 'Integration Tenant Connection test successful for ' + Tenant.Name) : req.warn(400, 'Integration Tenant Connection test unsuccessful for ' + Tenant.Name)
                 success &&= success_pingTenant
 
+                if (success && Tenant.Neo_target_certificate_alias) {
+                    const keystores = await caller.getNeoKeystoreEntries()
+                    const success_target_certificate_alias = !!keystores.find(keystore => keystore.Alias === Tenant.Neo_target_certificate_alias)
+                    success_target_certificate_alias || req.warn(400, 'CF Certificate Alias ' + Tenant.Neo_target_certificate_alias + ' is missing in ' + Tenant.Name)
+                    success &&= success_target_certificate_alias
+                }
+
                 if (Tenant.UseForCertificateUserMappings) {
                     await caller.refreshPlatformToken()
 
@@ -157,13 +164,6 @@ export default class RegistrationService extends cds.ApplicationService {
                     const success_testPlatform = await caller.testPlatformSettings()
                     success_testPlatform ? req.notify(200, 'Validating Platform Settings successful for ' + Tenant.Name) : req.warn(400, ' Validating Platform Settings unsuccessful for ' + Tenant.Name)
                     success &&= success_testPlatform
-                }
-                
-                if (Tenant.NEO_target_certificate_alias) {
-                    const keystores = await caller.getNeoKeystoreEntries()
-                    const success_target_certificate_alias = !!keystores.find(keystore => keystore.Alias === Tenant.NEO_target_certificate_alias)
-                    success_target_certificate_alias || req.warn(400, 'Target Certificate Alias ' + Tenant.NEO_target_certificate_alias + ' is missing in ' + Tenant.Name)
-                    success &&= success_target_certificate_alias
                 }
 
                 return success

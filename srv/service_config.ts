@@ -303,9 +303,8 @@ export default class ConfigService extends cds.ApplicationService {
             const Task = await SELECT.one.from(req.subject).columns(x => {
                 x.SourceTenant((y: Tenant) => { y.Name, y.UseForCertificateUserMappings, y.Environment }),
                     x.TargetTenant((y: Tenant) => { y.Name, y.UseForCertificateUserMappings, y.Environment }),
-                    x.toTaskNodes((y: MigrationTaskNode) => { y.ObjectID, y.Component }).where({ Included: true })
+                    x.toTaskNodes((y: MigrationTaskNode) => { y.ObjectID, y.Component, y.Name }).where({ Included: true })
             }) as MigrationTask
-        
 
             const warnings =  new MigrationTaskHelper(Task).checkSecurityArtifactsCompatibility();
             if (warnings.length > 0) {
@@ -430,12 +429,12 @@ export default class ConfigService extends cds.ApplicationService {
     }
 
     private static isSecurityArtifactComponentIndividual(component: string) {
-        return component === Settings.ComponentNames.KeyStoreEntry 
-            || component === Settings.ComponentNames.Credentials
+        // return component === Settings.ComponentNames.KeyStoreEntry 
+        return component === Settings.ComponentNames.Credentials
             || component == Settings.ComponentNames.OAuthCredential
     }
 
     private static isSecurityArtifactComponentShared(component: string) {
-        return component.includes('Shared')
+        return component == Settings.ComponentNames.MassSecurityContent
     }
 }
