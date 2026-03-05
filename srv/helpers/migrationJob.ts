@@ -81,6 +81,24 @@ type TSecurityContentTransportPayload = {
     Mode: string
 }
 
+type TSecurityTaskStatus = {
+    TaskId: string
+    TargetCertificateAlias: string
+    Mode: string
+    Type: string
+    TaskState: string
+    TaskLogs: string
+    SourceTenant: string
+    TargetTenant: string
+    TotalArtifactsFromSource: number
+    Created: number
+    Updated: number
+    Skipped: number
+    Erroneous: null
+    ArtifactErrors: string
+    ExceptionThrown: string
+}
+
 export default class MigrationJobHelper {
     Job: MigrationJob
     Task: MigrationTask | null
@@ -136,6 +154,7 @@ export default class MigrationJobHelper {
             if (this.Task.SourceTenant) {
                 this.ConnectorSource = new ExternalConnection(this.Task.SourceTenant)
                 await this.ConnectorSource?.refreshIntegrationToken()
+                await this.ConnectorSource?.refreshAuthorizationDetails()
                 await this.addLogEntry(0, 'Source: ' + this.Task.SourceTenant.Name)
             } else {
                 throw Error(`No source tenant specified`)
@@ -227,12 +246,12 @@ export default class MigrationJobHelper {
 
             await this.migrateJMSBrokers()
 
-            await this.migrateSharedSecurityContent()         // new security artifact
-            await this.migrateSharedKeyStore()                // new security artifact
-            await this.migrateSharedPgpKeys()                 // new security artifact
-            await this.migrateSharedJdbcDatasource()          // new security artifact
-            await this.migrateSharedOAuth2AuthorizationCode() // new security artifact
-            await this.migrateSharedKnownHosts()              // new security artifact
+            await this.migrateAllSecurityContent()         // new security artifact
+            await this.migrateAllKeyStores()                // new security artifact
+            await this.migrateAllPGPKeys()                 // new security artifact
+            await this.migrateAllJDBCDatasources()          // new security artifact
+            await this.migrateAllOAuth2AuthorizationCodes() // new security artifact
+            await this.migrateAllKnownHosts()              // new security artifact
 
             return true
         } catch (error: any) {
@@ -1267,9 +1286,9 @@ export default class MigrationJobHelper {
         return deployStatus
     }
 
-    private migrateSharedSecurityContent = async (): Promise<void> => {
-        await this.addLogEntry(1, 'ALL SECURITY CONTENT:');
-        const securityArtifactTypes = [];
+    private migrateAllSecurityContent = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL SECURITY CONTENT:')
+        const securityArtifactTypes = []
 
         if (this.MigrationContent.AllUserCredentials) {
             securityArtifactTypes.push(Settings.MassSecurityContentItems.AllUserCredentials.Type)
@@ -1288,82 +1307,82 @@ export default class MigrationJobHelper {
         }
 
         if (securityArtifactTypes.length > 0) {
-            const type = securityArtifactTypes.join(', ');
-            await this.migrateSecurityArtifacts(type);
+            const type = securityArtifactTypes.join(', ')
+            await this.migrateSecurityArtifact(type)
         } else {
             await this.addLogEntry(2, 'No items to migrate.')
         }
     }
 
-    private migrateSharedKeyStore = async (): Promise<void> => {
-        await this.addLogEntry(1, 'ALL KEYSTORES:');
+    private migrateAllKeyStores = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL KEYSTORES:')
         if (this.MigrationContent.AllKeystores) {
             const type = Settings.MassSecurityContentItems.AllKeystores.Type
-            await this.migrateSecurityArtifacts(type);
+            await this.migrateSecurityArtifact(type)
         } else {
             await this.addLogEntry(2, 'No items to migrate.')
         }
     }
 
-    private migrateSharedPgpKeys = async (): Promise<void> => {
-        await this.addLogEntry(1, 'ALL PGP KEYS:');
+    private migrateAllPGPKeys = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL PGP KEYS:')
         if (this.MigrationContent.AllPGPKeys) {
             const type = Settings.MassSecurityContentItems.AllPGPKeys.Type
-            await this.migrateSecurityArtifacts(type);
+            await this.migrateSecurityArtifact(type)
         } else {
             await this.addLogEntry(2, 'No items to migrate.')
         }
     }
 
-    private migrateSharedJdbcDatasource = async (): Promise<void> => {
-        await this.addLogEntry(1, 'ALL JDBC DATASOURCES:');
+    private migrateAllJDBCDatasources = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL JDBC DATASOURCES:')
         if (this.MigrationContent.AllJDBCDatasources) {
             const type = Settings.MassSecurityContentItems.AllJDBCDatasources.Type
-            await this.migrateSecurityArtifacts(type);
+            await this.migrateSecurityArtifact(type)
         } else {
             await this.addLogEntry(2, 'No items to migrate.')
         }
     }
 
-    private migrateSharedOAuth2AuthorizationCode = async (): Promise<void> => {
-        await this.addLogEntry(1, 'ALL OAUTH2 AUTHORIZATION CODES:');
+    private migrateAllOAuth2AuthorizationCodes = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL OAUTH2 AUTHORIZATION CODES:')
         if (this.MigrationContent.AllOAuth2AuthorizationCodes) {
             const type = Settings.MassSecurityContentItems.AllOAuth2AuthorizationCodes.Type
-            await this.migrateSecurityArtifacts(type);
+            await this.migrateSecurityArtifact(type)
         } else {
             await this.addLogEntry(2, 'No items to migrate.')
         }
     }
 
-    private migrateSharedKnownHosts = async (): Promise<void> => {
-        await this.addLogEntry(1, 'ALL KNOWN HOSTS:');
+    private migrateAllKnownHosts = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL KNOWN HOSTS:')
         if (this.MigrationContent.AllKnownHosts) {
             const type = Settings.MassSecurityContentItems.AllKnownHosts.Type
-            await this.migrateSecurityArtifacts(type);
+            await this.migrateSecurityArtifact(type)
         } else {
             await this.addLogEntry(2, 'No items to migrate.')
         }
     }
 
-    private migrateSecurityArtifacts = async (type: string) => {
+    private migrateSecurityArtifact = async (type: string) => {
         await this.addLogEntry(2, 'Migrate Security Artifacts:')
         const securityContentTransportsPayload = {
             TaskId: 'dummyId',
             Type: type,
-            TargetCertificateAlias: this.Task?.TargetTenant?.Neo_target_certificate_alias,
-            Mode : "merge"
-        } as TSecurityContentTransportPayload;
+            TargetCertificateAlias: this.Task?.SourceTenant?.Neo_target_certificate_alias,
+            Mode: "merge"
+        } as TSecurityContentTransportPayload
         
-        await this.ConnectorSource?.refreshAuthorizationDetails()
-        const response = await this.ConnectorSource?.externalPostWithCSRF(Settings.Paths.SecurityArtifactsTransport.path, securityContentTransportsPayload);
+        // await this.ConnectorSource?.refreshAuthorizationDetails()
+        const response = await this.ConnectorSource?.externalPostWithCSRF(Settings.Paths.SecurityArtifactsTransport.path, securityContentTransportsPayload)
 
-        const isResponseSuccess = await this.validateMigrateSecurityArtifactsResponse(response, type);
+        const isResponseSuccess = await this.validateMigrateSecurityArtifactsResponse(response, type)
         if (!isResponseSuccess) {
             return false
         }
 
-        const taskId = response?.value?.data?.taskId;
-        await this.pollTaskStatus(taskId, type);
+        const taskId = response?.value?.data?.taskId
+        await this.pollTaskStatus(taskId, type)
         return true
     }
 
@@ -1387,42 +1406,38 @@ export default class MigrationJobHelper {
             return false
         } else {
             await this.addLogEntry(3, `Migration task for type '${type}' was created`)
-            return true;
+            return true
         }
     }
 
     private pollTaskStatus = async (taskId: string, type: string): Promise<void> => {
-        return new Promise((res, rej) => {
+        return new Promise(resolve => {
             const interval = setInterval(async () => {
                 const response = await this.ConnectorSource?.externalGet(Settings.Paths.SecurityArtifactsTransport.task.replace('{TASK_ID}', taskId))
-                
+                const taskStatus = response?.value?.data?.d as TSecurityTaskStatus
+
                 // status code 400 means that the task is still running
                 if (response?.code !== 400) {
-                    const taskState = response?.value?.data?.d.TaskState;
-                    
+                    const taskState = taskStatus.TaskState
+                    await this.addLogEntry(3, `Migration task finished with status: ${taskState}`)
+
+                    const item = this.getItemFromSecurityArtifactsType(type)
                     if (taskState === "ERROR" || taskState === "FAILED") {
-                        const item = this.getItemFromSecurityArtifactsType(type)
-
-                        await this.addLogEntry(3, `Migration task finished with status: ${taskState}`)
-                        await this.generateError('Security Artifacts', item, `Migration task Exception: ${response?.value?.data?.d?.ExceptionThrown}`)
-                        rej()
+                        await this.generateError(Settings.ComponentNames.MassSecurityContent, item, `Migration task Exception: ${taskStatus.ExceptionThrown}`)
                     } else if (taskState === "PARTIAL_SUCCESS") {
-                        const item = this.getItemFromSecurityArtifactsType(type)
+                        await this.generateWarning(Settings.ComponentNames.MassSecurityContent, item, `Artifact Errors: ${taskStatus.ArtifactErrors}. ${taskStatus.Erroneous} artifact(s) were not migrated.`)
+                    }
 
-                        await this.addLogEntry(3, `Migration task finished with status: ${taskState}`)
-                        await this.generateWarning('Security Artifacts', item, `Artifact Errors: ${response?.value?.data?.d?.ArtifactErrors}. ${response?.value?.data?.d?.Erroneous} artifact(s) were not migrated.`)
-                        rej()
-                    } else {
-                        await this.addLogEntry(3, `Migration task finished with status ${taskState}`)
+                    if (taskState !== 'RUNNING') {
+                        clearInterval(interval)
+                        resolve()
                     }
-                    
-                    if(taskState !== 'RUNNING') {
-                        clearInterval(interval);
-                        res()
-                    }
+                } else {
+                    await this.addLogEntry(4, `Task is running ...`)
                 }
-            }, 10000);
-        }); 
+
+            }, Settings.Defaults.MigrateSecurityArtifacts.sleepInterval)
+        })
     }
 
     private getItemFromSecurityArtifactsType = (type: string): string => {

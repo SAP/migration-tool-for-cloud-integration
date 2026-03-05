@@ -139,8 +139,8 @@ export const Settings = {
             TestSettings: '/authorization/v1/accounts/{ACCOUNT_ID}/groups'
         },
         SecurityArtifactsTransport: {
-           path: '/api/v1/SecurityContentTransports',
-           task: `/api/v1/SecurityContentTransports('{TASK_ID}')`
+            path: '/api/v1/SecurityContentTransports',
+            task: '/api/v1/SecurityContentTransports(\'{TASK_ID}\')'
         }
     },
 
@@ -205,7 +205,7 @@ export const Settings = {
         },
         AllKnownHosts: {
             Name: 'All Known Hosts',
-            Type: 'knownHost'
+            Type: 'knownHosts'
         }
     },
 
@@ -278,6 +278,9 @@ export const Settings = {
             successStatus: 'succeeded',
             errorStatus: 'failed',
             maxWait: 60 * 1000
+        },
+        MigrateSecurityArtifacts: {
+            sleepInterval: 5 * 1000
         }
     }
 }

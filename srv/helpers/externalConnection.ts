@@ -48,7 +48,6 @@ export default class ExternalConnection {
         const authorizationDetails = await this.getAuthorizationDetailsForSecurityArtifacts()
         this.CSRFToken = authorizationDetails.csrfToken!
         this.Cookie = authorizationDetails.cookie!
-        
     }
     public refreshPlatformToken = async (): Promise<void> => {
         if (this.Tenant.Environment == 'Neo') {
@@ -329,7 +328,7 @@ export default class ExternalConnection {
                 'Cookie': this.Cookie
             }
         }
-        return await this.doAxiosCall(request)
+        return await this.doAxiosCall(request, true)
     }
     public externalPutCertificate = async (query: string, body: string): Promise<TResponse> => {
         const request = {

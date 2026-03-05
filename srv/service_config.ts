@@ -31,7 +31,7 @@ import {
     TMigrationTaskPresets
 } from '#cds-models/migrationtool'
 
-const { info, error, warn } = cds.log('ConfigService')
+const { info, error } = cds.log('ConfigService')
 
 export default class ConfigService extends cds.ApplicationService {
 
@@ -301,12 +301,12 @@ export default class ConfigService extends cds.ApplicationService {
         this.on(MigrationTask.actions.startMigration, async (req): Promise<MigrationJob | Error | undefined> => {
             const [keys] = req.params as typeof MigrationTask.keys[]
             const Task = await SELECT.one.from(req.subject).columns(x => {
-                x.SourceTenant((y: Tenant) => { y.Name, y.UseForCertificateUserMappings, y.Environment }),
+                x.SourceTenant((y: Tenant) => { y.Name, y.UseForCertificateUserMappings, y.Environment, y.Neo_target_certificate_alias }),
                     x.TargetTenant((y: Tenant) => { y.Name, y.UseForCertificateUserMappings, y.Environment }),
                     x.toTaskNodes((y: MigrationTaskNode) => { y.ObjectID, y.Component, y.Name }).where({ Included: true })
             }) as MigrationTask
 
-            const warnings =  new MigrationTaskHelper(Task).checkSecurityArtifactsCompatibility();
+            const warnings =  new MigrationTaskHelper(Task).checkSecurityArtifactsCompatibility()
             if (warnings.length > 0) {
                 warnings.forEach(warning => {
                     req.warn(400, warning)
@@ -328,6 +328,12 @@ export default class ConfigService extends cds.ApplicationService {
                         'You have included at least 1 Certificate-to-User Mapping for this migration. Before these can be migrated, both source and target tenants have to be configured for the migration of Certificate-to-User Mappings via the \'Register Tenants\' application:<br/><br/>' +
                         Task.SourceTenant!.Name + ': ' + (Task.SourceTenant!.UseForCertificateUserMappings ? 'Ok' : 'Not configured') + '<br/>' +
                         Task.TargetTenant!.Name + ': ' + (Task.TargetTenant!.UseForCertificateUserMappings ? 'Ok' : 'Not configured'))
+                }
+
+                const countMassSecurityContent = Task.toTaskNodes!.filter(x => x.Component == Settings.ComponentNames.MassSecurityContent).length
+                if (countMassSecurityContent > 0) {
+                    assert(!!Task.SourceTenant!.Neo_target_certificate_alias,
+                        'You have included at least 1 Bulk Security Content item for this migration. Before these can be migrated, the Neo tenant has to be configured with a CF Certificate Alias via the \'Register Tenants\' application.')
                 }
 
                 const job_id = randomUUID()
