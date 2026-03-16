@@ -28,8 +28,32 @@ export default class MigrationTaskHelper {
         await this.updateNodesWithExistInFlags()
 
         if (preset == TMigrationTaskPresets.SkipAll) { this.Task.toTaskNodes.forEach(node => node.Included = false) }
-        if (preset == TMigrationTaskPresets.IncludeAll) { this.Task.toTaskNodes.forEach(node => node.Included = true) }
-        if (preset == TMigrationTaskPresets.Optimal) { this.Task.toTaskNodes.forEach(node => node.Included = (node.ExistInSource && !node.ExistInTarget)) }
+        if (preset == TMigrationTaskPresets.IncludeAll) {
+            this.Task.toTaskNodes.forEach(node => {
+                if (node.Component == Settings.ComponentNames.Credentials
+                    || node.Component == Settings.ComponentNames.OAuthCredential
+                    || node.Component == Settings.ComponentNames.KeyStoreEntry) {
+                    // Exclude individual security artifacts as the mass migration is the recommended approach for security content
+                    node.Included = false
+                } else {
+                    // Include all other artifacts that exist in source, as they are the ones that would need to be migrated
+                    node.Included = node.ExistInSource
+                }
+            })
+        }
+        if (preset == TMigrationTaskPresets.Optimal) {
+            this.Task.toTaskNodes.forEach(node => {
+                if (node.Component == Settings.ComponentNames.Credentials
+                    || node.Component == Settings.ComponentNames.OAuthCredential
+                    || node.Component == Settings.ComponentNames.KeyStoreEntry) {
+                    // Exclude individual security artifacts as the mass migration is the recommended approach for security content
+                    node.Included = false
+                } else {
+                    // Include all other artifacts that exist in source but not in target, as they are the ones that would need to be migrated
+                    node.Included = node.ExistInSource && !node.ExistInTarget
+                }
+            })
+        }
 
         this.Task.toTaskNodes.length > 0 && await INSERT.into(MigrationTaskNodes).entries(this.Task.toTaskNodes)
     }
@@ -65,15 +89,15 @@ export default class MigrationTaskHelper {
                     x.toVariables('*'),
                     x.toCertificateUserMappings('*'),
                     x.toDataStores('*')
-                    // x.toSharedUserCredentials('*'),            // new security artifact
-                    // x.toSharedSecureParameters('*'),           // new security artifact
-                    // x.toSharedOAuth2ClientCredentials('*'),    // new security artifact
-                    // x.toSharedOAuth2SAMLBearerAssertions('*'), // new security artifact
-                    // x.toSharedKeystores('*'),                  // new security artifact
-                    // x.toSharedPgpKeys('*'),                    // new security artifact
-                    // x.toSharedJdbcDatasources('*'),            // new security artifact
-                    // x.toSharedOAuth2AuthorizationCodes('*'),   // new security artifact
-                    // x.toSharedKnownHosts('*')                  // new security artifact
+                // x.toSharedUserCredentials('*'),            // new security artifact
+                // x.toSharedSecureParameters('*'),           // new security artifact
+                // x.toSharedOAuth2ClientCredentials('*'),    // new security artifact
+                // x.toSharedOAuth2SAMLBearerAssertions('*'), // new security artifact
+                // x.toSharedKeystores('*'),                  // new security artifact
+                // x.toSharedPgpKeys('*'),                    // new security artifact
+                // x.toSharedJdbcDatasources('*'),            // new security artifact
+                // x.toSharedOAuth2AuthorizationCodes('*'),   // new security artifact
+                // x.toSharedKnownHosts('*')                  // new security artifact
             }) as Tenant
     }
     private buildNodesFromContent = async (): Promise<MigrationTaskNode[]> => {
