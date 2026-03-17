@@ -89,15 +89,6 @@ export default class MigrationTaskHelper {
                     x.toVariables('*'),
                     x.toCertificateUserMappings('*'),
                     x.toDataStores('*')
-                // x.toSharedUserCredentials('*'),            // new security artifact
-                // x.toSharedSecureParameters('*'),           // new security artifact
-                // x.toSharedOAuth2ClientCredentials('*'),    // new security artifact
-                // x.toSharedOAuth2SAMLBearerAssertions('*'), // new security artifact
-                // x.toSharedKeystores('*'),                  // new security artifact
-                // x.toSharedPgpKeys('*'),                    // new security artifact
-                // x.toSharedJdbcDatasources('*'),            // new security artifact
-                // x.toSharedOAuth2AuthorizationCodes('*'),   // new security artifact
-                // x.toSharedKnownHosts('*')                  // new security artifact
             }) as Tenant
     }
     private buildNodesFromContent = async (): Promise<MigrationTaskNode[]> => {
@@ -238,96 +229,6 @@ export default class MigrationTaskHelper {
             }
         }
 
-        // for (let item of Tenant.toSharedUserCredentials!) {
-        //     nodes.push({
-        //         ObjectID: item.ObjectID,
-        //         Id: item.Name,
-        //         Name: item.Name,
-        //         Component: Settings.ComponentNames.SharedUserCredentials,
-        //         toMigrationTask_ObjectID: this.Task.ObjectID
-        //     })
-        // }
-
-        // for (let item of Tenant.toSharedSecureParameters!) {
-        //     nodes.push({
-        //         ObjectID: item.ObjectID,
-        //         Id: item.Name,
-        //         Name: item.Name,
-        //         Component: Settings.ComponentNames.SharedSecureParameters,
-        //         toMigrationTask_ObjectID: this.Task.ObjectID
-        //     })
-        // }
-
-        // for (let item of Tenant.toSharedOAuth2ClientCredentials!) {
-        //     nodes.push({
-        //         ObjectID: item.ObjectID,
-        //         Id: item.Name,
-        //         Name: item.Name,
-        //         Component: Settings.ComponentNames.SharedOAuth2ClientCredentials,
-        //         toMigrationTask_ObjectID: this.Task.ObjectID
-        //     })
-        // }
-
-        // for (let item of Tenant.toSharedOAuth2SAMLBearerAssertions!) {
-        //     nodes.push({
-        //         ObjectID: item.ObjectID,
-        //         Id: item.Name,
-        //         Name: item.Name,
-        //         Component: Settings.ComponentNames.SharedOAuth2SAMLBearerAssertions,
-        //         toMigrationTask_ObjectID: this.Task.ObjectID
-        //     })
-        // }
-
-        // for (let item of Tenant.toSharedKeystores!) {
-        //     nodes.push({
-        //         ObjectID: item.ObjectID,
-        //         Id: item.Name,
-        //         Name: item.Name,
-        //         Component: Settings.ComponentNames.SharedKeystores,
-        //         toMigrationTask_ObjectID: this.Task.ObjectID
-        //     })
-        // }
-
-        // for (let item of Tenant.toSharedPgpKeys!) {
-        //     nodes.push({
-        //         ObjectID: item.ObjectID,
-        //         Id: item.Name,
-        //         Name: item.Name,
-        //         Component: Settings.ComponentNames.SharedPgpKeys,
-        //         toMigrationTask_ObjectID: this.Task.ObjectID
-        //     })
-        // }
-
-        // for (let item of Tenant.toSharedJdbcDatasources!) {
-        //     nodes.push({
-        //         ObjectID: item.ObjectID,
-        //         Id: item.Name,
-        //         Name: item.Name,
-        //         Component: Settings.ComponentNames.SharedJdbcDatasources,
-        //         toMigrationTask_ObjectID: this.Task.ObjectID
-        //     })
-        // }
-
-        // for (let item of Tenant.toSharedOAuth2AuthorizationCodes!) {
-        //     nodes.push({
-        //         ObjectID: item.ObjectID,
-        //         Id: item.Name,
-        //         Name: item.Name,
-        //         Component: Settings.ComponentNames.SharedOAuth2AuthorizationCodes,
-        //         toMigrationTask_ObjectID: this.Task.ObjectID
-        //     })
-        // }
-
-        // for (let item of Tenant.toSharedKnownHosts!) {
-        //     nodes.push({
-        //         ObjectID: item.ObjectID,
-        //         Id: item.Name,
-        //         Name: item.Name,
-        //         Component: Settings.ComponentNames.SharedKnownHosts,
-        //         toMigrationTask_ObjectID: this.Task.ObjectID
-        //     })
-        // }
-
         info(`${nodes.length} migration task nodes generated`)
         return nodes
     }
@@ -389,42 +290,6 @@ export default class MigrationTaskHelper {
                         node.ExistInSource = true
                         node.ExistInTarget = false
                         break
-                    // case Settings.ComponentNames.SharedUserCredentials: // new security artifact
-                    //     node.ExistInSource = true
-                    //     node.ExistInTarget = false
-                    //     break
-                    // case Settings.ComponentNames.SharedSecureParameters: // new security artifact
-                    //     node.ExistInSource = true
-                    //     node.ExistInTarget = false
-                    //     break
-                    // case Settings.ComponentNames.SharedOAuth2ClientCredentials: // new security artifact
-                    //     node.ExistInSource = true
-                    //     node.ExistInTarget = false
-                    //     break
-                    // case Settings.ComponentNames.SharedOAuth2SAMLBearerAssertions: // new security artifact
-                    //     node.ExistInSource = true
-                    //     node.ExistInTarget = false
-                    //     break
-                    // case Settings.ComponentNames.SharedKeystores: // new security artifact
-                    //     node.ExistInSource = true
-                    //     node.ExistInTarget = false
-                    //     break
-                    // case Settings.ComponentNames.SharedPgpKeys: // new security artifact
-                    //     node.ExistInSource = true
-                    //     node.ExistInTarget = false
-                    //     break
-                    // case Settings.ComponentNames.SharedJdbcDatasources: // new security artifact
-                    //     node.ExistInSource = true
-                    //     node.ExistInTarget = false
-                    //     break
-                    // case Settings.ComponentNames.SharedOAuth2AuthorizationCodes: // new security artifact
-                    //     node.ExistInSource = true
-                    //     node.ExistInTarget = false
-                    //     break
-                    // case Settings.ComponentNames.SharedKnownHosts: // new security artifact
-                    //     node.ExistInSource = true
-                    //     node.ExistInTarget = false
-                    //     break
                     default:
                         break
                 }

@@ -155,24 +155,6 @@ entity Tenants : managed {
                                                 on toCertificateUserMappings.toParent = $self;
             toDataStores                  : Composition of many extDataStores
                                                 on toDataStores.toParent = $self;
-            // toSharedUserCredentials             : Composition of many extSharedUserCredentials            // new security artifact
-            //                                         on toSharedUserCredentials.toParent = $self;
-            // toSharedSecureParameters            : Composition of many extSharedSecureParameters           // new security artifact
-            //                                         on toSharedSecureParameters.toParent = $self;
-            // toSharedOAuth2ClientCredentials     : Composition of many extSharedOAuth2ClientCredentials    // new security artifact
-            //                                         on toSharedOAuth2ClientCredentials.toParent = $self;
-            // toSharedOAuth2SAMLBearerAssertions  : Composition of many extSharedOAuth2SAMLBearerAssertions // new security artifact
-            //                                         on toSharedOAuth2SAMLBearerAssertions.toParent = $self;
-            // toSharedKeystores                   : Composition of many extSharedKeystores                  // new security artifact
-            //                                         on toSharedKeystores.toParent = $self;
-            // toSharedPgpKeys                     : Composition of many extSharedPgpKeys                    // new security artifact
-            //                                         on toSharedPgpKeys.toParent = $self;
-            // toSharedJdbcDatasources             : Composition of many extSharedJdbcDatasources            // new security artifact
-            //                                         on toSharedJdbcDatasources.toParent = $self;
-            // toSharedOAuth2AuthorizationCodes    : Composition of many extSharedOAuth2AuthorizationCodes   // new security artifact
-            //                                         on toSharedOAuth2AuthorizationCodes.toParent = $self;
-            // toSharedKnownHosts                  : Composition of many extSharedKnownHosts                 // new security artifact
-            //                                         on toSharedKnownHosts.toParent = $self;
 }
 
 // Integration Packages -----------------------------------------------------
@@ -459,79 +441,6 @@ entity extDataStoreEntries {
         CreatedAt   : DateTime;
         RetainUntil : DateTime;
 }
-
-// // Shared User Credentials --------------------------------------------------------------------------
-// entity extSharedUserCredentials {
-//     key ObjectID : UUID @Core.Computed;
-//         toParent: Association to one Tenants;
-//         Name: String(255);
-//         Description: String(255);
-// }
-
-// // Shared Secure Parameters --------------------------------------------------------------------------
-// entity extSharedSecureParameters {
-//     key ObjectID : UUID @Core.Computed;
-//         toParent: Association to one Tenants;
-//         Name: String(255);
-//         Description: String(255);
-// }
-
-// // Shared OAuth2ClientCredentials --------------------------------------------------------------------------
-// entity extSharedOAuth2ClientCredentials {
-//     key ObjectID : UUID @Core.Computed;
-//         toParent: Association to one Tenants;
-//         Name: String(255);
-//         Description: String(255);
-// }
-
-// // Shared OAuth2SAMLBearerAssertions -----------------------------------------------------------------
-// entity extSharedOAuth2SAMLBearerAssertions {
-//     key ObjectID : UUID @Core.Computed;
-//         toParent: Association to one Tenants;
-//         Name: String(255);
-//         Description: String(255);
-// }
-
-// // Shared Keystores -----------------------------------------------------------------
-// entity extSharedKeystores {
-//     key ObjectID : UUID @Core.Computed;
-//         toParent: Association to one Tenants;
-//         Name: String(255);
-//         Description: String(255);
-// }
-
-// // Shared PGP Keys -----------------------------------------------------------------------------------
-// entity extSharedPgpKeys {
-//     key ObjectID : UUID @Core.Computed;
-//         toParent: Association to one Tenants;
-//         Name: String(255);
-//         Description: String(255);
-// }
-
-// // Shared JDBC Datasources ----------------------------------------------------------------------------
-// entity extSharedJdbcDatasources {
-//     key ObjectID : UUID @Core.Computed;
-//         toParent: Association to one Tenants;
-//         Name: String(255);
-//         Description: String(255);
-// }
-
-// // Shared OAuth2AuthorizationCodes --------------------------------------------------------------------
-// entity extSharedOAuth2AuthorizationCodes {
-//     key ObjectID : UUID @Core.Computed;
-//         toParent: Association to one Tenants;
-//         Name: String(255);
-//         Description: String(255);
-// }
-
-// // Shared Known Hosts ---------------------------------------------------------------------------------
-// entity extSharedKnownHosts {
-//     key ObjectID : UUID @Core.Computed;
-//         toParent: Association to one Tenants;
-//         Name: String(255);
-//         Description: String(255);
-// }
-
 
 
 // Migration Tasks ------------------------------------------------------------------------------------

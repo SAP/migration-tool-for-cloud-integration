@@ -159,15 +159,6 @@ export const Settings = {
         CertificateUserMappings: 'Certificate User Mapping',
         DataStores: 'Global Data Store',
         MassSecurityContent: '# Bulk Content'
-        // SharedUserCredentials: 'Shared User Credentials',                      //new security artifact
-        // SharedSecureParameters: 'Shared Secure Parameters',                    //new security artifact
-        // SharedOAuth2ClientCredentials: 'Shared oAuth Client Credentials',      //new security artifact
-        // SharedOAuth2SAMLBearerAssertions: 'Shared oAuth SAMLBearerAssertions', //new security artifact
-        // SharedKeystores: 'Shared Keystores',                                   //new security artifact
-        // SharedPgpKeys: 'Shared PGP Keys',                                      //new security artifact
-        // SharedJdbcDatasources: 'Shared JDBC Datasources',                      //new security artifact
-        // SharedOAuth2AuthorizationCodes: 'Shared oAuth AuthorizationCodes',     //new security artifact
-        // SharedKnownHosts: 'Shared Known Hosts'                                 //new security artifact
     },
 
     MassSecurityContentItems: {
@@ -208,18 +199,6 @@ export const Settings = {
             Type: 'knownHosts'
         }
     },
-
-    // SharedSecurityArtifactTypeNames: {
-    //     userCredentials: 'Shared User Credentials',
-    //     secureParameter: 'Shared Secure Parameters',
-    //     oAuth2ClientCredentials: 'Shared oAuth Credentials',
-    //     oAuth2SAMLBearerAssertion: 'Shared oAuth SAMLBearerAssertions',
-    //     keystore: 'Shared Keystores',
-    //     pgpKeys: 'Shared PGP Keys',
-    //     jdbcDatasource: 'Shared JDBC Datasources',      
-    //     oAuth2AuthorizationCode: 'Shared oAuth AuthorizationCodes',
-    //     knownHosts: 'Shared Known Hosts'
-    // },
 
     DefaultPassword: 'default',
     Flags: {

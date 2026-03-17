@@ -260,15 +260,6 @@ service ConfigService {
     entity CertificateUserMappingRoles      as projection on db.extCertificateUserMappingRoles;
     entity DataStores                       as projection on db.extDataStores;
     entity DataStoreEntries                 as projection on db.extDataStoreEntries;
-    // entity SharedUserCredentials            as projection on db.extSharedUserCredentials;            //new security artifact
-    // entity SharedSecureParameters           as projection on db.extSharedSecureParameters;           //new security artifact
-    // entity SharedOAuth2ClientCredentials    as projection on db.extSharedOAuth2ClientCredentials;    //new security artifact
-    // entity SharedOAuth2SAMLBearerAssertions as projection on db.extSharedOAuth2SAMLBearerAssertions; //new security artifact
-    // entity SharedKeystores                  as projection on db.extSharedKeystores;                  //new security artifact
-    // entity SharedPgpKeys                    as projection on db.extSharedPgpKeys;                    //new security artifact
-    // entity SharedJdbcDatasource             as projection on db.extSharedJdbcDatasources;            //new security artifact
-    // entity SharedOAuth2AuthorizationCodes   as projection on db.extSharedOAuth2AuthorizationCodes;   //new security artifact
-    // entity SharedKnownHosts                 as projection on db.extSharedKnownHosts;                 //new security artifact
 
 
     @sap.deletable: false
