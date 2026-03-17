@@ -92,6 +92,7 @@ service ConfigService {
             Oauth_clientid,
             Oauth_secret,
             Oauth_servicekeyid,
+            Neo_target_certificate_alias,
             CF_organizationID,
             CF_organizationName,
             CF_spaceID,
@@ -256,9 +257,10 @@ service ConfigService {
             ValidUntil,
             ValidUntilCriticality;
 
-    entity CertificateUserMappingRoles     as projection on db.extCertificateUserMappingRoles;
-    entity DataStores                      as projection on db.extDataStores;
-    entity DataStoreEntries                as projection on db.extDataStoreEntries;
+    entity CertificateUserMappingRoles      as projection on db.extCertificateUserMappingRoles;
+    entity DataStores                       as projection on db.extDataStores;
+    entity DataStoreEntries                 as projection on db.extDataStoreEntries;
+
 
     @sap.deletable: false
     entity Errors                          as projection on db.Errors;
@@ -284,7 +286,7 @@ service ConfigService {
                     (
                             n.Included  =  true
                         and n.Component in (
-                            'Keystore', 'User Credential', 'oAuth Credential', 'Access Policy', 'Certificate User Mapping'
+                            'Keystore', 'User Credential', 'oAuth Credential', 'Access Policy', 'Certificate User Mapping', '# Bulk Content'
                         )
                         and t.ObjectID  =  n.toMigrationTask.ObjectID
                     )

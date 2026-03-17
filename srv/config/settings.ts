@@ -116,6 +116,10 @@ export const Settings = {
             CFPath: '/oauth/token?grant_type=client_credentials',
             NeoPath: '/oauth2/api/v1/token?grant_type=client_credentials'
         },
+        CSRFToken: {
+            CFPath: '/api/v1',
+            NeoPath: '/api/v1'
+        },
         CFPlatform: {
             TokenHost: 'uaa.cf.{HOST}',
             GetToken: '/oauth/token',
@@ -133,6 +137,10 @@ export const Settings = {
             Host: 'api.{HOST}',
             Ping: '/',
             TestSettings: '/authorization/v1/accounts/{ACCOUNT_ID}/groups'
+        },
+        SecurityArtifactsTransport: {
+            path: '/api/v1/SecurityContentTransports',
+            task: '/api/v1/SecurityContentTransports(\'{TASK_ID}\')'
         }
     },
 
@@ -149,7 +157,47 @@ export const Settings = {
         JMSBrokers: 'JMS Broker',
         Variables: 'Global Variable',
         CertificateUserMappings: 'Certificate User Mapping',
-        DataStores: 'Global Data Store'
+        DataStores: 'Global Data Store',
+        MassSecurityContent: '# Bulk Content'
+    },
+
+    MassSecurityContentItems: {
+        AllUserCredentials: {
+            Name: 'All User Credentials',
+            Type: 'userCredentials'
+        },
+        AllSecureParameters: {
+            Name: 'All Secure Parameters',
+            Type: 'secureParameter'
+        },
+        AllOAuth2ClientCredentials: {
+            Name: 'All OAuth Client Credentials',
+            Type: 'oAuth2ClientCredentials'
+        },
+        AllOAuth2SAMLBearerAssertions: {
+            Name: 'All OAuth SAMLBearerAssertions',
+            Type: 'oAuth2SAMLBearerAssertion'
+        },
+        AllKeystores: {
+            Name: 'All Keystores',
+            Type: 'keystore'
+        },
+        AllPGPKeys: {
+            Name: 'All PGP Keys',
+            Type: 'pgpKeys'
+        },
+        AllJDBCDatasources: {
+            Name: 'All JDBC Datasources',
+            Type: 'jdbcDatasource'
+        },
+        AllOAuth2AuthorizationCodes: {
+            Name: 'All OAuth AuthorizationCodes',
+            Type: 'oAuth2AuthorizationCode'
+        },
+        AllKnownHosts: {
+            Name: 'All Known Hosts',
+            Type: 'knownHosts'
+        }
     },
 
     DefaultPassword: 'default',
@@ -209,6 +257,9 @@ export const Settings = {
             successStatus: 'succeeded',
             errorStatus: 'failed',
             maxWait: 60 * 1000
+        },
+        MigrateSecurityArtifacts: {
+            sleepInterval: 5 * 1000
         }
     }
 }

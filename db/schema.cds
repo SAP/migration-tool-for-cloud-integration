@@ -107,6 +107,7 @@ entity Tenants : managed {
             Oauth_clientid                : String(255);
             Oauth_secret                  : String(255);
             Oauth_servicekeyid            : String(255);
+            Neo_target_certificate_alias  : String(255);
             CF_organizationID             : String(255);
             CF_organizationName           : String(255);
             CF_spaceID                    : String(255);

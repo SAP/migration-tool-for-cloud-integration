@@ -250,7 +250,13 @@ export default class ConfigService extends cds.ApplicationService {
                     if (each.Component == Settings.ComponentNames.Package) {
                         each.ConfigureOnlyText = each.ConfigureOnly ? 'Configuration only' : 'Full copy with variables'
                     } else {
-                        each.ConfigureOnlyText = 'Default'
+                        if (ConfigService.isSecurityArtifactComponentShared(each.Component!)) {
+                            each.ConfigureOnlyText = 'With Secrets'
+                        } else if (ConfigService.isSecurityArtifactComponentIndividual(each.Component!))  {
+                            each.ConfigureOnlyText = 'Without Secrets'
+                        } else {
+                            each.ConfigureOnlyText = 'Default'
+                        }
                     }
                 } else each.ConfigureOnlyText = '' // CDS 7 -> virtual fields do not have a default null value
 
@@ -292,13 +298,22 @@ export default class ConfigService extends cds.ApplicationService {
                 )
             }
         })
-        this.on(MigrationTask.actions.startMigration, async (req): Promise<MigrationJob | Error> => {
+        this.on(MigrationTask.actions.startMigration, async (req): Promise<MigrationJob | Error | undefined> => {
             const [keys] = req.params as typeof MigrationTask.keys[]
             const Task = await SELECT.one.from(req.subject).columns(x => {
-                x.SourceTenant((y: Tenant) => { y.Name, y.UseForCertificateUserMappings, y.Environment }),
+                x.SourceTenant((y: Tenant) => { y.Name, y.UseForCertificateUserMappings, y.Environment, y.Neo_target_certificate_alias }),
                     x.TargetTenant((y: Tenant) => { y.Name, y.UseForCertificateUserMappings, y.Environment }),
-                    x.toTaskNodes((y: MigrationTaskNode) => { y.ObjectID, y.Component }).where({ Included: true })
+                    x.toTaskNodes((y: MigrationTaskNode) => { y.ObjectID, y.Component, y.Name }).where({ Included: true })
             }) as MigrationTask
+
+            const warnings =  new MigrationTaskHelper(Task).checkSecurityArtifactsCompatibility()
+            if (warnings.length > 0) {
+                warnings.forEach(warning => {
+                    req.warn(400, warning)
+                })
+                return
+            }
+            
             try {
                 assert(Task.TargetTenant !== null, 'No target tenant has been defined.<br/><br/>Please select a target tenant via \'Change Target ...\'.')
 
@@ -313,6 +328,12 @@ export default class ConfigService extends cds.ApplicationService {
                         'You have included at least 1 Certificate-to-User Mapping for this migration. Before these can be migrated, both source and target tenants have to be configured for the migration of Certificate-to-User Mappings via the \'Register Tenants\' application:<br/><br/>' +
                         Task.SourceTenant!.Name + ': ' + (Task.SourceTenant!.UseForCertificateUserMappings ? 'Ok' : 'Not configured') + '<br/>' +
                         Task.TargetTenant!.Name + ': ' + (Task.TargetTenant!.UseForCertificateUserMappings ? 'Ok' : 'Not configured'))
+                }
+
+                const countMassSecurityContent = Task.toTaskNodes!.filter(x => x.Component == Settings.ComponentNames.MassSecurityContent).length
+                if (countMassSecurityContent > 0) {
+                    assert(!!Task.SourceTenant!.Neo_target_certificate_alias,
+                        'You have included at least 1 Bulk Security Content item for this migration. Before these can be migrated, the Neo tenant has to be configured with a CF Certificate Alias via the \'Register Tenants\' application.')
                 }
 
                 const job_id = randomUUID()
@@ -411,5 +432,15 @@ export default class ConfigService extends cds.ApplicationService {
         else if (minutes < 60) return minutes.toFixed(1) + ' minutes'
         else if (hours < 24) return hours.toFixed(1) + ' hours'
         else return days.toFixed(1) + ' days'
+    }
+
+    private static isSecurityArtifactComponentIndividual(component: string) {
+        // return component === Settings.ComponentNames.KeyStoreEntry 
+        return component === Settings.ComponentNames.Credentials
+            || component == Settings.ComponentNames.OAuthCredential
+    }
+
+    private static isSecurityArtifactComponentShared(component: string) {
+        return component == Settings.ComponentNames.MassSecurityContent
     }
 }

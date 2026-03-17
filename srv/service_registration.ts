@@ -24,6 +24,7 @@ const TenantTableFields = [
     'Token_host',
     'Oauth_clientid',
     'Oauth_secret',
+    'Neo_target_certificate_alias',
     'Role',
     'Environment',
     'ReadOnly',
@@ -144,12 +145,21 @@ export default class RegistrationService extends cds.ApplicationService {
                 success_pingTenant ? req.notify(200, 'Integration Tenant Connection test successful for ' + Tenant.Name) : req.warn(400, 'Integration Tenant Connection test unsuccessful for ' + Tenant.Name)
                 success &&= success_pingTenant
 
+                if (success && Tenant.Neo_target_certificate_alias) {
+                    const keystores = await caller.getNeoKeystoreEntries()
+                    const success_target_certificate_alias = !!keystores.find(keystore => keystore.Alias === Tenant.Neo_target_certificate_alias)
+                    success_target_certificate_alias || req.warn(400, 'CF Certificate Alias ' + Tenant.Neo_target_certificate_alias + ' is missing in ' + Tenant.Name)
+                    success &&= success_target_certificate_alias
+                }
+
                 if (Tenant.UseForCertificateUserMappings) {
                     await caller.refreshPlatformToken()
 
-                    const success_pingPlatform = await caller.pingPlatformTenant()
-                    success_pingPlatform ? req.notify(200, 'Platform Account Ping test successful for ' + Tenant.Name) : req.warn(400, 'Platform Account Ping test unsuccessful for ' + Tenant.Name)
-                    success &&= success_pingPlatform
+                    if (Tenant.Environment !== 'Neo') { //Neo API no longer supports a ping on the '/' endpoint
+                        const success_pingPlatform = await caller.pingPlatformTenant()
+                        success_pingPlatform ? req.notify(200, 'Platform Account Ping test successful for ' + Tenant.Name) : req.warn(400, 'Platform Account Ping test unsuccessful for ' + Tenant.Name)
+                        success &&= success_pingPlatform
+                    }
 
                     const success_testPlatform = await caller.testPlatformSettings()
                     success_testPlatform ? req.notify(200, 'Validating Platform Settings successful for ' + Tenant.Name) : req.warn(400, ' Validating Platform Settings unsuccessful for ' + Tenant.Name)

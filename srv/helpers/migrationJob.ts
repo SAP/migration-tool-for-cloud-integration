@@ -63,6 +63,40 @@ type TMigrationContent = {
     GlobalDataStores?: string[]
     DesignTimeArtifacts?: string[]
     ValueMappingDesigntimeArtifacts?: string[]
+    AllUserCredentials?: boolean            //new security artifact
+    AllSecureParameters?: boolean           //new security artifact
+    AllOAuth2ClientCredentials?: boolean    //new security artifact
+    AllOAuth2SAMLBearerAssertions?: boolean //new security artifact
+    AllKeystores?: boolean                  //new security artifact
+    AllPGPKeys?: boolean                    //new security artifact
+    AllJDBCDatasources?: boolean            //new security artifact
+    AllOAuth2AuthorizationCodes?: boolean   //new security artifact
+    AllKnownHosts?: boolean                 //new security artifact
+}
+
+type TSecurityContentTransportPayload = {
+    TaskId: string
+    Type: string
+    TargetCertificateAlias: string
+    Mode: string
+}
+
+type TSecurityTaskStatus = {
+    TaskId: string
+    TargetCertificateAlias: string
+    Mode: string
+    Type: string
+    TaskState: string
+    TaskLogs: string
+    SourceTenant: string
+    TargetTenant: string
+    TotalArtifactsFromSource: number
+    Created: number
+    Updated: number
+    Skipped: number
+    Erroneous: null
+    ArtifactErrors: string
+    ExceptionThrown: string
 }
 
 export default class MigrationJobHelper {
@@ -120,6 +154,7 @@ export default class MigrationJobHelper {
             if (this.Task.SourceTenant) {
                 this.ConnectorSource = new ExternalConnection(this.Task.SourceTenant)
                 await this.ConnectorSource?.refreshIntegrationToken()
+                await this.ConnectorSource?.refreshAuthorizationDetails()
                 await this.addLogEntry(0, 'Source: ' + this.Task.SourceTenant.Name)
             } else {
                 throw Error(`No source tenant specified`)
@@ -175,6 +210,16 @@ export default class MigrationJobHelper {
             this.MigrationContent.GlobalVariables = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Variables && x.Included)).map(x => x.Id!)
             this.MigrationContent.CertificateUserMappings = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.CertificateUserMappings && x.Included)).map(x => x.Id!)
             this.MigrationContent.GlobalDataStores = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.DataStores && x.Included)).map(x => x.Id!)
+            this.MigrationContent.AllUserCredentials = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllUserCredentials.Name && x.Included))
+            this.MigrationContent.AllSecureParameters = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllSecureParameters.Name && x.Included))
+            this.MigrationContent.AllOAuth2ClientCredentials = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllOAuth2ClientCredentials.Name && x.Included))
+            this.MigrationContent.AllOAuth2SAMLBearerAssertions = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllOAuth2SAMLBearerAssertions.Name && x.Included))
+            this.MigrationContent.AllKeystores = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllKeystores.Name && x.Included))
+            this.MigrationContent.AllPGPKeys = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllPGPKeys.Name && x.Included))
+            this.MigrationContent.AllJDBCDatasources = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllJDBCDatasources.Name && x.Included))
+            this.MigrationContent.AllOAuth2AuthorizationCodes = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllOAuth2AuthorizationCodes.Name && x.Included))
+            this.MigrationContent.AllKnownHosts = this.Task.toTaskNodes.some(x => (x.Component == Settings.ComponentNames.MassSecurityContent && x.Name == Settings.MassSecurityContentItems.AllKnownHosts.Name && x.Included))
+
 
             const packagesInScope = [...this.MigrationContent.IntegrationPackages, ...this.MigrationContent.IntegrationPackagesConfigOnly]
             this.MigrationContent.DesignTimeArtifacts = this.Task.toTaskNodes.filter(x => (x.Component == Settings.ComponentNames.Flow && packagesInScope.includes(x.PackageId!))).map(x => x.Id!)
@@ -200,6 +245,13 @@ export default class MigrationJobHelper {
             await this.migrateAccessPolicies()
 
             await this.migrateJMSBrokers()
+
+            await this.migrateAllSecurityContent()         // new security artifact
+            await this.migrateAllKeyStores()                // new security artifact
+            await this.migrateAllPGPKeys()                 // new security artifact
+            await this.migrateAllJDBCDatasources()          // new security artifact
+            await this.migrateAllOAuth2AuthorizationCodes() // new security artifact
+            await this.migrateAllKnownHosts()              // new security artifact
 
             return true
         } catch (error: any) {
@@ -1233,6 +1285,170 @@ export default class MigrationJobHelper {
         }
         return deployStatus
     }
+
+    private migrateAllSecurityContent = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL SECURITY CONTENT:')
+        const securityArtifactTypes = []
+
+        if (this.MigrationContent.AllUserCredentials) {
+            securityArtifactTypes.push(Settings.MassSecurityContentItems.AllUserCredentials.Type)
+        }
+
+        if (this.MigrationContent.AllSecureParameters) {
+            securityArtifactTypes.push(Settings.MassSecurityContentItems.AllSecureParameters.Type)
+        }
+
+        if (this.MigrationContent.AllOAuth2ClientCredentials) {
+            securityArtifactTypes.push(Settings.MassSecurityContentItems.AllOAuth2ClientCredentials.Type)
+        }
+
+        if (this.MigrationContent.AllOAuth2SAMLBearerAssertions) {
+            securityArtifactTypes.push(Settings.MassSecurityContentItems.AllOAuth2SAMLBearerAssertions.Type)
+        }
+
+        if (securityArtifactTypes.length > 0) {
+            const type = securityArtifactTypes.join(', ')
+            await this.migrateSecurityArtifact(type)
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateAllKeyStores = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL KEYSTORES:')
+        if (this.MigrationContent.AllKeystores) {
+            const type = Settings.MassSecurityContentItems.AllKeystores.Type
+            await this.migrateSecurityArtifact(type)
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateAllPGPKeys = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL PGP KEYS:')
+        if (this.MigrationContent.AllPGPKeys) {
+            const type = Settings.MassSecurityContentItems.AllPGPKeys.Type
+            await this.migrateSecurityArtifact(type)
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateAllJDBCDatasources = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL JDBC DATASOURCES:')
+        if (this.MigrationContent.AllJDBCDatasources) {
+            const type = Settings.MassSecurityContentItems.AllJDBCDatasources.Type
+            await this.migrateSecurityArtifact(type)
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateAllOAuth2AuthorizationCodes = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL OAUTH2 AUTHORIZATION CODES:')
+        if (this.MigrationContent.AllOAuth2AuthorizationCodes) {
+            const type = Settings.MassSecurityContentItems.AllOAuth2AuthorizationCodes.Type
+            await this.migrateSecurityArtifact(type)
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateAllKnownHosts = async (): Promise<void> => {
+        await this.addLogEntry(1, 'ALL KNOWN HOSTS:')
+        if (this.MigrationContent.AllKnownHosts) {
+            const type = Settings.MassSecurityContentItems.AllKnownHosts.Type
+            await this.migrateSecurityArtifact(type)
+        } else {
+            await this.addLogEntry(2, 'No items to migrate.')
+        }
+    }
+
+    private migrateSecurityArtifact = async (type: string) => {
+        await this.addLogEntry(2, 'Migrate Security Artifacts:')
+        const securityContentTransportsPayload = {
+            TaskId: 'dummyId',
+            Type: type,
+            TargetCertificateAlias: this.Task?.SourceTenant?.Neo_target_certificate_alias,
+            Mode: "merge"
+        } as TSecurityContentTransportPayload
+        
+        // await this.ConnectorSource?.refreshAuthorizationDetails()
+        const response = await this.ConnectorSource?.externalPostWithCSRF(Settings.Paths.SecurityArtifactsTransport.path, securityContentTransportsPayload)
+
+        const isResponseSuccess = await this.validateMigrateSecurityArtifactsResponse(response, type)
+        if (!isResponseSuccess) {
+            return false
+        }
+
+        const taskId = response?.value?.data?.taskId
+        await this.pollTaskStatus(taskId, type)
+        return true
+    }
+
+    private validateMigrateSecurityArtifactsResponse = async (response: TResponse | undefined, type: string): Promise<boolean> => {
+        if (!response) {
+            await this.addLogEntry(3, `Task for type '${type}' was not created`)
+            await this.generateError('Security Artifacts', 'Security Artifacts', 'An internal error occured. Please try again')
+            return false
+        }
+        if (response?.code !== 200) {
+            const item = this.getItemFromSecurityArtifactsType(type)
+
+            await this.addLogEntry(3, `Migration task for type '${type}' was not created`)
+
+            if (response?.code === 403) {
+                await this.generateError('Security Artifacts', item, `Operation Forbidden: Security Artifacts migration is not permitted with the current configuration. Ensure all configuration steps have been completed correctly.`)
+            } else {
+                await this.generateError('Security Artifacts', item, `${response.value?.error?.message?.value}`)
+            }
+
+            return false
+        } else {
+            await this.addLogEntry(3, `Migration task for type '${type}' was created`)
+            return true
+        }
+    }
+
+    private pollTaskStatus = async (taskId: string, type: string): Promise<void> => {
+        return new Promise(resolve => {
+            const interval = setInterval(async () => {
+                const response = await this.ConnectorSource?.externalGet(Settings.Paths.SecurityArtifactsTransport.task.replace('{TASK_ID}', taskId))
+                const taskStatus = response?.value?.data?.d as TSecurityTaskStatus
+
+                // status code 400 means that the task is still running
+                if (response?.code !== 400) {
+                    const taskState = taskStatus.TaskState
+                    await this.addLogEntry(3, `Migration task finished with status: ${taskState}`)
+
+                    const item = this.getItemFromSecurityArtifactsType(type)
+                    if (taskState === "ERROR" || taskState === "FAILED") {
+                        await this.generateError(Settings.ComponentNames.MassSecurityContent, item, `Migration task Exception: ${taskStatus.ExceptionThrown}`)
+                    } else if (taskState === "PARTIAL_SUCCESS") {
+                        await this.generateWarning(Settings.ComponentNames.MassSecurityContent, item, `Artifact Errors: ${taskStatus.ArtifactErrors}. ${taskStatus.Erroneous} artifact(s) were not migrated.`)
+                    }
+
+                    if (taskState !== 'RUNNING') {
+                        clearInterval(interval)
+                        resolve()
+                    }
+                } else {
+                    await this.addLogEntry(4, `Task is running ...`)
+                }
+
+            }, Settings.Defaults.MigrateSecurityArtifacts.sleepInterval)
+        })
+    }
+
+    private getItemFromSecurityArtifactsType = (type: string): string => {
+        const securityArtifactTypes = type.split(', ')
+        // const securityArtifactItem = securityArtifactTypes[0] as keyof typeof Settings.SharedSecurityArtifactTypeNames;
+        // const item = this.Task?.toTaskNodes?.filter(x => (x.Component == Settings.SharedSecurityArtifactTypeNames[securityArtifactItem]))[0]?.Component || 'Security Artifacts'
+        // return item
+        return Object.values(Settings.MassSecurityContentItems).find(x => x.Type == securityArtifactTypes[0])?.Name || 'Security Artifacts'
+    }
+
+
     private createCFServiceInstance = async (mapping: extCertificateUserMapping, roles: string[]): Promise<void> => {
         await this.addLogEntry(3, 'Creating service instance for roles: ' + roles.join(', '))
         const body = {

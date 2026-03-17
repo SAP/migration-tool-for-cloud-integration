@@ -159,6 +159,11 @@ annotate RegistrationService.Tenants with @(UI: {
                     $Type : 'UI.ReferenceFacet',
                     Label : 'oAuth Service Key',
                     Target: '@UI.FieldGroup#Connection_auth'
+                },
+                {
+                    $Type : 'UI.ReferenceFacet',
+                    Label : 'Security Content Migration',
+                    Target: '@UI.FieldGroup#Security_artifact_transport'
                 }
             ]
         }
@@ -210,6 +215,10 @@ annotate RegistrationService.Tenants with @(UI: {
             ![@UI.Hidden]: {$edmJson: {$Path: 'IsActiveEntity'}}
         }
     ]},
+    FieldGroup #Security_artifact_transport : { Data: [{
+        Value: Neo_target_certificate_alias,
+        ![@UI.Hidden]: ( not ( Environment = 'Neo' ) )
+    }]},
     FieldGroup #CF_data          : {Data: [
         {Value: CF_organizationName},
         {Value: CF_spaceName},
@@ -240,6 +249,7 @@ annotate RegistrationService.Tenants with @(UI: {
     Oauth_clientid                @title: 'oAuth Client ID'            @UI.Placeholder       : 'See OAuth Client credentials'                             @mandatory;
     Oauth_secret                  @title: 'oAuth Secret'               @UI.Placeholder       : 'See OAuth Client credentials'                             @mandatory        @Common.Masked;
     Oauth_servicekeyid            @title: 'oAuth Service Instance ID'  @UI.Placeholder       : 'ID of the service instance';
+    Neo_target_certificate_alias  @title: 'CF Certificate Alias'       @UI.Placeholder       : 'e.g. cf_transport';
     Role                          @title: 'System Role'                @UI.Placeholder       : 'Select role'                                              @mandatory;
     Environment                   @title: 'Environment'                @UI.Placeholder       : 'Select environment'                                       @mandatory;
     ReadOnly                      @title: 'Source-only system';

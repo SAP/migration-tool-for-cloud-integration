@@ -444,7 +444,7 @@ export default class ContentDownloader {
         const itemsSupported = items.filter(x => x.Type == 'Certificate')
         if (items.length > itemsSupported.length) {
             const notSupported = items.filter(x => !itemsSupported.includes(x)).map(x => x.Alias)
-            await this.createError(TErrorComponentName.KeystoreEntry, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + notSupported.length + ' keystore entries which are not supported for migration: ' + notSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument)
+            await this.createError(TErrorComponentName.KeystoreEntry, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + notSupported.length + ' keystore entries which are not supported for individual migration: ' + notSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument + ' Migration of shared artifacts is still possible')
         }
 
         this.removeInvalidParameters(Entities.extKeyStoreEntries, itemsSupported)
@@ -528,7 +528,7 @@ export default class ContentDownloader {
         const itemsSupported = items.filter(x => (x.Kind == 'default' || x.Kind == 'successfactors'))
         const itemsNotSupported = items.filter(x => (!itemsSupported.includes(x) && (!OAuth2ClientCredentialsList.includes(x.Name!)))).map(x => x.Name)
         if (itemsNotSupported.length > 0) {
-            await this.createError(TErrorComponentName.UserCredential, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + itemsNotSupported.length + ' user credential(s) which are not supported for migration: ' + itemsNotSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument)
+            await this.createError(TErrorComponentName.UserCredential, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + itemsNotSupported.length + ' user credential(s) which are not supported for individual migration: ' + itemsNotSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument + ' Migration of shared artifacts is still possible')
         }
         itemsSupported.forEach(x => ContentDownloader.fixSecurityArtifactDescriptor(x))
         await this.checkUserCredentials(itemsSupported)
@@ -736,7 +736,6 @@ export default class ContentDownloader {
     private checkJMSBrokers = async (item: extJMSBroker) => {
         // await this.createError('JMS Broker', 'Prototype Limitation', item, 'This tenant contains a JMS Broker which is not supported in this prototype. Usage = ' + item.QueueNumber + '/' + item.MaxQueueNumber)
     }
-
     private getAccessPolicies = async (filter?: string[], oppositeFilter?: boolean): Promise<number> => {
         info('getAccessPolicies ' + this.Tenant.ObjectID)
         this.setIntegrationContentStatusTopic('Access Policies')
