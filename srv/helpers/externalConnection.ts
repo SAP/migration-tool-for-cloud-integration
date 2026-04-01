@@ -119,10 +119,10 @@ export default class ExternalConnection {
                     'x-csrf-token': 'fetch',
                 }
             }
-            const response =  await this.doAxiosCall(request)
+            const response = await this.doAxiosCall(request)
             const csrfToken = response?.value.headers['x-csrf-token']
             const cookie = response?.value.headers['set-cookie']
-            return { csrfToken, cookie}
+            return { csrfToken, cookie }
         } catch (error: any) {
             throw new Error('Integration CSRF Tenant token:<br/><br/>' + error.message.replace(/\{/g, '[').replace(/\}/g, ']'))
         }

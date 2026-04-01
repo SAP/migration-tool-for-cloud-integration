@@ -50,7 +50,7 @@
         "service": "sap.btp.cpimigrationtool"
     },
     "sap.platform.cf": {
-	   "ui5VersionNumber": "1.142.7"
+	   "ui5VersionNumber": "1.142.10"
     },
     "sap.ui": {
         "technology": "UI5",

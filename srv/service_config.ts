@@ -252,7 +252,7 @@ export default class ConfigService extends cds.ApplicationService {
                     } else {
                         if (ConfigService.isSecurityArtifactComponentShared(each.Component!)) {
                             each.ConfigureOnlyText = 'With Secrets'
-                        } else if (ConfigService.isSecurityArtifactComponentIndividual(each.Component!))  {
+                        } else if (ConfigService.isSecurityArtifactComponentIndividual(each.Component!)) {
                             each.ConfigureOnlyText = 'Without Secrets'
                         } else {
                             each.ConfigureOnlyText = 'Default'
@@ -306,14 +306,14 @@ export default class ConfigService extends cds.ApplicationService {
                     x.toTaskNodes((y: MigrationTaskNode) => { y.ObjectID, y.Component, y.Name }).where({ Included: true })
             }) as MigrationTask
 
-            const warnings =  new MigrationTaskHelper(Task).checkSecurityArtifactsCompatibility()
+            const warnings = new MigrationTaskHelper(Task).checkSecurityArtifactsCompatibility()
             if (warnings.length > 0) {
                 warnings.forEach(warning => {
                     req.warn(400, warning)
                 })
                 return
             }
-            
+
             try {
                 assert(Task.TargetTenant !== null, 'No target tenant has been defined.<br/><br/>Please select a target tenant via \'Change Target ...\'.')
 
