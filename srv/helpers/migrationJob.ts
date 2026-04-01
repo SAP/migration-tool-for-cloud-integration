@@ -112,6 +112,7 @@ export default class MigrationJobHelper {
     Customizations: CustomLogic | null
     Variables: extVariable[]
     DataStores: extDataStore[]
+    reuseableContentDownloader: ContentDownloader
 
     constructor(job: MigrationJob) {
         this.Job = job
@@ -130,6 +131,8 @@ export default class MigrationJobHelper {
 
         this.Variables = []
         this.DataStores = []
+
+        this.reuseableContentDownloader = null as any
     }
 
     public execute = async (): Promise<void> => {
@@ -159,6 +162,7 @@ export default class MigrationJobHelper {
             } else {
                 throw Error(`No source tenant specified`)
             }
+            this.reuseableContentDownloader = new ContentDownloader(this.Task!.SourceTenant!)
 
             if (this.Task.TargetTenant) {
                 this.ConnectorTarget = new ExternalConnection(this.Task.TargetTenant)
@@ -617,6 +621,7 @@ export default class MigrationJobHelper {
         // Packages needing full copy:
         const SAPContentInScope_FullCopy = items.filter(x => (x.Vendor == 'SAP' && this.MigrationContent.IntegrationPackages?.includes(x.Id!)))
         for (let item of SAPContentInScope_FullCopy) {
+            Settings.Flags.SaveArtifactsAsNewVersionDuringMigration && await this.saveArtifactsAsVersion(item)
             const exists = await this.validateIfPackageExistsInTarget(itemsInTarget, item)
             const deleteBeforeHand = exists && Settings.Flags.DeletePackagesFromTargetBeforeOverwriting
             const success = await this.migrateSAPPackage(item, deleteBeforeHand)
@@ -651,6 +656,7 @@ export default class MigrationJobHelper {
         // Packages needing full copy:
         const CustomInScope_FullCopy = items.filter(x => (x.Vendor != 'SAP' && this.MigrationContent.IntegrationPackages?.includes(x.Id!)))
         for (let item of CustomInScope_FullCopy) {
+            Settings.Flags.SaveArtifactsAsNewVersionDuringMigration && await this.saveArtifactsAsVersion(item)
             const exists = await this.validateIfPackageExistsInTarget(itemsInTarget, item)
             const deleteBeforeHand = exists && Settings.Flags.DeletePackagesFromTargetBeforeOverwriting
             const success = await this.migrateCustomPackage(item, deleteBeforeHand)
@@ -707,6 +713,23 @@ export default class MigrationJobHelper {
         return response && await this.validateResponse('Package', item.Name!, response) || false
     }
 
+    // Save package as new version on source:
+    private saveArtifactsAsVersion = async (item: extIntegrationPackage): Promise<boolean> => {
+        await this.addLogEntry(2, 'Versioning Package ' + item.Name)
+
+        const result = await this.reuseableContentDownloader.saveArtifactsAsVersion(item.Id!)
+        if (result.success && result.renamed == 0) {
+            await this.addLogEntry(3, 'No drafts to save as new version')
+            return true
+        } else if (result.success && result.renamed > 0) {
+            await this.addLogEntry(3, `Saved ${result.renamed} drafts as version '${result.newVersion}'`)
+            return true
+        } else {
+            await this.addLogEntry(3, `Failed to save all drafts. Saved ${result.renamed} drafts as version '${result.newVersion}'`)
+            return false
+        }
+    }
+
     // Download package zip and upload to target:
     private migrateCustomPackage = async (item: extIntegrationPackage, deleteBeforeHand: boolean): Promise<boolean> => {
         await this.addLogEntry(2, 'Copying Package ' + item.Name)
@@ -756,8 +779,8 @@ export default class MigrationJobHelper {
         return response && await this.validateResponse('Package', item.Name!, response, 4) || false
     }
     private analyzePackageScriptFiles = async (item: extIntegrationPackage, itemBinary: Buffer): Promise<void> => {
-        const downloader = new ContentDownloader(item.toParent!)
-        const result = await downloader.searchForEnvVarsInPackage(itemBinary, this.Customizations)
+        // const downloader = new ContentDownloader(item.toParent!)
+        const result = await this.reuseableContentDownloader.searchForEnvVarsInPackage(itemBinary, this.Customizations)
         if (result) {
             const resultTexts = result.filter(x => x.count! > 0).map(x => x.artifact + ': ' + x.file + ' contains ' + x.count + ' occurrences of system.getenv()')
             const resultTextErrors = result.filter(x => x.count == -1).map(x => x.artifact + ': ' + x.file)

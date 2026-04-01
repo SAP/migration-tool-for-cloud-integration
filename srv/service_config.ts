@@ -13,12 +13,14 @@ import {
     IntegrationDesigntimeArtifacts,
     IntegrationPackage,
     IntegrationPackages,
+    MessageMappingDesigntimeArtifacts,
     MigrationJob,
     MigrationJobs,
     MigrationTask,
     MigrationTaskNode,
     MigrationTaskNodes,
     MigrationTasks,
+    ScriptCollectionDesigntimeArtifacts,
     Tenant,
     Tenants,
     getIntegrationContentStatus
@@ -154,6 +156,37 @@ export default class ConfigService extends cds.ApplicationService {
             }
             return result
         })
+        this.on(IntegrationPackage.actions.saveArtifactsAsVersion, async (req) => {
+            const Package = await SELECT.one.from(req.subject).columns(x => { x('*'), x.toParent('*') }) as IntegrationPackage
+            if (!Package || !Package.toParent) return 'No package found'
+
+            try {
+                const downloader = new DownloadHelper(Package.toParent)
+                const result = await downloader.saveArtifactsAsVersion(Package.Id!)
+                if (result.success) {
+                    result.renamed == 0
+                        ? req.notify(200, `No drafts in ${Package.Name}`)
+                        : req.notify(200, `Saved ${result.renamed} drafts of ${Package.Name}:<br/><br/>` + result.message.join('<br/>'))
+                } else {
+                    req.warn(400, `Failed to save all drafts of ${Package.Name}. Saved ${result.renamed} drafts:<br/><br/>` + result.message.join('<br/>'))
+                }
+
+                if (Settings.Flags.RefreshIntegrationContentAfterSaveDrafts && result.renamed > 0) {
+                    const Tenant = await SELECT.one.from(Tenants, Package.toParent.ObjectID!) as Tenant
+                    const refreshResult = await getIntegrationContentHandler(req, Tenant, {
+                        getIntegrationPackages_include: true,
+                        getIntegrationPackages_filter: [Package.Id!]
+                    }, true)
+                    if (refreshResult) {
+                        refreshResult.success
+                            ? req.notify(200, refreshResult.IntegrationContentStatus.Topic + '<br/><br/>' + refreshResult.IntegrationContentStatus.Item)
+                            : req.warn(400, refreshResult.IntegrationContentStatus.Topic + '<br/><br/>' + refreshResult.IntegrationContentStatus.Item)
+                    }
+                }
+            } catch (error) {
+                req.error(400, `An error occurred while saving drafts of ${Package.Name}:<br/><br/>` + (error instanceof Error ? error.message : String(error)))
+            }
+        })
         this.on(Tenant.actions.createNewMigrationTask, async (req): Promise<MigrationTask> => {
             const [keys] = req.params as typeof Tenant.keys[]
             const { Name, Description, TargetTenant, Preset } = req.data
@@ -193,7 +226,7 @@ export default class ConfigService extends cds.ApplicationService {
             req.notify(201, 'Migration Task created.')
             return Task
         })
-        this.after('READ', [IntegrationPackages, IntegrationDesigntimeArtifacts], (items): void => {
+        this.after('READ', [IntegrationPackages, IntegrationDesigntimeArtifacts, ScriptCollectionDesigntimeArtifacts, MessageMappingDesigntimeArtifacts], (items): void => {
             items?.forEach(each => {
                 each.Criticality = (each.NumberOfErrors && each.NumberOfErrors > 0)
                     ? Settings.CriticalityCodes.Orange
@@ -301,7 +334,7 @@ export default class ConfigService extends cds.ApplicationService {
         this.on(MigrationTask.actions.startMigration, async (req): Promise<MigrationJob | Error | undefined> => {
             const [keys] = req.params as typeof MigrationTask.keys[]
             const Task = await SELECT.one.from(req.subject).columns(x => {
-                x.SourceTenant((y: Tenant) => { y.Name, y.UseForCertificateUserMappings, y.Environment, y.Neo_target_certificate_alias }),
+                x.SourceTenant((y: Tenant) => { y.Name, y.UseForCertificateUserMappings, y.Environment, y.Neo_target_certificate_alias, y.ReadOnly }),
                     x.TargetTenant((y: Tenant) => { y.Name, y.UseForCertificateUserMappings, y.Environment }),
                     x.toTaskNodes((y: MigrationTaskNode) => { y.ObjectID, y.Component, y.Name }).where({ Included: true })
             }) as MigrationTask
@@ -334,6 +367,10 @@ export default class ConfigService extends cds.ApplicationService {
                 if (countMassSecurityContent > 0) {
                     assert(!!Task.SourceTenant!.Neo_target_certificate_alias,
                         'You have included at least 1 Bulk Security Content item for this migration. Before these can be migrated, the Neo tenant has to be configured with a CF Certificate Alias via the \'Register Tenants\' application.')
+                }
+
+                if (Settings.Flags.SaveArtifactsAsNewVersionDuringMigration) {
+                    assert(!Task.SourceTenant?.ReadOnly, 'Source tenant is read-only. Cannot automatically save artifacts as new version. Either disable the read-only flag for the source tenant in the \'Register Tenants\' application, or disable the option to save artifacts as new version during migration in the \'settings.ts\' of the application.')
                 }
 
                 const job_id = randomUUID()
@@ -373,7 +410,7 @@ export default class ConfigService extends cds.ApplicationService {
         this.on(MigrationTask.actions.refreshJobsTable, (req): void => { }) //empty function, but triggers side effect to refresh the table
         this.on(MigrationJob.actions.refreshLog, (req): void => { }) //empty function, but triggers side effect to refresh the table
 
-        function getIntegrationContentHandler(req: cds.Request<any>, Tenant: Tenant, filter: TContentDownloaderFilter): void {
+        function getIntegrationContentHandler(req: cds.Request<any>, Tenant: Tenant, filter: TContentDownloaderFilter, getPromise = false): void | Promise<{ success: boolean; IntegrationContentStatus: TIntegrationContentStatus }> {
             IntegrationContentStatus = {
                 Running: true,
                 Tenant: Tenant.Name,
@@ -385,7 +422,7 @@ export default class ConfigService extends cds.ApplicationService {
 
             req.http?.req?.setMaxListeners(0)
             const startTime = Date.now()
-            new DownloadHelper(Tenant, IntegrationContentStatus)
+            const promise = new DownloadHelper(Tenant, IntegrationContentStatus)
                 .getIntegrationContent(filter)
                 .then(async (count) => {
                     IntegrationContentStatus.Topic = `Integration Content has been refreshed with ${count} items.`
@@ -411,13 +448,16 @@ export default class ConfigService extends cds.ApplicationService {
 
                     IntegrationContentStatus.Running = false
                     info('Done in ' + elapsedTime)
+                    return { success: true, IntegrationContentStatus }
                 })
                 .catch((e: any) => {
                     error(e?.message || e)
                     IntegrationContentStatus.ErrorState = true
                     IntegrationContentStatus.Item = e?.message || String(e)
                     req.error(400, e)
+                    return { success: false, IntegrationContentStatus }
                 })
+            if (getPromise) { return promise }
         }
 
         return super.init()

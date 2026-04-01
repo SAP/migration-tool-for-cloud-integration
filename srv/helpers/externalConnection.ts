@@ -16,18 +16,24 @@ export type TResponse = {
 export default class ExternalConnection {
     Tenant: Tenant
     Token: string
+    TokenValidUntil: number
     CSRFToken: string
     Cookie: string[]
+    AuthorizationDetailsValidUntil: number
     PlatformToken: string
+    PlatformTokenValidUntil: number
     Connection: { HostTx: cds.Transaction | null; TokenTx: cds.Transaction | null }
     PlatformConnection: { HostTx: cds.Transaction | null; TokenTx: cds.Transaction | null }
 
     constructor(tenant: Tenant) {
         this.Tenant = tenant
         this.Token = ''
+        this.TokenValidUntil = Date.now()
         this.CSRFToken = ''
         this.Cookie = []
+        this.AuthorizationDetailsValidUntil = Date.now()
         this.PlatformToken = ''
+        this.PlatformTokenValidUntil = Date.now()
 
         this.Connection = {
             HostTx: null,
@@ -42,18 +48,27 @@ export default class ExternalConnection {
     // Connectivity and Tokens
 
     public refreshIntegrationToken = async (): Promise<void> => {
-        this.Token = await this.getOAuthToken()
+        if (this.TokenValidUntil <= Date.now() + 5 * 60 * 1000) { // only refresh if token is expiring within the next 5 minutes
+            this.Token = await this.getOAuthToken()
+            this.TokenValidUntil = Date.now() + 60 * 60 * 1000 // 1 hour
+        }
     }
     public refreshAuthorizationDetails = async (): Promise<void> => {
-        const authorizationDetails = await this.getAuthorizationDetailsForSecurityArtifacts()
-        this.CSRFToken = authorizationDetails.csrfToken!
-        this.Cookie = authorizationDetails.cookie!
+        if (this.AuthorizationDetailsValidUntil <= Date.now() + 5 * 60 * 1000) { // only refresh if details are expiring within the next 5 minutes
+            const authorizationDetails = await this.getAuthorizationDetailsForSecurityArtifacts()
+            this.CSRFToken = authorizationDetails.csrfToken!
+            this.Cookie = authorizationDetails.cookie!
+            this.AuthorizationDetailsValidUntil = Date.now() + 60 * 60 * 1000 // 1 hour
+        }
     }
     public refreshPlatformToken = async (): Promise<void> => {
-        if (this.Tenant.Environment == 'Neo') {
-            this.PlatformToken = await this.getNeoPlatformToken()
-        } else {
-            this.PlatformToken = await this.getCFPlatformToken()
+        if (this.PlatformTokenValidUntil <= Date.now() + 5 * 60 * 1000) { // only refresh if token is expiring within the next 5 minutes
+            if (this.Tenant.Environment == 'Neo') {
+                this.PlatformToken = await this.getNeoPlatformToken()
+            } else {
+                this.PlatformToken = await this.getCFPlatformToken()
+            }
+            this.PlatformTokenValidUntil = Date.now() + 60 * 60 * 1000 // 1 hour
         }
     }
 

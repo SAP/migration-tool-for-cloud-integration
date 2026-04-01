@@ -209,11 +209,42 @@ service ConfigService {
             toParent,
             ModifiedDateFormatted
         actions {
-            action analyzeScriptFiles() returns many db.TArtifactAnalysis;
+            action analyzeScriptFiles()      returns many db.TArtifactAnalysis;
+            action saveArtifactsAsVersion()  returns String;
         };
 
     entity IntegrationDesigntimeArtifacts  as
         projection on db.extIntegrationDesigntimeArtifacts {
+            *,
+            count(toErrors.ObjectID) as NumberOfErrors : Integer
+        }
+        group by
+            ObjectID,
+            Id,
+            Version,
+            PackageId,
+            Name,
+            Description,
+            ArtifactContent,
+            toParent;
+
+    entity ScriptCollectionDesigntimeArtifacts  as
+        projection on db.extScriptCollectionDesigntimeArtifacts {
+            *,
+            count(toErrors.ObjectID) as NumberOfErrors : Integer
+        }
+        group by
+            ObjectID,
+            Id,
+            Version,
+            PackageId,
+            Name,
+            Description,
+            ArtifactContent,
+            toParent;
+
+    entity MessageMappingDesigntimeArtifacts  as
+        projection on db.extMessageMappingDesigntimeArtifacts {
             *,
             count(toErrors.ObjectID) as NumberOfErrors : Integer
         }

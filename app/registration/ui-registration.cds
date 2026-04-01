@@ -252,7 +252,7 @@ annotate RegistrationService.Tenants with @(UI: {
     Neo_target_certificate_alias  @title: 'CF Certificate Alias'       @UI.Placeholder       : 'e.g. cf_transport';
     Role                          @title: 'System Role'                @UI.Placeholder       : 'Select role'                                              @mandatory;
     Environment                   @title: 'Environment'                @UI.Placeholder       : 'Select environment'                                       @mandatory;
-    ReadOnly                      @title: 'Source-only system';
+    ReadOnly                      @title: 'Read-only system';
     ReadOnlyText                  @title: 'Mode';
     CF_organizationName           @title: 'CF Organization'            @readonly;
     CF_spaceName                  @title: 'CF Space'                   @readonly;
