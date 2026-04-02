@@ -112,7 +112,7 @@ export default class MigrationJobHelper {
     Customizations: CustomLogic | null
     Variables: extVariable[]
     DataStores: extDataStore[]
-    reuseableContentDownloader: ContentDownloader
+    reusableContentDownloader: ContentDownloader
 
     constructor(job: MigrationJob) {
         this.Job = job
@@ -132,7 +132,7 @@ export default class MigrationJobHelper {
         this.Variables = []
         this.DataStores = []
 
-        this.reuseableContentDownloader = null as any
+        this.reusableContentDownloader = null as any
     }
 
     public execute = async (): Promise<void> => {
@@ -162,7 +162,7 @@ export default class MigrationJobHelper {
             } else {
                 throw Error(`No source tenant specified`)
             }
-            this.reuseableContentDownloader = new ContentDownloader(this.Task!.SourceTenant!)
+            this.reusableContentDownloader = new ContentDownloader(this.Task!.SourceTenant!)
 
             if (this.Task.TargetTenant) {
                 this.ConnectorTarget = new ExternalConnection(this.Task.TargetTenant)
@@ -717,7 +717,7 @@ export default class MigrationJobHelper {
     private saveArtifactsAsVersion = async (item: extIntegrationPackage): Promise<boolean> => {
         await this.addLogEntry(2, 'Versioning Package ' + item.Name)
 
-        const result = await this.reuseableContentDownloader.saveArtifactsAsVersion(item.Id!)
+        const result = await this.reusableContentDownloader.saveArtifactsAsVersion(item.Id!)
         if (result.success && result.renamed == 0) {
             await this.addLogEntry(3, 'No drafts to save as new version')
             return true
@@ -780,7 +780,7 @@ export default class MigrationJobHelper {
     }
     private analyzePackageScriptFiles = async (item: extIntegrationPackage, itemBinary: Buffer): Promise<void> => {
         // const downloader = new ContentDownloader(item.toParent!)
-        const result = await this.reuseableContentDownloader.searchForEnvVarsInPackage(itemBinary, this.Customizations)
+        const result = await this.reusableContentDownloader.searchForEnvVarsInPackage(itemBinary, this.Customizations)
         if (result) {
             const resultTexts = result.filter(x => x.count! > 0).map(x => x.artifact + ': ' + x.file + ' contains ' + x.count + ' occurrences of system.getenv()')
             const resultTextErrors = result.filter(x => x.count == -1).map(x => x.artifact + ': ' + x.file)
@@ -1395,7 +1395,7 @@ export default class MigrationJobHelper {
             TargetCertificateAlias: this.Task?.SourceTenant?.Neo_target_certificate_alias,
             Mode: "merge"
         } as TSecurityContentTransportPayload
-        
+
         // await this.ConnectorSource?.refreshAuthorizationDetails()
         const response = await this.ConnectorSource?.externalPostWithCSRF(Settings.Paths.SecurityArtifactsTransport.path, securityContentTransportsPayload)
 
@@ -1405,6 +1405,11 @@ export default class MigrationJobHelper {
         }
 
         const taskId = response?.value?.data?.taskId
+        if (!taskId) {
+            await this.addLogEntry(3, `Migration task ID not found in response for type '${type}'`)
+            await this.generateError('Security Artifacts', 'Security Artifacts', 'Migration task was created but no task ID was returned. Cannot poll status.')
+            return false
+        }
         await this.pollTaskStatus(taskId, type)
         return true
     }
@@ -1412,7 +1417,7 @@ export default class MigrationJobHelper {
     private validateMigrateSecurityArtifactsResponse = async (response: TResponse | undefined, type: string): Promise<boolean> => {
         if (!response) {
             await this.addLogEntry(3, `Task for type '${type}' was not created`)
-            await this.generateError('Security Artifacts', 'Security Artifacts', 'An internal error occured. Please try again')
+            await this.generateError('Security Artifacts', 'Security Artifacts', 'An internal error occurred. Please try again')
             return false
         }
         if (response?.code !== 200) {
@@ -1435,12 +1440,20 @@ export default class MigrationJobHelper {
 
     private pollTaskStatus = async (taskId: string, type: string): Promise<void> => {
         return new Promise(resolve => {
+            const startTime = Date.now()
             const interval = setInterval(async () => {
                 const response = await this.ConnectorSource?.externalGet(Settings.Paths.SecurityArtifactsTransport.task.replace('{TASK_ID}', taskId))
-                const taskStatus = response?.value?.data?.d as TSecurityTaskStatus
+                const taskStatus = response?.value?.data?.d as TSecurityTaskStatus | null
 
                 // status code 400 means that the task is still running
                 if (response?.code !== 400) {
+                    if (!taskStatus) {
+                        await this.addLogEntry(3, `Migration task status response was empty or malformed`)
+                        await this.generateError(Settings.ComponentNames.MassSecurityContent, type, `Security Artifacts migration task id ${taskId} its status response that was empty or malformed.`)
+                        clearInterval(interval)
+                        resolve()
+                        return
+                    }
                     const taskState = taskStatus.TaskState
                     await this.addLogEntry(3, `Migration task finished with status: ${taskState}`)
 
@@ -1457,6 +1470,13 @@ export default class MigrationJobHelper {
                     }
                 } else {
                     await this.addLogEntry(4, `Task is running ...`)
+                }
+
+                if (Date.now() - startTime > Settings.Defaults.MigrateSecurityArtifacts.maxWait) {
+                    clearInterval(interval)
+                    await this.generateWarning(Settings.ComponentNames.MassSecurityContent, type, `Security Artifacts migration task id ${taskId} is still running after maximum wait time exceeded. Please check the status of the migration task with ID ${taskId} in the source tenant.`)
+                    await this.addLogEntry(4, `Maximum wait time (${Settings.Defaults.MigrateSecurityArtifacts.maxWait / 60000} minutes) exceeded. Please check the status of the migration task with ID ${taskId} in the source tenant.`)
+                    resolve()
                 }
 
             }, Settings.Defaults.MigrateSecurityArtifacts.sleepInterval)

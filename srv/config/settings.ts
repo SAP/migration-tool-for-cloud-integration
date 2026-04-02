@@ -271,7 +271,8 @@ export const Settings = {
             maxWait: 60 * 1000
         },
         MigrateSecurityArtifacts: {
-            sleepInterval: 5 * 1000
+            sleepInterval: 5 * 1000,
+            maxWait: 40 * 60 * 1000 // 40 minutes
         }
     }
 }
