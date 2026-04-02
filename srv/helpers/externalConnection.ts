@@ -28,12 +28,13 @@ export default class ExternalConnection {
     constructor(tenant: Tenant) {
         this.Tenant = tenant
         this.Token = ''
-        this.TokenValidUntil = Date.now()
+        this.TokenValidUntil = 0
         this.CSRFToken = ''
         this.Cookie = []
-        this.AuthorizationDetailsValidUntil = Date.now()
+        this.AuthorizationDetailsValidUntil = 0
         this.PlatformToken = ''
-        this.PlatformTokenValidUntil = Date.now()
+        this.PlatformTokenValidUntil = 0
+
 
         this.Connection = {
             HostTx: null,
