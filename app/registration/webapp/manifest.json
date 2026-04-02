@@ -10,7 +10,7 @@
             ]
         },
         "applicationVersion": {
-            "version": "1.0.0"
+            "version": "1.4.0"
         },
         "title": "Register Tenants",
         "description": "Register tenants to be used in the migration",

@@ -10,7 +10,7 @@
             ]
         },
         "applicationVersion": {
-            "version": "1.0.0"
+            "version": "1.4.0"
         },
         "title": "Job Logs",
         "description": "View logs of previous job runs",

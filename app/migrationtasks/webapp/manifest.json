@@ -10,7 +10,7 @@
             ]
         },
         "applicationVersion": {
-            "version": "1.0.0"
+            "version": "1.4.0"
         },
         "title": "Migration Tasks",
         "description": "Manage migration task content",
