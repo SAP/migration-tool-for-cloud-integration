@@ -315,6 +315,11 @@ annotate ConfigService.IntegrationPackages with @(UI : {
             $Type  : 'UI.DataFieldForAction',
             Label  : 'Analyze Scripts for Env Vars',
             Action : 'ConfigService.analyzeScriptFiles'
+        },
+        {
+            $Type : 'UI.DataFieldForAction',
+            Label : 'Save Draft Artifacts',
+            Action: 'ConfigService.saveArtifactsAsVersion'
         }
     ],
     HeaderInfo          : {
@@ -343,6 +348,12 @@ annotate ConfigService.IntegrationPackages with @(UI : {
             Label  : 'Analyze Scripts for Env Vars',
             Action : 'ConfigService.analyzeScriptFiles',
             Inline : false
+        },
+        {
+            $Type : 'UI.DataFieldForAction',
+            Label : 'Save Draft Artifacts',
+            Action: 'ConfigService.saveArtifactsAsVersion',
+            Inline : false
         }
     ],
     DataPoint #Alerts   : {
@@ -369,6 +380,14 @@ annotate ConfigService.IntegrationPackages with @(UI : {
                 {
                     $Type  : 'UI.ReferenceFacet',
                     Target : 'toIntegrationDesigntimeArtifacts/@UI.PresentationVariant',
+                },
+                {
+                    $Type  : 'UI.ReferenceFacet',
+                    Target : 'toScriptCollectionDesigntimeArtifacts/@UI.PresentationVariant',
+                },
+                {
+                    $Type  : 'UI.ReferenceFacet',
+                    Target : 'toMessageMappingDesigntimeArtifacts/@UI.PresentationVariant',
                 },
                 {
                     $Type  : 'UI.ReferenceFacet',
@@ -476,6 +495,168 @@ annotate ConfigService.IntegrationDesigntimeArtifacts with @(UI : {
                     Target : 'toResources/@UI.PresentationVariant',
                 }
             ]
+        },
+        {
+            ![@UI.Hidden] : ( NumberOfErrors = 0 ),
+            $Type         : 'UI.CollectionFacet',
+            ID            : 'errors',
+            Label         : 'Errors',
+            Facets        : [{
+                $Type  : 'UI.ReferenceFacet',
+                Target : 'toErrors/@UI.PresentationVariant',
+            }, ]
+        }
+    ],
+    FieldGroup #Basic   : {Data : [
+        {Value : Name},
+        {Value : Id},
+        {Value : Version},
+        {Value : Description},
+        {Value : ArtifactContent}
+    ]}
+}) {
+    Id              @title : 'ID';
+    Version         @title : 'Version';
+    PackageId       @title : 'Package';
+    Name            @title : 'Name';
+    Description     @title : 'Description';
+    ArtifactContent @title : 'Artifact Content';
+};
+
+// Script Collection Designtime Artifacts -----------------------------------------------------
+annotate ConfigService.ScriptCollectionDesigntimeArtifacts with @(UI : {
+    Identification      : [{Value : Id}],
+    PresentationVariant : {
+        SortOrder      : [
+            {
+                Property   : NumberOfErrors,
+                Descending : true
+            },
+            {Property : Name}
+        ],
+        Visualizations : ['@UI.LineItem'],
+        RequestAtLeast : [NumberOfErrors]
+    },
+    HeaderInfo          : {
+        TypeName       : 'Script Collection',
+        TypeNamePlural : 'Script Collections',
+        Title          : {Value : Name},
+        Description    : {Value : Description}
+    },
+    LineItem            : [
+        {
+            $Type                 : 'UI.DataFieldForAnnotation',
+            Target                : '@UI.DataPoint#Alerts',
+            Label                 : 'Alerts',
+            ![@HTML5.CssDefaults] : {width : '3rem'},
+            ![@UI.Hidden] : ( NumberOfErrors = 0 )
+        },
+        {
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '30rem'}
+        },
+        {Value : Version},
+        {
+            Value                 : Description,
+            ![@HTML5.CssDefaults] : {width : '30rem'}
+        }
+    ],
+    DataPoint #Alerts   : {
+        Value                     : NumberOfErrors,
+        Criticality               : Criticality,
+        CriticalityRepresentation : #OnlyIcon,
+        ![@Common.QuickInfo]      : 'One or more error(s) could block migration of this item.'
+    },
+    Facets              : [
+        {
+            $Type  : 'UI.CollectionFacet',
+            ID     : 'metadata',
+            Label  : 'Metadata',
+            Facets : [{
+                $Type  : 'UI.ReferenceFacet',
+                Target : '@UI.FieldGroup#Basic'
+            }]
+        },
+        {
+            ![@UI.Hidden] : ( NumberOfErrors = 0 ),
+            $Type         : 'UI.CollectionFacet',
+            ID            : 'errors',
+            Label         : 'Errors',
+            Facets        : [{
+                $Type  : 'UI.ReferenceFacet',
+                Target : 'toErrors/@UI.PresentationVariant',
+            }, ]
+        }
+    ],
+    FieldGroup #Basic   : {Data : [
+        {Value : Name},
+        {Value : Id},
+        {Value : Version},
+        {Value : Description},
+        {Value : ArtifactContent}
+    ]}
+}) {
+    Id              @title : 'ID';
+    Version         @title : 'Version';
+    PackageId       @title : 'Package';
+    Name            @title : 'Name';
+    Description     @title : 'Description';
+    ArtifactContent @title : 'Artifact Content';
+};
+
+// Message Mapping Designtime Artifacts -----------------------------------------------------
+annotate ConfigService.MessageMappingDesigntimeArtifacts with @(UI : {
+    Identification      : [{Value : Id}],
+    PresentationVariant : {
+        SortOrder      : [
+            {
+                Property   : NumberOfErrors,
+                Descending : true
+            },
+            {Property : Name}
+        ],
+        Visualizations : ['@UI.LineItem'],
+        RequestAtLeast : [NumberOfErrors]
+    },
+    HeaderInfo          : {
+        TypeName       : 'Message Mapping',
+        TypeNamePlural : 'Message Mappings',
+        Title          : {Value : Name},
+        Description    : {Value : Description}
+    },
+    LineItem            : [
+        {
+            $Type                 : 'UI.DataFieldForAnnotation',
+            Target                : '@UI.DataPoint#Alerts',
+            Label                 : 'Alerts',
+            ![@HTML5.CssDefaults] : {width : '3rem'},
+            ![@UI.Hidden] : ( NumberOfErrors = 0 )
+        },
+        {
+            Value                 : Name,
+            ![@HTML5.CssDefaults] : {width : '30rem'}
+        },
+        {Value : Version},
+        {
+            Value                 : Description,
+            ![@HTML5.CssDefaults] : {width : '30rem'}
+        }
+    ],
+    DataPoint #Alerts   : {
+        Value                     : NumberOfErrors,
+        Criticality               : Criticality,
+        CriticalityRepresentation : #OnlyIcon,
+        ![@Common.QuickInfo]      : 'One or more error(s) could block migration of this item.'
+    },
+    Facets              : [
+        {
+            $Type  : 'UI.CollectionFacet',
+            ID     : 'metadata',
+            Label  : 'Metadata',
+            Facets : [{
+                $Type  : 'UI.ReferenceFacet',
+                Target : '@UI.FieldGroup#Basic'
+            }]
         },
         {
             ![@UI.Hidden] : ( NumberOfErrors = 0 ),

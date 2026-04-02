@@ -19,7 +19,7 @@ Use the **Register Tenants** app to register all your tenant systems (source, ta
 
 For Cloud Foundry based tenants, you can use the Import button where you can paste the JSON of the Service Key to automatically fill in all fields.
 
-The flag 'Source-only system' indicates if this tenant will be available as a migration target. If the flag is true, you won't be able to edit or post any content on this tenant with the migration tool as any call which is not a GET call will be blocked. This is purely a safety setting.
+The flag 'Read-only system' indicates if this tenant will be available as a migration target. If the flag is true, you won't be able to edit or post any content on this tenant with the migration tool as any call which is not a GET call will be blocked. This is purely a safety setting.
 
 Once a tenant is created / saved, you can use **Test Connection** to validate the settings. This will reach out to the Authentication Server to generate a token, and use this token on the Integration Tenant for a generic call to test the access.
 

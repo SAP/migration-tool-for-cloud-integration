@@ -92,6 +92,7 @@ service ConfigService {
             Oauth_clientid,
             Oauth_secret,
             Oauth_servicekeyid,
+            Neo_target_certificate_alias,
             CF_organizationID,
             CF_organizationName,
             CF_spaceID,
@@ -208,11 +209,42 @@ service ConfigService {
             toParent,
             ModifiedDateFormatted
         actions {
-            action analyzeScriptFiles() returns many db.TArtifactAnalysis;
+            action analyzeScriptFiles()      returns many db.TArtifactAnalysis;
+            action saveArtifactsAsVersion()  returns String;
         };
 
     entity IntegrationDesigntimeArtifacts  as
         projection on db.extIntegrationDesigntimeArtifacts {
+            *,
+            count(toErrors.ObjectID) as NumberOfErrors : Integer
+        }
+        group by
+            ObjectID,
+            Id,
+            Version,
+            PackageId,
+            Name,
+            Description,
+            ArtifactContent,
+            toParent;
+
+    entity ScriptCollectionDesigntimeArtifacts  as
+        projection on db.extScriptCollectionDesigntimeArtifacts {
+            *,
+            count(toErrors.ObjectID) as NumberOfErrors : Integer
+        }
+        group by
+            ObjectID,
+            Id,
+            Version,
+            PackageId,
+            Name,
+            Description,
+            ArtifactContent,
+            toParent;
+
+    entity MessageMappingDesigntimeArtifacts  as
+        projection on db.extMessageMappingDesigntimeArtifacts {
             *,
             count(toErrors.ObjectID) as NumberOfErrors : Integer
         }
@@ -256,9 +288,10 @@ service ConfigService {
             ValidUntil,
             ValidUntilCriticality;
 
-    entity CertificateUserMappingRoles     as projection on db.extCertificateUserMappingRoles;
-    entity DataStores                      as projection on db.extDataStores;
-    entity DataStoreEntries                as projection on db.extDataStoreEntries;
+    entity CertificateUserMappingRoles      as projection on db.extCertificateUserMappingRoles;
+    entity DataStores                       as projection on db.extDataStores;
+    entity DataStoreEntries                 as projection on db.extDataStoreEntries;
+
 
     @sap.deletable: false
     entity Errors                          as projection on db.Errors;
@@ -284,7 +317,7 @@ service ConfigService {
                     (
                             n.Included  =  true
                         and n.Component in (
-                            'Keystore', 'User Credential', 'oAuth Credential', 'Access Policy', 'Certificate User Mapping'
+                            'Keystore', 'User Credential', 'oAuth Credential', 'Access Policy', 'Certificate User Mapping', '# Bulk Content'
                         )
                         and t.ObjectID  =  n.toMigrationTask.ObjectID
                     )

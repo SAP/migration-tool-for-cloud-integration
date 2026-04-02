@@ -1,5 +1,5 @@
 # Limitations
-*Last updated: 28 Sep 2022*
+*Last updated: 02 Apr 2026*
 
 This tool has limitations on which content can be migrated and which not. Some limitations are set by the availability of suitable APIs, while other limitations are defined by security constraints.
 
@@ -12,19 +12,19 @@ Generic limitations of SAP Integration Suite on Multi Cloud are also documented 
 |Limitation|Reason|Solution
 |-|-|-
 |Version history can not be migrated|No suitable API to export history
-|Draft items can not be migrated|No suitable API to export draft items|Save item as new version first
+|~~Draft items can not be migrated~~|~~No suitable API to export draft items~~|Delivered in v1.4.0
 |Custom Groovy and Javascript code is analyzed for usage of Environment Variables, which may generate alerts in the tool but the custom code is not modified/corrected|Can not automatically correct custom code|Manually review the alerts and make appropriate changes. See [SAP Help page](https://help.sap.com/viewer/368c481cd6954bdfa5d0435479fd4eaf/Cloud/en-US/fb24f52d522b4a3b84c762ff7e085861.html)
 
 ## Security Material
 
 |Limitation|Reason|Solution
 |-|-|-
-|User Credentials of type 'Default' and 'Successfactors' can be migrated but will be created without the correct password/secret. User Credentials of type 'open connectors' can not be migrated|Security reasons|Set password/secret manually after migration
-|Only OAuth credentials of type 'Client Credentials' can be migrated, not 'SAML Bearer Assertion' or 'Authorization Code'|Security reasons|Re-create the item manually
-|Only Keystore entries of type 'Certificate' can be migrated, not 'Key Pair', 'SSH Key' or 'Keystore'. Also entries indicated with 'Maintained by SAP' can not be migrated|Security reasons|Re-create the item manually
-|Secure Parameters can not be migrated|No suitable API available|Re-create the item manually
-|Known Hosts can not be migrated|No suitable API available|Re-create the item manually
-|PGP Keyrings can not be migrated|No suitable API available|Re-create the item manually
+|~~User Credentials of type 'Default' and 'Successfactors' can be migrated but will be created without the correct password/secret. User Credentials of type 'open connectors' can not be migrated~~|~~Security reasons~~|Delivered in v1.4.0
+|~~Only OAuth credentials of type 'Client Credentials' can be migrated, not 'SAML Bearer Assertion' or 'Authorization Code'~~|~~Security reasons~~|Delivered in v1.4.0
+|~~Only Keystore entries of type 'Certificate' can be migrated, not 'Key Pair', 'SSH Key' or 'Keystore'. Also entries indicated with 'Maintained by SAP' can not be migrated~~|~~Security reasons~~|Delivered in v1.4.0
+|~~Secure Parameters can not be migrated~~|~~No suitable API available~~|Delivered in v1.4.0
+|~~Known Hosts can not be migrated~~|~~No suitable API available~~|Delivered in v1.4.0
+|~~PGP Keyrings can not be migrated~~|~~No suitable API available~~|Delivered in v1.4.0
 |~~Certificate-to-User Mappings can not be migrated~~|~~Different concept in CF~~|Delivered in v1.2.0
 
 ## Stores
@@ -33,7 +33,7 @@ Generic limitations of SAP Integration Suite on Multi Cloud are also documented 
 |-|-|-
 |~~Data Stores can not be migrated~~|~~Tool roadmap item~~|Delivered in v1.3.0
 |~~Variables can not be migrated~~|~~Tool roadmap item~~|Delivered in v1.1.0
-|JDBC Material can not be migrated|No suitable API available
+|~~JDBC Material can not be migrated~~|~~No suitable API available~~|Delivered in v1.4.0
 |Message Store can not be migrated|No suitable API available
 |JMS Queue Entries can not be migrated|Not necessary|Empty queue on Neo tenant before migration
 

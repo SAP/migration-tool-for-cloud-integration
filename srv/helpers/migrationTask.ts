@@ -1,4 +1,5 @@
 import cds from '@sap/cds'
+import { randomUUID } from 'crypto'
 
 import { Settings } from '../config/settings'
 
@@ -27,8 +28,32 @@ export default class MigrationTaskHelper {
         await this.updateNodesWithExistInFlags()
 
         if (preset == TMigrationTaskPresets.SkipAll) { this.Task.toTaskNodes.forEach(node => node.Included = false) }
-        if (preset == TMigrationTaskPresets.IncludeAll) { this.Task.toTaskNodes.forEach(node => node.Included = true) }
-        if (preset == TMigrationTaskPresets.Optimal) { this.Task.toTaskNodes.forEach(node => node.Included = (node.ExistInSource && !node.ExistInTarget)) }
+        if (preset == TMigrationTaskPresets.IncludeAll) {
+            this.Task.toTaskNodes.forEach(node => {
+                if (node.Component == Settings.ComponentNames.Credentials
+                    || node.Component == Settings.ComponentNames.OAuthCredential
+                    || node.Component == Settings.ComponentNames.KeyStoreEntry) {
+                    // Exclude individual security artifacts as the mass migration is the recommended approach for security content
+                    node.Included = false
+                } else {
+                    // Include all other artifacts that exist in source, as they are the ones that would need to be migrated
+                    node.Included = node.ExistInSource
+                }
+            })
+        }
+        if (preset == TMigrationTaskPresets.Optimal) {
+            this.Task.toTaskNodes.forEach(node => {
+                if (node.Component == Settings.ComponentNames.Credentials
+                    || node.Component == Settings.ComponentNames.OAuthCredential
+                    || node.Component == Settings.ComponentNames.KeyStoreEntry) {
+                    // Exclude individual security artifacts as the mass migration is the recommended approach for security content
+                    node.Included = false
+                } else {
+                    // Include all other artifacts that exist in source but not in target, as they are the ones that would need to be migrated
+                    node.Included = node.ExistInSource && !node.ExistInTarget
+                }
+            })
+        }
 
         this.Task.toTaskNodes.length > 0 && await INSERT.into(MigrationTaskNodes).entries(this.Task.toTaskNodes)
     }
@@ -48,6 +73,7 @@ export default class MigrationTaskHelper {
         return await SELECT.one.from(Tenants, ObjectID)
             .columns(x => {
                 x.ObjectID,
+                    x.Environment,
                     x.toIntegrationPackages(y => {
                         y('*'),
                             y.toIntegrationDesigntimeArtifacts('*'),
@@ -191,6 +217,18 @@ export default class MigrationTaskHelper {
             })
         }
 
+        if (Tenant.Environment == 'Neo') {
+            for (let item of Object.values(Settings.MassSecurityContentItems)) {
+                nodes.push({
+                    ObjectID: randomUUID(),
+                    Id: item.Name,
+                    Name: item.Name,
+                    Component: Settings.ComponentNames.MassSecurityContent,
+                    toMigrationTask_ObjectID: this.Task.ObjectID
+                })
+            }
+        }
+
         info(`${nodes.length} migration task nodes generated`)
         return nodes
     }
@@ -248,6 +286,10 @@ export default class MigrationTaskHelper {
                         node.ExistInSource = SourceTenant.toDataStores!.findIndex(x => x.DataStoreName == node.Id) >= 0
                         node.ExistInTarget = TargetTenant.toDataStores!.findIndex(x => x.DataStoreName == node.Id) >= 0
                         break
+                    case Settings.ComponentNames.MassSecurityContent:
+                        node.ExistInSource = true
+                        node.ExistInTarget = false
+                        break
                     default:
                         break
                 }
@@ -259,6 +301,46 @@ export default class MigrationTaskHelper {
             warn(`This task contains ${includedItemsNoLongerInSource} items which do not exist in the source tenant anymore. Refresh needed.`)
         }
         return includedItemsNoLongerInSource
+    }
+
+    public checkSecurityArtifactsCompatibility = () => {
+        const warnings: string[] = []
+
+        const checks = [
+            {
+                individual: Settings.ComponentNames.KeyStoreEntry,
+                shared: Settings.MassSecurityContentItems.AllKeystores.Name,
+                message: `Individual Keystore items and 'All Keystores' are included at the same time. Please select either individual items or 'All Keystores' item.`
+            },
+            {
+                individual: Settings.ComponentNames.OAuthCredential,
+                shared: Settings.MassSecurityContentItems.AllOAuth2ClientCredentials.Name,
+                message: `Individual OAuth Credential items and 'All OAuth Client Credentials' are included at the same time. Please select either individual items or 'All OAuth Client Credentials' item.`
+            },
+            {
+                individual: Settings.ComponentNames.Credentials,
+                shared: Settings.MassSecurityContentItems.AllUserCredentials.Name,
+                message: `Individual User Credential items and 'All User Credentials' are included at the same time. Please select either individual items or 'All User Credentials' item.`
+            }
+        ]
+
+        if (this.Task.toTaskNodes) {
+            for (const check of checks) {
+                const warning = this.checkCompatibility(check.individual, check.shared, check.message)
+                warning && warnings.push(warning)
+            }
+        }
+
+        return warnings
+    }
+
+    private checkCompatibility = (individualComponent: string, sharedName: string, message: string): string | undefined => {
+        const individualIncluded = this.Task.toTaskNodes?.some(node => node.Component === individualComponent)
+        const sharedIncluded = this.Task.toTaskNodes?.some(node => (node.Component === Settings.ComponentNames.MassSecurityContent && node.Name === sharedName))
+
+        if (individualIncluded && sharedIncluded) {
+            return message
+        }
     }
 
 }

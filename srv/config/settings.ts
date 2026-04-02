@@ -31,16 +31,26 @@ export const Settings = {
                 undeploy: '/api/v1/IntegrationRuntimeArtifacts(\'{ARTIFACT_ID}\')',
                 delete: '/api/v1/IntegrationDesigntimeArtifacts(Id=\'{ARTIFACT_ID}\',Version=\'active\')',
                 Configurations: { path: 'api/v1/IntegrationDesigntimeArtifacts(Id=\'{ARTIFACT_ID}\',Version=\'active\')/Configurations' },
-                Resources: { path: 'api/v1/IntegrationDesigntimeArtifacts(Id=\'{ARTIFACT_ID}\',Version=\'active\')/Resources' }
+                Resources: { path: 'api/v1/IntegrationDesigntimeArtifacts(Id=\'{ARTIFACT_ID}\',Version=\'active\')/Resources' },
+                saveAsVersion: { path: '/api/v1/IntegrationDesigntimeArtifactSaveAsVersion?Id=\'{ARTIFACT_ID}\'&SaveAsVersion=\'{ARTIFACT_VERSION}\'' }
             },
             IntegrationRuntimeArtifacts: {
                 path: '/api/v1/IntegrationRuntimeArtifacts(\'{ARTIFACT_ID}\')'
             },
             ValueMappingDesigntimeArtifacts: {
                 path: '/api/v1/IntegrationPackages(\'{PACKAGE_ID}\')/ValueMappingDesigntimeArtifacts',
-                ValMapSchema: { path: '/api/v1/ValueMappingDesigntimeArtifacts(Id=\'{ARTIFACT_ID}\',Version=\'{VERSION_ID}\')/ValMapSchema' }
+                ValMapSchema: { path: '/api/v1/ValueMappingDesigntimeArtifacts(Id=\'{ARTIFACT_ID}\',Version=\'{VERSION_ID}\')/ValMapSchema' },
+                saveAsVersion: { path: '/api/v1/ValueMappingDesigntimeArtifactSaveAsVersion?Id=\'{ARTIFACT_ID}\'&SaveAsVersion=\'{ARTIFACT_VERSION}\'' }
             },
-            CustomTags: { path: '/api/v1/IntegrationPackages(\'{PACKAGE_ID}\')/CustomTags' }
+            CustomTags: { path: '/api/v1/IntegrationPackages(\'{PACKAGE_ID}\')/CustomTags' },
+            ScriptCollectionDesigntimeArtifacts: {
+                path: '/api/v1/IntegrationPackages(\'{PACKAGE_ID}\')/ScriptCollectionDesigntimeArtifacts',
+                saveAsVersion: { path: '/api/v1/ScriptCollectionDesigntimeArtifactSaveAsVersion?Id=\'{ARTIFACT_ID}\'&SaveAsVersion=\'{ARTIFACT_VERSION}\'' }
+            },
+            MessageMappingDesigntimeArtifacts: {
+                path: '/api/v1/IntegrationPackages(\'{PACKAGE_ID}\')/MessageMappingDesigntimeArtifacts',
+                saveAsVersion: { path: '/api/v1/MessageMappingDesigntimeArtifactSaveAsVersion?Id=\'{ARTIFACT_ID}\'&SaveAsVersion=\'{ARTIFACT_VERSION}\'' }
+            }
         },
         MessageProcessingLogs: {
             path: '/api/v1/MessageProcessingLogs?$inlinecount=allpages&$filter=IntegrationFlowName eq \'{ARTIFACT_ID}\' and Status eq \'COMPLETED\' and LogStart gt datetime\'{START_TIME}\''
@@ -116,6 +126,10 @@ export const Settings = {
             CFPath: '/oauth/token?grant_type=client_credentials',
             NeoPath: '/oauth2/api/v1/token?grant_type=client_credentials'
         },
+        CSRFToken: {
+            CFPath: '/api/v1',
+            NeoPath: '/api/v1'
+        },
         CFPlatform: {
             TokenHost: 'uaa.cf.{HOST}',
             GetToken: '/oauth/token',
@@ -133,6 +147,10 @@ export const Settings = {
             Host: 'api.{HOST}',
             Ping: '/',
             TestSettings: '/authorization/v1/accounts/{ACCOUNT_ID}/groups'
+        },
+        SecurityArtifactsTransport: {
+            path: '/api/v1/SecurityContentTransports',
+            task: '/api/v1/SecurityContentTransports(\'{TASK_ID}\')'
         }
     },
 
@@ -149,7 +167,47 @@ export const Settings = {
         JMSBrokers: 'JMS Broker',
         Variables: 'Global Variable',
         CertificateUserMappings: 'Certificate User Mapping',
-        DataStores: 'Global Data Store'
+        DataStores: 'Global Data Store',
+        MassSecurityContent: '# Bulk Content'
+    },
+
+    MassSecurityContentItems: {
+        AllUserCredentials: {
+            Name: 'All User Credentials',
+            Type: 'userCredentials'
+        },
+        AllSecureParameters: {
+            Name: 'All Secure Parameters',
+            Type: 'secureParameter'
+        },
+        AllOAuth2ClientCredentials: {
+            Name: 'All OAuth Client Credentials',
+            Type: 'oAuth2ClientCredentials'
+        },
+        AllOAuth2SAMLBearerAssertions: {
+            Name: 'All OAuth SAMLBearerAssertions',
+            Type: 'oAuth2SAMLBearerAssertion'
+        },
+        AllKeystores: {
+            Name: 'All Keystores',
+            Type: 'keystore'
+        },
+        AllPGPKeys: {
+            Name: 'All PGP Keys',
+            Type: 'pgpKeys'
+        },
+        AllJDBCDatasources: {
+            Name: 'All JDBC Datasources',
+            Type: 'jdbcDatasource'
+        },
+        AllOAuth2AuthorizationCodes: {
+            Name: 'All OAuth AuthorizationCodes',
+            Type: 'oAuth2AuthorizationCode'
+        },
+        AllKnownHosts: {
+            Name: 'All Known Hosts',
+            Type: 'knownHosts'
+        }
     },
 
     DefaultPassword: 'default',
@@ -157,7 +215,9 @@ export const Settings = {
         DeletePackagesFromTargetBeforeOverwriting: true, //Used in migrationJob class. The 'overwrite' POST call might not overwrite all settings, so it's cleaner to first delete existing content. Also, if false, Local Variables can not be migrated. Default is true.
         DownloadConfigurationsAndResources: false, //Used in contentDownloader class. Not really necessary to have this information in 'Explore Tenants' as this really slows down the synchronization, so default false.
         ManipulateZipFileProduceOutputFile: false, //Used in ziphelper class. For debugging you can generate a physical zip file before uploading it to the tenant. Default is false.
-        AnalyzePackageContentWhenRefreshingContent: true //Used in contentDownloader class. Specifies whether script files + embedded certificates are analyzed when downloading the metadata of the tenant. Gives a more complete picture, but slows down the sync.
+        AnalyzePackageContentWhenRefreshingContent: true, //Used in contentDownloader class. Specifies whether script files + embedded certificates are analyzed when downloading the metadata of the tenant. Gives a more complete picture, but slows down the sync.
+        RefreshIntegrationContentAfterSaveDrafts: true, //Used in configService class. Specifies whether to automatically trigger a refresh of the integration content after saving draft artifacts.
+        SaveArtifactsAsNewVersionDuringMigration: true //Used in migrationJob class. Specifies whether to save artifacts as new version when they are in 'Draft' state. This ensures a cleaner migration and better overview of migrated content, but also increases the runtime of the migration. Default is true.
     },
     RegEx: {
         iflowFile: /^src\/main\/resources\/scenarioflows\/integrationflow\/(.*)\.iflw$/gi,
@@ -209,6 +269,10 @@ export const Settings = {
             successStatus: 'succeeded',
             errorStatus: 'failed',
             maxWait: 60 * 1000
+        },
+        MigrateSecurityArtifacts: {
+            sleepInterval: 5 * 1000,
+            maxWait: 40 * 60 * 1000 // 40 minutes
         }
     }
 }

@@ -25,6 +25,8 @@ type TArtifactAnalysis {
 type TErrorComponentName   : String(50) enum {
     IntegrationPackage = 'Integration Package';
     IntegrationFlow = 'Integration Flow';
+    ScriptCollection = 'Script Collection';
+    MessageMapping = 'Message Mapping';
     ValueMapping = 'Value Mapping';
     KeystoreEntry = 'Keystore Entry';
     UserCredential = 'User Credential';
@@ -107,6 +109,7 @@ entity Tenants : managed {
             Oauth_clientid                : String(255);
             Oauth_secret                  : String(255);
             Oauth_servicekeyid            : String(255);
+            Neo_target_certificate_alias  : String(255);
             CF_organizationID             : String(255);
             CF_organizationName           : String(255);
             CF_spaceID                    : String(255);
@@ -184,6 +187,10 @@ entity extIntegrationPackages {
     virtual Criticality                       : Integer @Core.Computed;
             toIntegrationDesigntimeArtifacts  : Composition of many extIntegrationDesigntimeArtifacts
                                                     on toIntegrationDesigntimeArtifacts.toParent = $self;
+            toScriptCollectionDesigntimeArtifacts : Composition of many extScriptCollectionDesigntimeArtifacts
+                                                    on toScriptCollectionDesigntimeArtifacts.toParent = $self;
+            toMessageMappingDesigntimeArtifacts   : Composition of many extMessageMappingDesigntimeArtifacts
+                                                    on toMessageMappingDesigntimeArtifacts.toParent = $self;
             toValueMappingDesigntimeArtifacts : Composition of many extValueMappingDesigntimeArtifacts
                                                     on toValueMappingDesigntimeArtifacts.toParent = $self;
             toCustomTags                      : Composition of many extCustomTags
@@ -214,6 +221,40 @@ entity extIntegrationDesigntimeArtifacts {
                                    on  toErrors.ComponentName = Name
                                    and toErrors.toParent      = toParent.toParent.ObjectID
                                    and toErrors.Component     = 'Integration Flow';
+}
+
+entity extScriptCollectionDesigntimeArtifacts {
+    key     ObjectID         : UUID    @Core.Computed;
+    key     Id               : String(255);
+            Version          : String(255);
+            PackageId        : String(255);
+            Name             : String(255);
+            Description      : String(1000);
+            ArtifactContent  : Binary;
+    virtual NumberOfErrors   : Integer @Core.Computed;
+    virtual Criticality      : Integer @Core.Computed;
+            toParent         : Association to one extIntegrationPackages;
+            toErrors         : Association to many Errors
+                                   on  toErrors.ComponentName = Name
+                                   and toErrors.toParent      = toParent.toParent.ObjectID
+                                   and toErrors.Component     = 'Script Collection';
+}
+
+entity extMessageMappingDesigntimeArtifacts {
+    key     ObjectID         : UUID    @Core.Computed;
+    key     Id               : String(255);
+            Version          : String(255);
+            PackageId        : String(255);
+            Name             : String(255);
+            Description      : String(1000);
+            ArtifactContent  : Binary;
+    virtual NumberOfErrors   : Integer @Core.Computed;
+    virtual Criticality      : Integer @Core.Computed;
+            toParent         : Association to one extIntegrationPackages;
+            toErrors         : Association to many Errors
+                                   on  toErrors.ComponentName = Name
+                                   and toErrors.toParent      = toParent.toParent.ObjectID
+                                   and toErrors.Component     = 'Message Mapping';
 }
 
 entity extConfigurations {

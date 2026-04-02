@@ -40,12 +40,16 @@ import {
     extJMSBrokers,
     extKeyStoreEntry,
     extKeyStoreEntries,
+    extMessageMappingDesigntimeArtifact,
+    extMessageMappingDesigntimeArtifacts,
     extNumberRange,
     extNumberRanges,
     extOAuth2ClientCredential,
     extOAuth2ClientCredentials,
     extResource,
     extResources,
+    extScriptCollectionDesigntimeArtifact,
+    extScriptCollectionDesigntimeArtifacts,
     extUserCredential,
     extUserCredentials,
     extValMapSchema,
@@ -242,6 +246,8 @@ export default class ContentDownloader {
         for (let each of items) {
             this.setIntegrationContentStatusItem(each.Id!)
             await this.getIntegrationDesigntimeArtifacts(each.Id!, each.ObjectID!).then(n => this.NumberOfItems += n)
+            await this.getScriptCollectionDesigntimeArtifacts(each.Id!, each.ObjectID!).then(n => this.NumberOfItems += n)
+            await this.getMessageMappingDesigntimeArtifacts(each.Id!, each.ObjectID!).then(n => this.NumberOfItems += n)
             await this.getValueMappingDesigntimeArtifacts(each.Id!, each.ObjectID!).then(n => this.NumberOfItems += n)
             await this.getCustomTags(each.Id!, each.ObjectID!).then(n => this.NumberOfItems += n)
 
@@ -304,6 +310,141 @@ export default class ContentDownloader {
         }
         info('checkIntegrationDesigntimeArtifacts returned ' + count + ' errors.')
         return count
+    }
+
+    private getScriptCollectionDesigntimeArtifacts = async (package_id: string, parent_id: string): Promise<number> => {
+        info('getScriptCollectionDesigntimeArtifacts ' + package_id + ' with parent ID: ' + parent_id)
+        const items = await this.Connector.externalCall(Settings.Paths.IntegrationPackages.ScriptCollectionDesigntimeArtifacts.path.replace('{PACKAGE_ID}', package_id)) as extScriptCollectionDesigntimeArtifact[]
+
+        await DELETE.from(Errors).where({
+            toParent: this.Tenant.ObjectID,
+            Component: TErrorComponentName.ScriptCollection,
+            ComponentName: { in: items.map(x => x.Name) }
+        })
+        await this.checkScriptCollectionDesigntimeArtifacts(items, package_id)
+
+        this.removeInvalidParameters(Entities.extScriptCollectionDesigntimeArtifacts, items)
+        for (let each of items) {
+            each.toParent_ObjectID = parent_id
+            each.toParent_Id = package_id
+            each.toParent_toParent_ObjectID = this.Tenant.ObjectID
+        }
+        await DELETE.from(extScriptCollectionDesigntimeArtifacts).where({ 'toParent_ObjectID': parent_id })
+        try {
+            items.length > 0 && await INSERT(items).into(extScriptCollectionDesigntimeArtifacts)
+        } catch (error) { info(error); throw error }
+
+        return items.length
+    }
+    private checkScriptCollectionDesigntimeArtifacts = async (items: extScriptCollectionDesigntimeArtifact[], package_id: string): Promise<number> => {
+        var count = 0
+        for (let each of items) {
+            if (each.Version == 'Active' || each.Version == 'Draft')
+                count += await this.createError(TErrorComponentName.ScriptCollection, 'Error', each, 'Item is in Draft state (package: ' + package_id + ')', Settings.Paths.DeepLinks.PackageArtifacts.replace('{PACKAGE_ID}', each.PackageId!))
+        }
+        info('checkScriptCollectionDesigntimeArtifacts returned ' + count + ' errors.')
+        return count
+    }
+
+    private getMessageMappingDesigntimeArtifacts = async (package_id: string, parent_id: string): Promise<number> => {
+        info('getMessageMappingDesigntimeArtifacts ' + package_id + ' with parent ID: ' + parent_id)
+        const items = await this.Connector.externalCall(Settings.Paths.IntegrationPackages.MessageMappingDesigntimeArtifacts.path.replace('{PACKAGE_ID}', package_id)) as extMessageMappingDesigntimeArtifact[]
+
+        await DELETE.from(Errors).where({
+            toParent: this.Tenant.ObjectID,
+            Component: TErrorComponentName.MessageMapping,
+            ComponentName: { in: items.map(x => x.Name) }
+        })
+        await this.checkMessageMappingDesigntimeArtifacts(items, package_id)
+
+        this.removeInvalidParameters(Entities.extMessageMappingDesigntimeArtifacts, items)
+        for (let each of items) {
+            each.toParent_ObjectID = parent_id
+            each.toParent_Id = package_id
+            each.toParent_toParent_ObjectID = this.Tenant.ObjectID
+        }
+        await DELETE.from(extMessageMappingDesigntimeArtifacts).where({ 'toParent_ObjectID': parent_id })
+        try {
+            items.length > 0 && await INSERT(items).into(extMessageMappingDesigntimeArtifacts)
+        } catch (error) { info(error); throw error }
+
+        return items.length
+    }
+    private checkMessageMappingDesigntimeArtifacts = async (items: extMessageMappingDesigntimeArtifact[], package_id: string): Promise<number> => {
+        var count = 0
+        for (let each of items) {
+            if (each.Version == 'Active' || each.Version == 'Draft')
+                count += await this.createError(TErrorComponentName.MessageMapping, 'Error', each, 'Item is in Draft state (package: ' + package_id + ')', Settings.Paths.DeepLinks.PackageArtifacts.replace('{PACKAGE_ID}', each.PackageId!))
+        }
+        info('checkMessageMappingDesigntimeArtifacts returned ' + count + ' errors.')
+        return count
+    }
+
+    public saveArtifactsAsVersion = async (package_id: string): Promise<{
+        success: boolean,
+        renamed: number,
+        message: string[],
+        newVersion: string
+    }> => {
+        info('saveArtifactsAsVersion ' + package_id)
+        var message: string[] = []
+        var success = true
+        var renamed = 0
+
+        assert(!this.Tenant.ReadOnly, 'Tenant is set to read-only. No artifacts can be saved as new version. Disable the read-only flag in Register Tenants to enable this functionality.')
+
+        await this.Connector.refreshIntegrationToken()
+        await this.Connector.refreshAuthorizationDetails()
+
+        const newVersion = new Date().toISOString().split('T')[0].replace(/-/g, '.')
+        const drafts = [
+            {
+                type: 'Integration Flow',
+                path: Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.saveAsVersion.path,
+                artifacts: (await this.Connector.externalCall(Settings.Paths.IntegrationPackages.IntegrationDesigntimeArtifacts.path.replace('{PACKAGE_ID}', package_id)) as extIntegrationDesigntimeArtifact[])
+                    .filter(x => x.Version == 'Active')
+            },
+            {
+                type: 'Value Mapping',
+                path: Settings.Paths.IntegrationPackages.ValueMappingDesigntimeArtifacts.saveAsVersion.path,
+                artifacts: (await this.Connector.externalCall(Settings.Paths.IntegrationPackages.ValueMappingDesigntimeArtifacts.path.replace('{PACKAGE_ID}', package_id)) as extValueMappingDesigntimeArtifact[])
+                    .filter(x => x.Version == 'Active' || x.Version == 'Draft')
+            },
+            {
+                type: 'Script Collection',
+                path: Settings.Paths.IntegrationPackages.ScriptCollectionDesigntimeArtifacts.saveAsVersion.path,
+                artifacts: (await this.Connector.externalCall(Settings.Paths.IntegrationPackages.ScriptCollectionDesigntimeArtifacts.path.replace('{PACKAGE_ID}', package_id)) as extScriptCollectionDesigntimeArtifact[])
+                    .filter(x => x.Version == 'Active' || x.Version == 'Draft')
+            },
+            {
+                type: 'Message Mapping',
+                path: Settings.Paths.IntegrationPackages.MessageMappingDesigntimeArtifacts.saveAsVersion.path,
+                artifacts: (await this.Connector.externalCall(Settings.Paths.IntegrationPackages.MessageMappingDesigntimeArtifacts.path.replace('{PACKAGE_ID}', package_id)) as extMessageMappingDesigntimeArtifact[])
+                    .filter(x => x.Version == 'Active' || x.Version == 'Draft')
+            }
+        ]
+
+        for (let contentType of drafts) {
+            for (let artifact of contentType.artifacts) {
+                const response = await this.Connector?.externalPostWithCSRF(contentType.path
+                    .replace('{ARTIFACT_ID}', artifact.Id!)
+                    .replace('{ARTIFACT_VERSION}', newVersion)
+                )
+                if (response && response.code < 400) {
+                    const msg = `Success: ${contentType.type} ${artifact.Id!} saved as version ${newVersion}`
+                    info(msg)
+                    message.push(msg)
+                    renamed++
+                } else {
+                    const errorMessage = `${response.code}: ${response.value?.error?.message?.value ?? response.value}`
+                    const msg = `Error: ${contentType.type} ${artifact.Id!} could not be saved as version ${newVersion} [${errorMessage}]`
+                    warn(msg)
+                    message.push(msg)
+                    success = false
+                }
+            }
+        }
+        return { success, renamed, message, newVersion }
     }
 
     private getConfigurations = async (package_id: string, artifact_id: string, parent_id: string): Promise<number> => {
@@ -444,7 +585,7 @@ export default class ContentDownloader {
         const itemsSupported = items.filter(x => x.Type == 'Certificate')
         if (items.length > itemsSupported.length) {
             const notSupported = items.filter(x => !itemsSupported.includes(x)).map(x => x.Alias)
-            await this.createError(TErrorComponentName.KeystoreEntry, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + notSupported.length + ' keystore entries which are not supported for migration: ' + notSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument)
+            await this.createError(TErrorComponentName.KeystoreEntry, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + notSupported.length + ' keystore entries which are not supported for individual migration: ' + notSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument + ' Migration of shared artifacts is still possible')
         }
 
         this.removeInvalidParameters(Entities.extKeyStoreEntries, itemsSupported)
@@ -528,7 +669,7 @@ export default class ContentDownloader {
         const itemsSupported = items.filter(x => (x.Kind == 'default' || x.Kind == 'successfactors'))
         const itemsNotSupported = items.filter(x => (!itemsSupported.includes(x) && (!OAuth2ClientCredentialsList.includes(x.Name!)))).map(x => x.Name)
         if (itemsNotSupported.length > 0) {
-            await this.createError(TErrorComponentName.UserCredential, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + itemsNotSupported.length + ' user credential(s) which are not supported for migration: ' + itemsNotSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument)
+            await this.createError(TErrorComponentName.UserCredential, 'Limitation', { Name: 'See documentation' }, 'This tenant contains ' + itemsNotSupported.length + ' user credential(s) which are not supported for individual migration: ' + itemsNotSupported.join(', '), Settings.Paths.DeepLinks.LimitationsDocument + ' Migration of shared artifacts is still possible')
         }
         itemsSupported.forEach(x => ContentDownloader.fixSecurityArtifactDescriptor(x))
         await this.checkUserCredentials(itemsSupported)
@@ -736,7 +877,6 @@ export default class ContentDownloader {
     private checkJMSBrokers = async (item: extJMSBroker) => {
         // await this.createError('JMS Broker', 'Prototype Limitation', item, 'This tenant contains a JMS Broker which is not supported in this prototype. Usage = ' + item.QueueNumber + '/' + item.MaxQueueNumber)
     }
-
     private getAccessPolicies = async (filter?: string[], oppositeFilter?: boolean): Promise<number> => {
         info('getAccessPolicies ' + this.Tenant.ObjectID)
         this.setIntegrationContentStatusTopic('Access Policies')

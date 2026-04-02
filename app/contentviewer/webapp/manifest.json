@@ -10,7 +10,7 @@
             ]
         },
         "applicationVersion": {
-            "version": "1.0.0"
+            "version": "1.4.0"
         },
         "title": "Explore Tenants",
         "description": "Explore the content of your tenant",
@@ -50,7 +50,7 @@
         "service": "sap.btp.cpimigrationtool"
     },
     "sap.platform.cf": {
-	   "ui5VersionNumber": "1.142.4"
+        "ui5VersionNumber": "1.142.10"
     },
     "sap.ui": {
         "technology": "UI5",
@@ -124,6 +124,16 @@
                     "pattern": "Tenants({key})/toIntegrationPackages({key2})/toIntegrationDesigntimeArtifacts({key3}):?query:",
                     "name": "IntegrationDesigntimeArtifactsObjectPage_toIntegrationDesigntimeArtifacts",
                     "target": "IntegrationDesigntimeArtifactsObjectPage_toIntegrationDesigntimeArtifacts"
+                },
+                {
+                    "pattern": "Tenants({key})/toIntegrationPackages({key2})/toScriptCollectionDesigntimeArtifacts({key3}):?query:",
+                    "name": "IntegrationDesigntimeArtifactsObjectPage_toScriptCollectionDesigntimeArtifacts",
+                    "target": "IntegrationDesigntimeArtifactsObjectPage_toScriptCollectionDesigntimeArtifacts"
+                },
+                {
+                    "pattern": "Tenants({key})/toIntegrationPackages({key2})/toMessageMappingDesigntimeArtifacts({key3}):?query:",
+                    "name": "IntegrationDesigntimeArtifactsObjectPage_toMessageMappingDesigntimeArtifacts",
+                    "target": "IntegrationDesigntimeArtifactsObjectPage_toMessageMappingDesigntimeArtifacts"
                 },
                 {
                     "pattern": "Tenants({key})/toIntegrationPackages({key2})/toIntegrationDesigntimeArtifacts({key3})/toConfigurations({key4}):?query:",
@@ -261,6 +271,7 @@
                     "options": {
                         "settings": {
                             "entitySet": "Tenants",
+                            "enhanceI18n": "i18n/i18n.properties",
                             "variantManagement": "None",
                             "navigation": {
                                 "toIntegrationPackages": {
@@ -409,11 +420,22 @@
                     "options": {
                         "settings": {
                             "entitySet": "IntegrationPackages",
+                            "enhanceI18n": "i18n/i18n.properties",
                             "variantManagement": "None",
                             "navigation": {
                                 "toIntegrationDesigntimeArtifacts": {
                                     "detail": {
                                         "route": "IntegrationDesigntimeArtifactsObjectPage_toIntegrationDesigntimeArtifacts"
+                                    }
+                                },
+                                "toScriptCollectionDesigntimeArtifacts": {
+                                    "detail": {
+                                        "route": "IntegrationDesigntimeArtifactsObjectPage_toScriptCollectionDesigntimeArtifacts"
+                                    }
+                                },
+                                "toMessageMappingDesigntimeArtifacts": {
+                                    "detail": {
+                                        "route": "IntegrationDesigntimeArtifactsObjectPage_toMessageMappingDesigntimeArtifacts"
                                     }
                                 },
                                 "toCustomTags": {
@@ -451,6 +473,32 @@
                                     }
                                 }
                             },
+                            "content": {}
+                        }
+                    }
+                },
+                "IntegrationDesigntimeArtifactsObjectPage_toScriptCollectionDesigntimeArtifacts": {
+                    "type": "Component",
+                    "id": "IntegrationDesigntimeArtifactsObjectPage_toScriptCollectionDesigntimeArtifacts",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "ScriptCollectionDesigntimeArtifacts",
+                            "variantManagement": "None",
+                            "navigation": {},
+                            "content": {}
+                        }
+                    }
+                },
+                "IntegrationDesigntimeArtifactsObjectPage_toMessageMappingDesigntimeArtifacts": {
+                    "type": "Component",
+                    "id": "IntegrationDesigntimeArtifactsObjectPage_toMessageMappingDesigntimeArtifacts",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "MessageMappingDesigntimeArtifacts",
+                            "variantManagement": "None",
+                            "navigation": {},
                             "content": {}
                         }
                     }

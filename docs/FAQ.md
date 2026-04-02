@@ -42,4 +42,4 @@ If needed, you can solve this by clicking on 'Reset / Regenerate Content List'. 
 
 **Q: I can't select all tenants as migration target?**
 
-**A:** Make sure the tenant you want to use as a target is not marked as read-only (Source-only system flag set to true in Register Tenants module).
+**A:** Make sure the tenant you want to use as a target is not marked as read-only (Read-only system flag set to true in Register Tenants module).

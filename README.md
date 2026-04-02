@@ -14,6 +14,7 @@ This repo keeps track of versions via Tags:
 - Tag v1.1.x: scope similar to Postman collection v1.6.0 (14 Feb 2022) (Variables)
 - Tag v1.2.x: scope similar to Postman collection v1.7.1 (30 May 2022) (Certificate-to-User Mapping)
 - Tag v1.3.x: scope similar to Postman collection v1.8.0 (12 Dec 2022) (Data Stores)
+- Tag v1.4.x: scope similar to Postman collection v1.9.1 (04 Jun 2025) (Security Artifacts and Drafts)
 
 This Github repository is an alternative tool which aims to achieve the same as the Postman collection while offering greater flexibility and control over your migration project. Areas where this tool provides an advantage over the Postman collection:
 - Creation of 'Migration Tasks' which focus on a subset of the content in the tenant;
@@ -147,7 +148,7 @@ To learn how to use the tool, please refer to the [user documentation](/docs).
 - **1.133.0**: Issue: dynamically hidden fields still visible
 - **1.136.1**: Issue: iFlows not visualized (wait for 1.136.2 fix)
 - **1.138.1**: Stable
-- **1.142.2**: Stable
+- **1.142.10**: Stable
 
 Specify the version to be used in [/app/home.html](./app/home.html) (when running locally), or in each of the 4 application's `manifest.json` files in the `sap.platform.cf.ui5versionNumber` setting (when deployed to Work Zone).
 
@@ -168,6 +169,7 @@ Version availability: https://ui5.sap.com/versionoverview.html
 - **9.0.3**: Stable
 - **9.1.3**: Stable
 - **9.6.4**: Stable
+- **9.8.4**: Stable
 
 More information on changelog: https://cap.cloud.sap/docs/releases
 
