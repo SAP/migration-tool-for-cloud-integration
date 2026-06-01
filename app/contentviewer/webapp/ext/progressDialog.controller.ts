@@ -6,7 +6,6 @@ import ODataModel from 'sap/ui/model/odata/v4/ODataModel'
 import JSONModel from 'sap/ui/model/json/JSONModel'
 import V4Context from 'sap/ui/model/odata/v4/Context'
 import CoreElement from 'sap/ui/core/Element'
-import jQuery from 'sap/ui/thirdparty/jquery'
 
 import Button from 'sap/m/Button'
 import Dialog from 'sap/m/Dialog'
@@ -257,7 +256,8 @@ export default class progressDialog extends ControllerExtension {
                 ],
                 escapeHandler: function (oPromise): void {
                     // https://github.com/SAP/ui5-typescript/issues/502
-                    (oPromise as { resolve: () => void; reject: () => void }).reject()
+                    // (oPromise as { resolve: () => void; reject: () => void }).reject()
+                    oPromise.reject()
                 },
                 afterClose: (): void => {
                     if (this.timeout) clearTimeout(this.timeout)
@@ -280,10 +280,12 @@ export default class progressDialog extends ControllerExtension {
     }
 
     private refreshProgressStatus(): void {
-        jQuery.ajax({
-            url: this.serviceUrl + 'getIntegrationContentStatus()',
-            type: 'GET',
-            success: (data: TIntegrationContentStatus) => {
+        fetch(this.serviceUrl + 'getIntegrationContentStatus()')
+            .then(res => {
+                if (!res.ok) throw new Error(res.statusText)
+                return res.json() as Promise<TIntegrationContentStatus>
+            })
+            .then((data: TIntegrationContentStatus) => {
                 if (!data.ErrorState) {
                     if (data.Running) {
                         this.setProgressStatus(data.Progress!, `Downloading content for ${data.Tenant} ...`, data.Topic!, data.Item!)
@@ -304,15 +306,14 @@ export default class progressDialog extends ControllerExtension {
                     this.coreById<Text>('textBottom1').setText('Unexpected error: ' + data.Item)
                     this.coreById<Button>('btnClose').setVisible(true)
                 }
-            },
-            error: (request, status, error): void => {
+            })
+            .catch((error: Error) => {
                 console.error(error)
                 this.coreById<ProgressIndicator>('progressPackages').setState('Error')
-                this.coreById<Text>('textBottom1').setText('Error: ' + error)
+                this.coreById<Text>('textBottom1').setText('Error: ' + error.message)
                 this.coreById<Button>('btnClose').setVisible(true)
                 this.coreById<Button>('btnRefresh').setVisible(true)
-            }
-        })
+            })
     }
 
 }
