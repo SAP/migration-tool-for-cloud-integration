@@ -10,8 +10,7 @@
     "strictNullChecks": true,
     "sourceMap": true,
     "types": [
-      "@sapui5/types",
-      "@types/jquery"
+      "@sapui5/types"
     ],
     "paths": {
       "#cds-models/*": [
