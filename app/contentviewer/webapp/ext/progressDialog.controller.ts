@@ -280,9 +280,17 @@ export default class progressDialog extends ControllerExtension {
     }
 
     private refreshProgressStatus(): void {
+        if (!this.serviceUrl) {
+            console.error('serviceUrl is not set')
+            return
+        }
         fetch(this.serviceUrl + 'getIntegrationContentStatus()')
             .then(res => {
-                if (!res.ok) throw new Error(res.statusText)
+                if (!res.ok) {
+                    return res.text().then(body => {
+                        throw new Error(`${res.status} ${res.statusText}: ${body}`)
+                    })
+                }
                 return res.json() as Promise<TIntegrationContentStatus>
             })
             .then((data: TIntegrationContentStatus) => {
@@ -307,10 +315,11 @@ export default class progressDialog extends ControllerExtension {
                     this.coreById<Button>('btnClose').setVisible(true)
                 }
             })
-            .catch((error: Error) => {
+            .catch((error: unknown) => {
                 console.error(error)
                 this.coreById<ProgressIndicator>('progressPackages').setState('Error')
-                this.coreById<Text>('textBottom1').setText('Error: ' + error.message)
+                const message = error instanceof Error ? error.message : String(error)
+                this.coreById<Text>('textBottom1').setText('Error: ' + message)
                 this.coreById<Button>('btnClose').setVisible(true)
                 this.coreById<Button>('btnRefresh').setVisible(true)
             })
