@@ -10,7 +10,8 @@
     "strictNullChecks": true,
     "sourceMap": true,
     "types": [
-      "@sapui5/types"
+      "@sapui5/types",
+      "node"
     ],
     "paths": {
       "#cds-models/*": [

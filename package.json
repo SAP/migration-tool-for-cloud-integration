@@ -10,7 +10,7 @@
     "email": "willem.pardaens@sap.com"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "keywords": [
     "SAP Integration Suite",
@@ -18,30 +18,30 @@
     "Migration tool"
   ],
   "dependencies": {
-    "@cap-js/hana": "^2",
-    "@cap-js/postgres": "^2",
-    "@cap-js/sqlite": "^2",
-    "@sap-cloud-sdk/http-client": "^4.6",
-    "@sap/cds": "~9.8",
+    "@cap-js/hana": "^3",
+    "@cap-js/postgres": "^3",
+    "@cap-js/sqlite": "^3",
+    "@sap-cloud-sdk/http-client": "^4.8",
+    "@sap/cds": "^10",
     "@sap/xssec": "^4",
-    "axios": "^1.16",
+    "axios": "^1.18",
     "qs": "^6.15",
     "xml2js": "^0.6",
-    "yauzl": "^3.3",
+    "yauzl": "^3.4",
     "yazl": "^3.3"
   },
   "devDependencies": {
-    "@cap-js/cds-typer": "^0.38",
-    "@cap-js/cds-types": "^0.16",
-    "@sap/cds-dk": "^9.8",
-    "@types/node": "^25.6",
+    "@cap-js/cds-typer": "^0.40",
+    "@cap-js/cds-types": "^0.18",
+    "@sap/cds-dk": "^10.0",
+    "@types/node": "^26",
     "@types/qs": "^6.15",
     "@types/xml2js": "^0.4",
-    "@types/yauzl": "^2.10",
+    "@types/yauzl": "^3.4",
     "@types/yazl": "^3.3",
-    "eslint": "^10.2",
+    "eslint": "^10.7",
     "rimraf": "^6",
-    "tsx": "^4.21",
+    "tsx": "^4.23",
     "typescript": "^6.0"
   },
   "scripts": {

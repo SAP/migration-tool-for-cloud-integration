@@ -125,7 +125,7 @@ export default class progressDialog extends ControllerExtension {
         const dialog = oEvent.getSource().getEventingParent() as Dialog
         const data = (dialog.getModel('selection') as JSONModel).getData() as Record<string, boolean | string[]>
 
-        const count = checkboxeNames.reduce((p, c: keyof typeof data) => p += data[`${c}_include`] == true ? 1 : 0, 0)
+        const count = checkboxeNames.reduce((p, c: keyof typeof data) => p + (data[`${c}_include`] == true ? 1 : 0), 0)
         if (count == 0) {
             MessageBox.error('No items selected', { title: 'Error' })
             return

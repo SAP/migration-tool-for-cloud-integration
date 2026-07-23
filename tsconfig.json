@@ -12,8 +12,14 @@
     "paths": {
       "#cds-models/*": [
         "./@cds-models/*"
+      ],
+      "@sap/cds": [
+        "./node_modules/@cap-js/cds-types"
       ]
-    }
+    },
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "allowJs": true
   },
   "include": [
     "srv"
