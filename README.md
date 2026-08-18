@@ -170,6 +170,7 @@ Version availability: https://ui5.sap.com/versionoverview.html
 - **9.1.3**: Stable
 - **9.6.4**: Stable
 - **9.8.4**: Stable
+- **10.0.4**: Stable
 
 More information on changelog: https://cap.cloud.sap/docs/releases
 
