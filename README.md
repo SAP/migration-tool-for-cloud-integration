@@ -61,6 +61,8 @@ To stop the tool, in Terminal or Command Prompt, press `control-C`
 
 It is required to have an active installation of Node.js (version 20 or later), available from the [Node.js](https://nodejs.org/) website, including Node Package Manager (NPM). You can verify your installed version via `node -v`.
 
+It is required to have the **Cloud MTA Build tool** (`mbt`) installed, test with `mbt -v` which should print the version number ([download here](https://sap.github.io/cloud-mta-build-tool/download/)).
+
 To install, in Terminal or Command Prompt, run:
 
 1. Install the SAP CAP SDK 'CDS-DK': `npm i -g @sap/cds-dk`
