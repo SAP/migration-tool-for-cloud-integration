@@ -209,8 +209,9 @@ export default class ConfigService extends cds.ApplicationService {
             const countItems = Object.values(TenantStats).reduce((p, c) => p + c, 0)
             countItems == 0 && req.error(400, 'No content downloaded yet. Please click on \'Get Integration Content\' first before creating a Migration Task')
 
-            const newTask = await this.create(MigrationTasks, {
-                ObjectID: randomUUID(),
+            const newTask_ObjectId = randomUUID()
+            await this.create(MigrationTasks, {
+                ObjectID: newTask_ObjectId,
                 Name: Name,
                 Description: Description,
                 SourceTenant_ObjectID: keys.ObjectID,
@@ -218,7 +219,7 @@ export default class ConfigService extends cds.ApplicationService {
                 CustomConfig: '{ "name_prefix": "" }'
             })
 
-            const Task = await SELECT.one.from(MigrationTasks, newTask.ObjectID).columns(x => { x('*'), x.toTaskNodes('*') })
+            const Task = await SELECT.one.from(MigrationTasks, newTask_ObjectId).columns(x => { x('*'), x.toTaskNodes('*') })
             if (!Task) return {}
 
             await new MigrationTaskHelper(Task).generateTaskNodes(Preset ?? 'Optimal')
