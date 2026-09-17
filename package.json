@@ -33,7 +33,7 @@
   "devDependencies": {
     "@cap-js/cds-typer": "^0.40",
     "@cap-js/cds-types": "^0.18",
-    "@sap/cds-dk": "^10.0",
+    "@sap/cds-dk": "^10.1",
     "@types/node": "^26",
     "@types/qs": "^6.15",
     "@types/xml2js": "^0.4",
