@@ -78,6 +78,7 @@ type TSecurityContentTransportPayload = {
     TaskId: string
     Type: string
     TargetCertificateAlias: string
+    TargetTenantHost: string
     Mode: string
 }
 
@@ -1393,6 +1394,7 @@ export default class MigrationJobHelper {
             TaskId: 'dummyId',
             Type: type,
             TargetCertificateAlias: this.Task?.SourceTenant?.Neo_target_certificate_alias,
+            TargetTenantHost: this.Task?.TargetTenant?.Host,
             Mode: "merge"
         } as TSecurityContentTransportPayload
 
